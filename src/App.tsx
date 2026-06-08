@@ -22,6 +22,7 @@ import { Word } from './types';
 import { loadVocabulary } from './data/VocabularyLoader';
 import { getSynonymsOrAntonyms } from './data/GeminiNetwork';
 import { kanjiData } from './data/kanji_n3';
+import { KanjiStrokeAnimator } from './components/KanjiStrokeAnimator';
 
 // Caching helper functions for Gemini Vocabulary results
 const getCacheKey = (wordId: string, mode: 'same' | 'diff') => {
@@ -1213,7 +1214,7 @@ export default function App() {
                   {/* FLASHCARD BODY CONTAINER */}
                   <div 
                     onClick={() => setIsKanjiFlipped(!isKanjiFlipped)}
-                    className="h-[360px] cursor-pointer perspective-1000 select-none touch-pan-y"
+                    className="h-[440px] cursor-pointer perspective-1000 select-none touch-pan-y"
                   >
                     <div className={`w-full h-full duration-500 transform-style-3d relative ${isKanjiFlipped ? 'rotate-y-180' : ''}`}>
                       
@@ -1244,10 +1245,16 @@ export default function App() {
                         </div>
 
                         {/* Large Kanji Display */}
-                        <div className="flex-1 flex flex-col justify-center items-center gap-4 py-4">
-                          <h3 className="text-8xl font-black text-slate-900 dark:text-slate-50 leading-none tracking-normal font-sans">
+                        <div className="flex-1 flex flex-col justify-center items-center gap-2 py-2">
+                          <h3 
+                            className="text-8xl font-normal text-slate-900 dark:text-slate-50 leading-none tracking-normal select-none"
+                            style={{ fontFamily: '"KanjiStrokeOrder", "Kanji Stroke Order", "Kanji-Stroke-Order", sans-serif' }}
+                          >
                             {currentKanji.kanji}
                           </h3>
+                          
+                          {/* Animated stroke order widget */}
+                          <KanjiStrokeAnimator kanji={currentKanji.kanji} />
                         </div>
 
                         {/* Prompt hint */}
