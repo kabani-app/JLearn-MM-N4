@@ -62,7 +62,7 @@ export default function App() {
     };
   });
 
-  const [activeTab, setActiveTab] = useState<'Home' | 'Search'>('Home');
+  const [activeTab, setActiveTab] = useState<'Home' | 'Kanji' | 'Search'>('Home');
   const [activePart, setActivePart] = useState<'Part 1' | 'Part 2'>('Part 1');
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
 
@@ -500,7 +500,13 @@ export default function App() {
                       onClick={() => setActiveTab('Home')}
                       className={`px-4 py-1.5 font-bold text-xs rounded-lg transition active-press ${activeTab === 'Home' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
                     >
-                      Home Module
+                      Meaning
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('Kanji')}
+                      className={`px-4 py-1.5 font-bold text-xs rounded-lg transition active-press ${activeTab === 'Kanji' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    >
+                      Kanji
                     </button>
                     <button
                       onClick={() => setActiveTab('Search')}
@@ -1119,6 +1125,31 @@ export default function App() {
               </div>
 
             </div>
+          ) : activeTab === 'Kanji' ? (
+            /* --- KANJI SCREEN (Placeholder for now) --- */
+            <div className="flex flex-col gap-6 flex-1 py-12 justify-center items-center text-center animate-fade-in max-w-2xl mx-auto w-full select-none">
+              <div className="w-20 h-20 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-3xl shrink-0 shadow-lg glow-pulse mb-2">
+                🏮
+              </div>
+              <h2 className="font-extrabold text-2xl lg:text-3xl text-indigo-600 dark:text-indigo-400 tracking-wide">
+                N3 Kanji 361
+              </h2>
+              <div className="w-16 h-1 bg-indigo-600 dark:bg-indigo-400 rounded-full my-1.5" />
+              <p className="text-sm font-bold text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed mt-1">
+                Coming Soon - Kanji content will be added soon
+              </p>
+              
+              <div className="mt-8 bg-lightSurface/80 dark:bg-slate-900/40 border border-slate-250/50 dark:border-slate-800/50 rounded-2xl p-6 max-w-md w-full">
+                <span className="px-2 py-0.5 text-[9px] uppercase tracking-widest font-black bg-indigo-650 text-white rounded-md">
+                  ROADMAP PREVIEW
+                </span>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-4 text-left leading-relaxed space-y-2">
+                  <span className="block">• 361 core N3 Kanji characters with Myanmar translation</span>
+                  <span className="block">• Detailed writing stroke orders and Kunyomi/Onyomi readings</span>
+                  <span className="block">• Kanji-focused flashcard decks, drawing practices & quick quiz modes</span>
+                </p>
+              </div>
+            </div>
           ) : (
             /* --- DICTIONARY SEARCH SCREEN --- */
             <div className="flex flex-col gap-4 flex-1">
@@ -1212,7 +1243,16 @@ export default function App() {
               className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${activeTab === 'Home' ? 'text-indigo-600 dark:text-indigo-400 font-black' : 'text-slate-400 hover:text-slate-600'}`}
             >
               <Book size={20} className={activeTab === 'Home' ? 'stroke-[2.5px]' : ''} />
-              <span className="text-[10px] uppercase tracking-wider">Home</span>
+              <span className="text-[10px] uppercase tracking-wider">Meaning</span>
+            </button>
+
+            {/* Kanji Tab */}
+            <button
+              onClick={() => setActiveTab('Kanji')}
+              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${activeTab === 'Kanji' ? 'text-indigo-600 dark:text-indigo-400 font-black' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              <Sparkles size={20} className={activeTab === 'Kanji' ? 'stroke-[2.5px]' : ''} />
+              <span className="text-[10px] uppercase tracking-wider">Kanji</span>
             </button>
 
             {/* Search Tab */}
