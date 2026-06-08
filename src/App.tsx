@@ -22,6 +22,27 @@ import { Word } from './types';
 import { loadVocabulary } from './data/VocabularyLoader';
 import { getSynonymsOrAntonyms } from './data/GeminiNetwork';
 
+// Caching helper functions for Gemini Vocabulary results
+const getCacheKey = (wordId: string, mode: 'same' | 'diff') => {
+  return `gemini_vocab_cache_${mode}_${wordId}`;
+};
+
+const getCachedResult = (wordId: string, mode: 'same' | 'diff'): string | null => {
+  try {
+    return localStorage.getItem(getCacheKey(wordId, mode));
+  } catch (e) {
+    return null;
+  }
+};
+
+const setCachedResult = (wordId: string, mode: 'same' | 'diff', value: string) => {
+  try {
+    localStorage.setItem(getCacheKey(wordId, mode), value);
+  } catch (e) {
+    console.error('Error writing to localStorage cache:', e);
+  }
+};
+
 export default function App() {
   // --- Core Vocabulary Storage & States ---
   const allWords = useMemo(() => loadVocabulary(), []);
@@ -233,6 +254,63 @@ export default function App() {
     };
   }, [isAutoPlaying, isFlipped, currentIndex, activeList]);
 
+  // Background pre-fetching of next card's AI results (de-bounced)
+  useEffect(() => {
+    if (!selectedUnit || isAutoPlaying || isListView) return;
+    
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= activeList.length) return;
+    
+    const nextWord = activeList[nextIndex];
+    if (!nextWord) return;
+    
+    // Check if both are already cached
+    const hasSameCache = !!getCachedResult(nextWord.id, 'same');
+    const hasDiffCache = !!getCachedResult(nextWord.id, 'diff');
+    if (hasSameCache && hasDiffCache) return;
+    
+    const apiKey = (import.meta.env.VITE_GEMINI_API_KEY as string) || localStorage.getItem('GEMINI_API_KEY') || '';
+    if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') return;
+    
+    const timer = setTimeout(async () => {
+      // Background pre-fetch 'same' meanings
+      if (!hasSameCache) {
+        try {
+          const result = await getSynonymsOrAntonyms(
+            nextWord.hiragana,
+            nextWord.kanji,
+            nextWord.meaning,
+            'same'
+          );
+          if (result && !result.startsWith('Error') && !result.includes('အမှားဖြစ်') && !result.includes('API Key Error') && !result.includes('API Key is missing')) {
+            setCachedResult(nextWord.id, 'same', result);
+          }
+        } catch (e) {
+          console.debug('Background pre-fetch same failed:', e);
+        }
+      }
+      
+      // Background pre-fetch 'diff' opposites
+      if (!hasDiffCache) {
+        try {
+          const result = await getSynonymsOrAntonyms(
+            nextWord.hiragana,
+            nextWord.kanji,
+            nextWord.meaning,
+            'diff'
+          );
+          if (result && !result.startsWith('Error') && !result.includes('အမှားဖြစ်') && !result.includes('API Key Error') && !result.includes('API Key is missing')) {
+            setCachedResult(nextWord.id, 'diff', result);
+          }
+        } catch (e) {
+          console.debug('Background pre-fetch diff failed:', e);
+        }
+      }
+    }, 1200); // 1.2s idle delay to avoid spamming searches while clicking fast through card collections
+    
+    return () => clearTimeout(timer);
+  }, [currentIndex, activeList, selectedUnit, isAutoPlaying, isListView]);
+
   // Load Unit
   const openUnit = (unitName: string) => {
     setSelectedUnit(unitName);
@@ -287,10 +365,19 @@ export default function App() {
     handleNext();
   };
 
-  // Run AI helper query
+  // Run AI helper query with caching & skeleton
   const loadAI = async (mode: 'same' | 'diff') => {
     if (!currentWord) return;
     setAiMode(mode);
+    
+    // Check local storage cache first
+    const cached = getCachedResult(currentWord.id, mode);
+    if (cached) {
+      setAiResult(cached);
+      setAiLoading(false);
+      return;
+    }
+    
     setAiResult('');
     setAiLoading(true);
 
@@ -301,6 +388,11 @@ export default function App() {
         currentWord.meaning,
         mode
       );
+      
+      // Save valid responses in cache
+      if (result && !result.startsWith('Error') && !result.includes('အမှားဖြစ်') && !result.includes('API Key Error') && !result.includes('API Key is missing')) {
+        setCachedResult(currentWord.id, mode, result);
+      }
       setAiResult(result);
     } catch (err) {
       setAiResult(`Error: ${(err as Error).message}`);
@@ -481,6 +573,18 @@ export default function App() {
             )}
           </div>
         </header>
+
+        {/* TICKER/MARQUEE BANNER */}
+        <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 py-2.5 overflow-hidden flex items-center border-b border-indigo-500/20 select-none shadow-sm relative z-30 transition-all">
+          <div className="w-full flex overflow-hidden">
+            <div className="animate-marquee inline-flex shrink-0 items-center gap-16 text-xs text-white font-bold tracking-wide">
+              <span>✨ This App is created by PHYO WAI SOE ✨ 日本語能力試験 N3 Standard 2400 ✨ This App is created by PHYO WAI SOE ✨</span>
+              <span>✨ This App is created by PHYO WAI SOE ✨ 日本語能力試験 N3 Standard 2400 ✨ This App is created by PHYO WAI SOE ✨</span>
+              <span>✨ This App is created by PHYO WAI SOE ✨ 日本語能力試験 N3 Standard 2400 ✨ This App is created by PHYO WAI SOE ✨</span>
+              <span>✨ This App is created by PHYO WAI SOE ✨ 日本語能力試験 N3 Standard 2400 ✨ This App is created by PHYO WAI SOE ✨</span>
+            </div>
+          </div>
+        </div>
 
         {/* MAIN BODY AREA */}
         <main className="flex-1 overflow-y-auto px-4 py-4 lg:px-8 lg:py-8 flex flex-col gap-4">
@@ -748,9 +852,31 @@ export default function App() {
                           {(aiLoading || aiResult) && (
                             <div className="bg-slate-50 dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-4 rounded-2xl flex flex-col gap-1.5 shadow-inner transition max-h-[145px] overflow-y-auto">
                               {aiLoading ? (
-                                <div className="flex flex-col gap-1.5 items-center justify-center py-2.5">
-                                  <div className="w-5 h-5 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
-                                  <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">AI Retrieving lists...</span>
+                                <div className="space-y-2.5 py-1 w-full animate-pulse select-none">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-yellow-500 animate-bounce text-xs">•</span>
+                                    <div className="h-3 w-1/4 bg-slate-200 dark:bg-slate-800 rounded" />
+                                    <div className="h-3 w-1/2 bg-slate-100 dark:bg-slate-900 rounded opacity-60" />
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-green-500 animate-bounce text-xs delay-75">•</span>
+                                    <div className="h-3 w-1/5 bg-slate-200 dark:bg-slate-800 rounded" />
+                                    <div className="h-3 w-2/5 bg-slate-100 dark:bg-slate-900 rounded opacity-60" />
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-blue-500 animate-bounce text-xs delay-100">•</span>
+                                    <div className="h-3 w-1/3 bg-slate-200 dark:bg-slate-800 rounded" />
+                                    <div className="h-3 w-1/3 bg-slate-100 dark:bg-slate-900 rounded opacity-60" />
+                                  </div>
+                                  <div className="flex items-center justify-center gap-1.5 pt-1">
+                                    <span className="flex h-1.5 w-1.5 relative">
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-indigo-500"></span>
+                                    </span>
+                                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-widest leading-none">
+                                      Retrieving AI Insights...
+                                    </span>
+                                  </div>
                                 </div>
                               ) : (
                                 <div className="text-xs leading-relaxed flex flex-col gap-1">
