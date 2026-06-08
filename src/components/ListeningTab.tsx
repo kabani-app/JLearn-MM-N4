@@ -375,50 +375,50 @@ export const ListeningTab: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 h-[50vh] overflow-y-auto pr-1 scrollbar-thin">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 h-[50vh] overflow-y-auto pr-1 scrollbar-thin">
           {filteredTracks.map((track) => {
             const isActive = currentTrack?.fileName === track.fileName;
             return (
               <div
                 key={track.fileName}
                 onClick={() => playTrack(track)}
-                className={`p-3 rounded-2xl border flex items-center justify-between gap-3 cursor-pointer transition-all duration-200 group relative overflow-hidden ${
+                className={`p-5 sm:p-6 rounded-2xl border flex items-center justify-between gap-4 cursor-pointer transition-all duration-200 group relative overflow-hidden ${
                   isActive
                     ? 'bg-indigo-50/70 border-indigo-200 dark:bg-indigo-950/40 dark:border-indigo-900/60 shadow-sm'
                     : 'bg-lightSurface border-lightBorder hover:border-slate-300/80 dark:bg-darkSurface dark:border-darkBorder dark:hover:border-slate-800/85'
                 }`}
               >
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-4 min-w-0">
                   <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
+                    className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors shrink-0 ${
                       isActive
                         ? 'bg-indigo-600 text-white'
                         : 'bg-slate-100 group-hover:bg-slate-200 dark:bg-slate-900 dark:group-hover:bg-slate-800 text-slate-400 dark:text-slate-500'
                     }`}
                   >
                     {isActive && isPlaying ? (
-                      <div className="flex items-end gap-0.5 h-3">
-                        <div className="w-[2.5px] bg-white rounded-full animate-pulse h-2.5" />
-                        <div className="w-[2.5px] bg-white rounded-full animate-pulse h-1.5" />
-                        <div className="w-[2.5px] bg-white rounded-full animate-pulse h-3" />
+                      <div className="flex items-end gap-0.5 h-3.5">
+                        <div className="w-[3px] bg-white rounded-full animate-pulse h-3" />
+                        <div className="w-[3px] bg-white rounded-full animate-pulse h-2" />
+                        <div className="w-[3px] bg-white rounded-full animate-pulse h-3.5" />
                       </div>
                     ) : isActive ? (
-                      <Pause className="w-4 h-4" />
+                      <Pause className="w-5 h-5" />
                     ) : (
-                      <Music className="w-4 h-4" />
+                      <Music className="w-5 h-5" />
                     )}
                   </div>
 
                   <div className="min-w-0">
                     <h4
-                      className={`text-[11px] font-extrabold truncate ${
+                      className={`text-xs sm:text-sm font-extrabold truncate ${
                         isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-200'
                       }`}
                       title={track.fileName}
                     >
                       {track.fileName}
                     </h4>
-                    <span className="text-[9px] text-slate-400/80 dark:text-slate-500 font-extrabold uppercase tracking-widest mt-0.5 block">
+                    <span className="text-[10px] sm:text-xs text-slate-400/80 dark:text-slate-500 font-extrabold uppercase tracking-widest mt-1 block">
                       {activeCDTab === 'A' ? 'CD-A Segment' : 'CD-B Segment'}
                     </span>
                   </div>
@@ -433,13 +433,13 @@ export const ListeningTab: React.FC = () => {
                       playTrack(track);
                     }
                   }}
-                  className={`w-7 h-7 rounded-full flex items-center justify-center border transition shadow-xs shrink-0 ${
+                  className={`w-11 h-11 rounded-full flex items-center justify-center border transition shadow-xs shrink-0 ${
                     isActive
                       ? 'bg-indigo-600 hover:bg-indigo-700 border-indigo-600 text-white'
                       : 'bg-slate-50 hover:bg-slate-100 border-slate-200/60 dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-slate-800 text-slate-500 hover:text-slate-700'
                   }`}
                 >
-                  {isActive && isPlaying ? <Pause size={12} /> : <Play size={12} className="ml-0.5" />}
+                  {isActive && isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-1" />}
                 </button>
               </div>
             );
