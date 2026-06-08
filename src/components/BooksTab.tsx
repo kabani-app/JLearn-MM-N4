@@ -87,23 +87,14 @@ export const BooksTab: React.FC = () => {
               </div>
 
               {/* Action buttons */}
-              <div className="flex flex-col sm:flex-row gap-2.5">
+              <div className="flex gap-2.5">
                 <button
                   onClick={() => openPdfViewer(book)}
-                  className="flex-1 h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition active-press shadow-sm"
+                  className="w-full h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition active-press shadow-sm"
                 >
                   <BookOpen className="w-4 h-4" />
-                  <span>Read Online</span>
+                  <span>Read</span>
                 </button>
-                <a
-                  href={`https://drive.google.com/uc?export=download&id=${book.fileId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 h-10 px-4 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 font-extrabold text-xs flex items-center justify-center gap-1.5 transition active-press"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download</span>
-                </a>
               </div>
             </div>
           </div>
@@ -129,22 +120,24 @@ export const BooksTab: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <a
                 href={`https://drive.google.com/uc?export=download&id=${selectedBook.fileId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-200 transition"
+                className="h-9 px-3 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-lg text-white font-extrabold text-xs flex items-center gap-1.5 transition shadow-sm whitespace-nowrap"
                 title="Download PDF"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-3.5 h-3.5" />
+                <span>Download</span>
               </a>
               <button
                 onClick={closePdfViewer}
-                className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg transition"
+                className="h-9 px-3 bg-slate-800 hover:bg-slate-700 active:bg-slate-750 text-slate-200 hover:text-white rounded-lg font-extrabold text-xs flex items-center gap-1.5 transition whitespace-nowrap"
                 aria-label="Close PDF"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
+                <span>Close</span>
               </button>
             </div>
           </div>
