@@ -351,170 +351,140 @@ export default function App() {
     return Math.round((masteredCount * 100) / allWords.length);
   }, [allWords, masteredCount]);
 
+  const part1Stats = useMemo(() => {
+    let total = 0;
+    let learned = 0;
+    if (vocabData['Part 1']) {
+      Object.keys(vocabData['Part 1']).forEach(unit => {
+        const words = vocabData['Part 1'][unit] || [];
+        total += words.length;
+        learned += words.filter(w => learnedWords.has(w.id)).length;
+      });
+    }
+    const percent = total === 0 ? 0 : Math.round((learned * 100) / total);
+    return { total, learned, percent };
+  }, [vocabData, learnedWords]);
+
+  const part2Stats = useMemo(() => {
+    let total = 0;
+    let learned = 0;
+    if (vocabData['Part 2']) {
+      Object.keys(vocabData['Part 2']).forEach(unit => {
+        const words = vocabData['Part 2'][unit] || [];
+        total += words.length;
+        learned += words.filter(w => learnedWords.has(w.id)).length;
+      });
+    }
+    const percent = total === 0 ? 0 : Math.round((learned * 100) / total);
+    return { total, learned, percent };
+  }, [vocabData, learnedWords]);
+
   return (
-    <div className="bg-slate-100 dark:bg-slate-950 min-h-screen flex items-center justify-center py-0 sm:py-8 lg:px-4 transition-colors duration-200">
-      <div className="w-full max-w-full lg:max-w-5xl flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-12 p-0 lg:p-4">
+    <div className="bg-slate-100 dark:bg-slate-950 min-h-screen flex lg:flex-col items-center justify-center lg:items-stretch lg:justify-start py-0 sm:py-8 lg:py-0 transition-colors duration-200">
+      
+      {/* Container Frame - behaves as absolute/mobile center on smaller screens, and wide fluid layout on lg screens (1024px+) */}
+      <div className="w-full sm:max-w-md lg:max-w-full lg:w-full bg-lightBg dark:bg-darkBg min-h-screen sm:min-h-[85vh] lg:min-h-screen sm:rounded-2xl lg:rounded-none sm:shadow-2xl lg:shadow-none sm:border lg:border-none border-slate-200 dark:border-darkBorder flex flex-col relative overflow-hidden transition-all duration-200 shrink-0">
         
-        {/* Left Decorative/Info Dashboard - Visible on lg (1024px) & above */}
-        <div className="hidden lg:flex flex-col w-[360px] h-[780px] bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-900 rounded-3xl p-8 text-white shadow-2xl border border-indigo-900/40 justify-between relative overflow-hidden shrink-0">
-          {/* Subtle background decoration */}
-          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-2xl -ml-16 -mb-16 pointer-events-none" />
-          
-          <div className="flex flex-col gap-6 z-10">
-            {/* Logo/Branding */}
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600/30 backdrop-blur-md flex items-center justify-center border border-indigo-400/25 shadow-lg shadow-indigo-950/40">
-                <span className="text-2xl">📚</span>
-              </div>
-              <div>
-                <span className="px-2 py-0.5 text-[8px] uppercase tracking-widest font-black bg-indigo-600 text-white rounded-md">WEB COMPANION</span>
-                <h1 className="font-extrabold text-lg leading-tight tracking-wide text-slate-100">N3 Standard 2400</h1>
-              </div>
-            </div>
+        {/* TOP HEADER / NAVBAR */}
+        <header className="sticky top-0 z-40 bg-lightSurface dark:bg-darkSurface border-b border-lightBorder dark:border-darkBorder py-3.5 px-4 lg:px-8 shadow-sm transition-colors duration-200">
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
+            {selectedUnit === null ? (
+              <>
+                <div className="flex items-center gap-3 lg:gap-8">
+                  {/* Branding */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none">
+                      <span className="text-lg">📚</span>
+                    </div>
+                    <div>
+                      <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">N3 Standard 2400</h1>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
+                    </div>
+                  </div>
 
-            {/* Title & Slogan */}
-            <div className="mt-2 space-y-2">
-              <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-indigo-100 leading-tight">
-                継続は力なり
-              </h2>
-              <p className="text-xs text-indigo-200/70 font-medium leading-relaxed">
-                "Perseverance is power." Master 2,400 selected N3 level Japanese-Myanmar vocabulary words with ease.
-              </p>
-            </div>
-
-            {/* Overall stats list */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mt-2 space-y-3.5">
-              <h3 className="text-[10px] font-extrabold tracking-wider uppercase text-indigo-300">Your Study Progress</h3>
-              
-              <div className="space-y-2.5">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-slate-300 font-medium">Mastered Terms</span>
-                  <span className="font-bold text-white">{masteredCount} / {allWords.length}</span>
-                </div>
-                
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-slate-300 font-medium">Completion Rate</span>
-                  <span className="font-bold text-emerald-400">{totalProgressPercent}%</span>
+                  {/* Desktop Navigation Tabs */}
+                  <div className="hidden lg:flex items-center gap-2 bg-slate-100 dark:bg-slate-900/60 px-1 py-1 rounded-xl border border-slate-200/40">
+                    <button
+                      onClick={() => setActiveTab('Home')}
+                      className={`px-4 py-1.5 font-bold text-xs rounded-lg transition active-press ${activeTab === 'Home' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    >
+                      Home Module
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('Search')}
+                      className={`px-4 py-1.5 font-bold text-xs rounded-lg transition active-press ${activeTab === 'Search' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    >
+                      Dictionary Search
+                    </button>
+                  </div>
                 </div>
 
-                <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-emerald-400 transition-all duration-300 rounded-full" 
-                    style={{ width: `${totalProgressPercent}%` }}
-                  />
-                </div>
-              </div>
-            </div>
+                <div className="flex items-center gap-2">
+                  {/* Desktop Header Stats */}
+                  <div className="hidden lg:flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950/25 border border-emerald-100 dark:border-emerald-900/40 px-3.5 py-1.5 rounded-xl mr-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 animate-fade-in">
+                    <span>✨ Mastered {masteredCount}/{allWords.length}</span>
+                    <span className="opacity-40">|</span>
+                    <span>{totalProgressPercent}% Complete</span>
+                  </div>
 
-            {/* Split layout interactive features */}
-            <div className="space-y-3">
-              <h3 className="text-[10px] font-extrabold tracking-wider uppercase text-indigo-300">Flashcard Shortcuts</h3>
-              
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                  <span className="text-lg block mb-1">🔁</span>
-                  <span className="text-[10px] font-bold text-slate-200 block">Shuffle List</span>
-                </div>
-                <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                  <span className="text-lg block mb-1">▶️</span>
-                  <span className="text-[10px] font-bold text-slate-200 block">Autoplay</span>
-                </div>
-              </div>
-            </div>
-          </div>
+                  {/* Light/Dark mode */}
+                  <button 
+                    onClick={() => setSettings(p => ({ ...p, darkMode: !p.darkMode }))}
+                    className="w-8.5 h-8.5 rounded-full border border-lightBorder dark:border-darkBorder flex items-center justify-center text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition active-press"
+                    aria-label="Toggle dark mode"
+                  >
+                    {settings.darkMode ? '☀️' : '🌙'}
+                  </button>
 
-          <div className="flex flex-col gap-4 z-10">
-            {/* Smart tools notice */}
-            <div className="bg-indigo-950/50 border border-indigo-800/40 rounded-xl p-3.5 flex items-start gap-2.5">
-              <span className="text-base shrink-0">✨</span>
-              <div className="text-[11px] leading-relaxed text-indigo-200 font-medium">
-                <strong className="text-indigo-400 block font-bold">API Synonyms/Antonyms</strong>
-                Get instant Japanese suggestions in real-time powered by Google's <span className="font-bold text-indigo-300">gemini-3.5-flash</span>.
-              </div>
-            </div>
+                  {/* API Settings */}
+                  <button 
+                    onClick={() => setShowSettingsModal(true)}
+                    className="w-8.5 h-8.5 rounded-full border border-lightBorder dark:border-darkBorder flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition active-press"
+                    aria-label="API Settings"
+                  >
+                    <Settings size={16} />
+                  </button>
 
-            <div className="flex items-center justify-between border-t border-white/10 pt-4 text-[10px] text-slate-400 font-bold">
-              <span>N3 Standard web-remix</span>
-              <span>v1.0.0</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Frame Container */}
-        <div className="w-full sm:max-w-md lg:w-[430px] lg:max-w-[430px] bg-lightBg dark:bg-darkBg min-h-screen sm:min-h-[85vh] lg:h-[780px] sm:rounded-2xl sm:shadow-2xl sm:border border-slate-200 dark:border-darkBorder flex flex-col relative overflow-hidden transition-all duration-200 shrink-0">
-        
-        {/* TOP HEADER */}
-        <header className="sticky top-0 z-40 bg-lightSurface dark:bg-darkSurface border-b border-lightBorder dark:border-darkBorder py-3.5 px-4 shadow-sm flex items-center justify-between transition-colors duration-200">
-          {selectedUnit === null ? (
-            <>
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none">
-                  <span className="text-lg">📚</span>
+                  {/* Last Study */}
+                  <button
+                    onClick={launchLastStudy}
+                    className="h-8.5 px-3 bg-indigo-600 text-white font-semibold text-xs rounded-xl flex items-center gap-1 hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 dark:shadow-none active-press"
+                  >
+                    <Play size={12} className="fill-current" />
+                    <span>Last Study</span>
+                  </button>
                 </div>
-                <div>
-                  <h1 className="font-bold text-sm leading-tight text-slate-800 dark:text-slate-100">N3 Standard 2400</h1>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar</p>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-3.5">
+                  <button 
+                    onClick={closeUnit}
+                    className="w-9 h-9 rounded-xl border border-lightBorder dark:border-darkBorder flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200"
+                  >
+                    <ArrowLeft size={16} />
+                  </button>
+                  <div className="leading-tight">
+                    <h2 className="font-bold text-[13px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">Study Mode</h2>
+                    <p className="font-bold text-sm text-slate-800 dark:text-slate-100 max-w-[200px] sm:max-w-xs truncate">{selectedUnit}</p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2">
-                {/* Light/Dark mode */}
+                {/* Header Right toggler */}
                 <button 
                   onClick={() => setSettings(p => ({ ...p, darkMode: !p.darkMode }))}
-                  className="w-8.5 h-8.5 rounded-full border border-lightBorder dark:border-darkBorder flex items-center justify-center text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition active-press"
-                  aria-label="Toggle dark mode"
+                  className="w-8.5 h-8.5 rounded-full border border-lightBorder dark:border-darkBorder flex items-center justify-center text-sm hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                   {settings.darkMode ? '☀️' : '🌙'}
                 </button>
-
-                {/* API Settings */}
-                <button 
-                  onClick={() => setShowSettingsModal(true)}
-                  className="w-8.5 h-8.5 rounded-full border border-lightBorder dark:border-darkBorder flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition active-press"
-                  aria-label="API Settings"
-                >
-                  <Settings size={16} />
-                </button>
-
-                {/* Last Study */}
-                <button
-                  onClick={launchLastStudy}
-                  className="h-8.5 px-3 bg-indigo-600 text-white font-semibold text-xs rounded-xl flex items-center gap-1 hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 dark:shadow-none active-press"
-                >
-                  <Play size={12} className="fill-current" />
-                  <span>Last Study</span>
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center gap-3.5">
-                <button 
-                  onClick={closeUnit}
-                  className="w-9 h-9 rounded-xl border border-lightBorder dark:border-darkBorder flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200"
-                >
-                  <ArrowLeft size={16} />
-                </button>
-                <div className="leading-tight">
-                  <h2 className="font-bold text-[13px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">Study Mode</h2>
-                  <p className="font-bold text-sm text-slate-800 dark:text-slate-100 max-w-[200px] truncate">{selectedUnit}</p>
-                </div>
-              </div>
-
-              {/* Header Right toggler */}
-              <button 
-                onClick={() => setSettings(p => ({ ...p, darkMode: !p.darkMode }))}
-                className="w-8.5 h-8.5 rounded-full border border-lightBorder dark:border-darkBorder flex items-center justify-center text-sm hover:bg-slate-50 dark:hover:bg-slate-800"
-              >
-                {settings.darkMode ? '☀️' : '🌙'}
-              </button>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </header>
 
         {/* MAIN BODY AREA */}
-        <main className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
+        <main className="flex-1 overflow-y-auto px-4 py-4 lg:px-8 lg:py-8 flex flex-col gap-4">
+          <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col gap-6">
           
           {/* SCREEN DISPATCHER */}
           {selectedUnit !== null ? (
@@ -568,7 +538,7 @@ export default function App() {
 
                   {/* LIST SUBVIEW */}
                   {isListView ? (
-                    <div className="flex flex-col gap-3 pb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-8">
                       {activeList.map((word) => {
                         const learned = learnedWords.has(word.id);
                         return (
@@ -623,7 +593,7 @@ export default function App() {
                     </div>
                   ) : (
                     /* FLASHCARD GRAPHICS CONTAINER */
-                    <div className="flex-1 flex flex-col gap-4">
+                    <div className="flex-1 flex flex-col gap-4 max-w-2xl mx-auto w-full">
                       {/* Linear progression bar */}
                       <div className="w-full h-1 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden">
                         <div 
@@ -838,41 +808,104 @@ export default function App() {
             </div>
           ) : activeTab === 'Home' ? (
             /* --- DASHBOARD SCREEN --- */
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-6">
               
-              {/* STATS BANNER VIEW */}
-              <div className="flex gap-3">
-                
-                {/* Learned metrics box */}
-                <div className="flex-1 bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-4 rounded-2xl flex items-center gap-3 shadow-sm transition hover:shadow-md">
-                  <div className="w-11 h-11 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center text-lg animate-pulse shrink-0">
-                    <Star size={20} fill="currentColor" />
+              {/* RESPONSIVE DASHBOARD STATS BANNER VIEW */}
+              <div>
+                {/* Mobile version (flex, matching original layout perfectly) */}
+                <div className="flex lg:hidden gap-3">
+                  {/* Learned metrics box */}
+                  <div className="flex-1 bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-4 rounded-2xl flex items-center gap-3 shadow-sm transition hover:shadow-md">
+                    <div className="w-11 h-11 rounded-full bg-amber-50 dark:bg-amber-955/20 text-amber-500 flex items-center justify-center text-lg shrink-0">
+                      <Star size={20} fill="currentColor" />
+                    </div>
+                    <div>
+                      <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mastered</h4>
+                      <p className="font-extrabold text-base text-slate-800 dark:text-slate-100">
+                        {masteredCount} <span className="text-[11px] text-slate-400 font-semibold">/ {allWords.length}</span>
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mastered</h4>
-                    <p className="font-extrabold text-base text-slate-800 dark:text-slate-100">
-                      {masteredCount} <span className="text-[11px] text-slate-400 font-semibold">/ {allWords.length}</span>
-                    </p>
+
+                  {/* Performance linear meter */}
+                  <div className="flex-1 bg-gradient-to-br from-indigo-600 to-violet-700 p-4 rounded-2xl text-white shadow-lg flex flex-col justify-between">
+                    <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest block">Total Progress</span>
+                    <div className="flex items-baseline gap-1 mt-1">
+                      <span className="text-2xl font-black">{totalProgressPercent}%</span>
+                      <span className="text-[10px] text-white/70">completed</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-white/20 rounded-full mt-2.5 overflow-hidden">
+                      <div className="h-full bg-white rounded-full transition-all duration-300" style={{ width: `${totalProgressPercent}%` }} />
+                    </div>
                   </div>
                 </div>
 
-                {/* Performance linear meter */}
-                <div className="flex-1 bg-gradient-to-br from-indigo-600 to-violet-700 p-4 rounded-2xl text-white shadow-lg flex flex-col justify-between">
-                  <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest block">Total Progress</span>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-2xl font-black">{totalProgressPercent}%</span>
-                    <span className="text-[10px] text-white/70">completed</span>
+                {/* Desktop Version - Wide stats row cards at the top (grid of 3 columns) */}
+                <div className="hidden lg:grid grid-cols-3 gap-6">
+                  {/* Total Performance overall */}
+                  <div className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-6 rounded-2xl shadow-sm flex items-center gap-4 hover:shadow-md transition">
+                    <div className="w-14 h-14 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center text-2xl shrink-0">
+                      ⭐
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black block">Overall Progress</span>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <span className="text-3xl font-black text-slate-850 dark:text-slate-150">{masteredCount}</span>
+                        <span className="text-sm text-slate-450 dark:text-slate-400 font-semibold">of {allWords.length} terms</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-850 rounded-full overflow-hidden">
+                          <div className="h-full bg-amber-500 rounded-full transition-all duration-300" style={{ width: `${totalProgressPercent}%` }} />
+                        </div>
+                        <span className="text-xs font-black text-amber-500">{totalProgressPercent}%</span>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="w-full h-1.5 bg-white/20 rounded-full mt-2.5 overflow-hidden">
-                    <div className="h-full bg-white rounded-full transition-all duration-300" style={{ width: `${totalProgressPercent}%` }} />
+
+                  {/* Part 1 stats card */}
+                  <div className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-6 rounded-2xl shadow-sm flex items-center gap-4 hover:shadow-md transition">
+                    <div className="w-14 h-14 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center text-2xl shrink-0">
+                      📖
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black block">Part 1 Mastery</span>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">{part1Stats.learned}</span>
+                        <span className="text-sm text-slate-450 dark:text-slate-400 font-semibold">of {part1Stats.total} words</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-850 rounded-full overflow-hidden">
+                          <div className="h-full bg-indigo-600 dark:bg-indigo-400 rounded-full transition-all duration-300" style={{ width: `${part1Stats.percent}%` }} />
+                        </div>
+                        <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">{part1Stats.percent}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Part 2 stats card */}
+                  <div className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-6 rounded-2xl shadow-sm flex items-center gap-4 hover:shadow-md transition">
+                    <div className="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 flex items-center justify-center text-2xl shrink-0">
+                      🏆
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black block">Part 2 Mastery</span>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{part2Stats.learned}</span>
+                        <span className="text-sm text-slate-450 dark:text-slate-400 font-semibold">of {part2Stats.total} words</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-850 rounded-full overflow-hidden">
+                          <div className="h-full bg-emerald-600 dark:bg-emerald-400 rounded-full transition-all duration-300" style={{ width: `${part2Stats.percent}%` }} />
+                        </div>
+                        <span className="text-xs font-black text-emerald-500">{part2Stats.percent}%</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
               </div>
 
               {/* SECTION TABS FOR PART 1 / PART 2 */}
-              <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1">
+              <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 self-start min-w-[280px]">
                 {(['Part 1', 'Part 2'] as const).map((part) => {
                   const selected = activePart === part;
                   const count = Object.keys(vocabData[part]).length;
@@ -892,7 +925,7 @@ export default function App() {
               <div className="flex flex-col gap-3">
                 <h3 className="font-extrabold text-xs text-slate-400 tracking-wider uppercase">Study Units</h3>
                 
-                <div className="flex flex-col gap-3 pb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-12">
                   {Object.keys(vocabData[activePart]).map((unitName) => {
                     const uWords = vocabData[activePart][unitName] || [];
                     const uTotal = uWords.length;
@@ -990,7 +1023,7 @@ export default function App() {
                 <div className="flex-1 flex flex-col gap-3 pb-12">
                   <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wide px-1">Found {searchResults.length} results</p>
                   
-                  <div className="flex flex-col gap-3 max-h-[62vh] overflow-y-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[62vh] overflow-y-auto">
                     {searchResults.map((word) => {
                       const learned = learnedWords.has(word.id);
                       return (
@@ -1041,11 +1074,12 @@ export default function App() {
             </div>
           )}
 
+          </div>
         </main>
 
         {/* BOTTOM NAVIGATION TAB BAR */}
         {selectedUnit === null && (
-          <nav className="sticky bottom-0 z-40 bg-lightSurface dark:bg-darkSurface border-t border-lightBorder dark:border-darkBorder px-6 py-2 pb-3.5 flex items-center justify-around shadow-lg transition-colors duration-200">
+          <nav className="lg:hidden sticky bottom-0 z-40 bg-lightSurface dark:bg-darkSurface border-t border-lightBorder dark:border-darkBorder px-6 py-2 pb-3.5 flex items-center justify-around shadow-lg transition-colors duration-200">
             {/* Home Tab */}
             <button
               onClick={() => setActiveTab('Home')}
@@ -1121,6 +1155,5 @@ export default function App() {
 
       </div>
     </div>
-  </div>
-);
+  );
 }
