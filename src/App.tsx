@@ -129,6 +129,24 @@ export default function App() {
     }
   }, [settings.darkMode]);
 
+  // Track last study for Meaning Vocab
+  useEffect(() => {
+    if (activeTab === 'Home' && selectedUnit) {
+      localStorage.setItem('lastStudy_tab', 'meaning');
+      localStorage.setItem('lastStudy_meaning_unit', selectedUnit);
+      localStorage.setItem('lastStudy_meaning_index', String(currentIndex));
+    }
+  }, [activeTab, selectedUnit, currentIndex]);
+
+  // Track last study for Kanji
+  useEffect(() => {
+    if (activeTab === 'Kanji') {
+      localStorage.setItem('lastStudy_tab', 'kanji');
+      localStorage.setItem('lastStudy_kanji_unit', String(selectedKanjiUnit));
+      localStorage.setItem('lastStudy_kanji_index', String(currentKanjiIndex));
+    }
+  }, [activeTab, selectedKanjiUnit, currentKanjiIndex]);
+
   // Pre-load voices
   useEffect(() => {
     if ('speechSynthesis' in window) {
@@ -365,9 +383,25 @@ export default function App() {
 
   // Last Studied Unit Launcher
   const launchLastStudy = () => {
-    const lastUnit = settings.lastStudiedUnit || Object.keys(vocabData['Part 1'])[0] || '';
-    if (lastUnit) {
-      openUnit(lastUnit);
+    const tab = localStorage.getItem('lastStudy_tab') || 'meaning';
+    if (tab === 'meaning') {
+      const defaultUnit = Object.keys(vocabData['Part 1'])[0] || '';
+      const lastUnit = localStorage.getItem('lastStudy_meaning_unit') || defaultUnit;
+      const index = parseInt(localStorage.getItem('lastStudy_meaning_index') || '0', 10);
+      
+      setActiveTab('Home');
+      if (lastUnit) {
+        openUnit(lastUnit);
+        setCurrentIndex(index);
+      }
+    } else {
+      const lastKanjiUnitRaw = localStorage.getItem('lastStudy_kanji_unit') || 'All';
+      const lastKanjiUnit = lastKanjiUnitRaw === 'All' ? 'All' : (parseInt(lastKanjiUnitRaw, 10) || 'All');
+      const index = parseInt(localStorage.getItem('lastStudy_kanji_index') || '0', 10);
+      
+      setActiveTab('Kanji');
+      setSelectedKanjiUnit(lastKanjiUnit as number | 'All');
+      setCurrentKanjiIndex(index);
     }
   };
 
@@ -516,7 +550,7 @@ export default function App() {
                       <span className="text-lg">📚</span>
                     </div>
                     <div>
-                      <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">N3 Standard 2400</h1>
+                      <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">JLearn-MM</h1>
                       <p className="text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
                     </div>
                   </div>
