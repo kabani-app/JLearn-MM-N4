@@ -12,8 +12,8 @@ interface BookItem {
 
 const BOOK_DATA: BookItem[] = [
   {
-    title: "Shin Kanzen Master N3 Listening",
-    description: "N3 Listening practice book - Shin Kanzen Master series",
+    title: "新完全マスター聴解日本語能力試験N3",
+    description: "Shin Kanzen Master N3 Listening",
     fileId: "1W5LUyEJZIyE91IhXNl5Kii3S2amZ-2bw",
     size: "~50 MB",
     category: "Listening",
@@ -50,8 +50,45 @@ export const BooksTab: React.FC = () => {
         </p>
       </div>
 
-      {/* Library Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5">
+      {/* MOBILE LIST LAYOUT (Single horizontal row, small icon on left, title/desc center, read right) */}
+      <div className="flex flex-col gap-3 md:hidden">
+        {BOOK_DATA.map((book) => (
+          <div
+            key={book.fileId}
+            className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder rounded-2xl p-3 flex items-center justify-between gap-3 shadow-xs hover:shadow-sm"
+          >
+            {/* Small icon (40x40px) on the left */}
+            <div
+              style={{ backgroundColor: book.color }}
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0"
+            >
+              <Book className="w-5 h-5 drop-shadow-sm" />
+            </div>
+
+            {/* Title + description in the middle */}
+            <div className="flex-grow min-w-0 pr-2">
+              <h3 className="font-extrabold text-slate-800 dark:text-slate-100 text-xs truncate leading-tight">
+                {book.title}
+              </h3>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5 leading-none font-semibold">
+                {book.description} • {book.size}
+              </p>
+            </div>
+
+            {/* Read button on the right */}
+            <button
+              onClick={() => openPdfViewer(book)}
+              className="h-8 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[11px] flex items-center gap-1 shrink-0 transition active-press shadow-xs"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Read</span>
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* DESKTOP GRID LAYOUT (Grid of cards) */}
+      <div className="hidden md:grid md:grid-cols-2 gap-5">
         {BOOK_DATA.map((book) => (
           <div
             key={book.fileId}
