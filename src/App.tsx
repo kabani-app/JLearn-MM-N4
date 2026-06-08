@@ -547,13 +547,19 @@ export default function App() {
               <>
                 <div className="flex items-center gap-3 lg:gap-8">
                   {/* Branding */}
-                  <div className="flex items-center gap-3">
+                  <div 
+                    onClick={() => {
+                      setActiveTab('Home');
+                      setSelectedUnit(null);
+                    }}
+                    className="flex items-center gap-3 cursor-pointer select-none active:opacity-80 shrink-0"
+                  >
                     <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none">
                       <span className="text-lg">📚</span>
                     </div>
                     <div>
                       <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">JLearn-MM</h1>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
+                      <p className="hidden sm:block text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
                     </div>
                   </div>
 
@@ -624,16 +630,37 @@ export default function App() {
               </>
             ) : (
               <>
-                <div className="flex items-center gap-3.5">
-                  <button 
-                    onClick={closeUnit}
-                    className="w-9 h-9 rounded-xl border border-lightBorder dark:border-darkBorder flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200"
+                <div className="flex items-center gap-3 lg:gap-8">
+                  {/* Branding (Always visible, always clickable) */}
+                  <div 
+                    onClick={() => {
+                      setActiveTab('Home');
+                      setSelectedUnit(null);
+                    }}
+                    className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none active:opacity-80 shrink-0"
                   >
-                    <ArrowLeft size={16} />
-                  </button>
-                  <div className="leading-tight">
-                    <h2 className="font-bold text-[13px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">Study Mode</h2>
-                    <p className="font-bold text-sm text-slate-800 dark:text-slate-100 max-w-[200px] sm:max-w-xs truncate">{selectedUnit}</p>
+                    <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none">
+                      <span className="text-lg">📚</span>
+                    </div>
+                    <div className="leading-tight">
+                      <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">JLearn-MM</h1>
+                      <p className="hidden sm:block text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
+                    </div>
+                  </div>
+
+                  {/* Study Mode details */}
+                  <div className="flex items-center gap-2 border-l border-slate-200 dark:border-slate-800 pl-2.5 sm:pl-3">
+                    <button 
+                      onClick={closeUnit}
+                      className="w-8 h-8 rounded-lg border border-lightBorder dark:border-darkBorder flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 transition shrink-0"
+                      aria-label="Back"
+                    >
+                      <ArrowLeft size={14} />
+                    </button>
+                    <div className="leading-none max-w-[80px] xs:max-w-[120px] sm:max-w-[200px] truncate">
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider">Study</span>
+                      <p className="font-extrabold text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 truncate mt-0.5" title={selectedUnit}>{selectedUnit}</p>
+                    </div>
                   </div>
                 </div>
 
