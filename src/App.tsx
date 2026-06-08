@@ -16,7 +16,8 @@ import {
   Sparkles,
   List as ListIcon,
   LayoutGrid,
-  Headphones
+  Headphones,
+  BookOpen
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Word } from './types';
@@ -25,6 +26,7 @@ import { getSynonymsOrAntonyms } from './data/GeminiNetwork';
 import { kanjiData } from './data/kanji_n3';
 import { KanjiStrokeAnimator } from './components/KanjiStrokeAnimator';
 import { ListeningTab } from './components/ListeningTab';
+import { BooksTab } from './components/BooksTab';
 
 // Caching helper functions for Gemini Vocabulary results
 const getCacheKey = (wordId: string, mode: 'same' | 'diff') => {
@@ -66,7 +68,7 @@ export default function App() {
     };
   });
 
-  const [activeTab, setActiveTab] = useState<'Home' | 'Kanji' | 'Search' | 'Listening'>('Home');
+  const [activeTab, setActiveTab] = useState<'Home' | 'Kanji' | 'Search' | 'Listening' | 'Books'>('Home');
   const [activePart, setActivePart] = useState<'Part 1' | 'Part 2'>('Part 1');
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
 
@@ -588,6 +590,12 @@ export default function App() {
                       className={`px-4 py-1.5 font-bold text-xs rounded-lg transition active-press ${activeTab === 'Listening' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
                     >
                       Listening
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('Books')}
+                      className={`px-4 py-1.5 font-bold text-xs rounded-lg transition active-press ${activeTab === 'Books' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                    >
+                      Books
                     </button>
                   </div>
                 </div>
@@ -1527,9 +1535,12 @@ export default function App() {
               )}
 
             </div>
-          ) : (
+          ) : activeTab === 'Listening' ? (
             /* --- LISTENING PRACTICE SCREEN --- */
             <ListeningTab />
+          ) : (
+            /* --- BOOKS LIBRARY SCREEN --- */
+            <BooksTab />
           )}
 
           </div>
@@ -1572,6 +1583,15 @@ export default function App() {
             >
               <Headphones size={16} className={activeTab === 'Listening' ? 'stroke-[2.5px]' : ''} />
               <span className="text-[9px] font-extrabold uppercase tracking-wider">Listening</span>
+            </button>
+
+            {/* Books Tab */}
+            <button
+              onClick={() => setActiveTab('Books')}
+              className={`flex flex-col items-center gap-0.5 p-1 rounded-lg transition ${activeTab === 'Books' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : 'text-slate-400 hover:text-slate-600'}`}
+            >
+              <BookOpen size={16} className={activeTab === 'Books' ? 'stroke-[2.5px]' : ''} />
+              <span className="text-[9px] font-extrabold uppercase tracking-wider">Books</span>
             </button>
           </nav>
         )}
