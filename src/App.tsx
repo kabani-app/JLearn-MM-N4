@@ -21,6 +21,7 @@ import confetti from 'canvas-confetti';
 import { Word } from './types';
 import { loadVocabulary } from './data/VocabularyLoader';
 import { getSynonymsOrAntonyms } from './data/GeminiNetwork';
+import { kanjiData } from './data/kanji_n3';
 
 // Caching helper functions for Gemini Vocabulary results
 const getCacheKey = (wordId: string, mode: 'same' | 'diff') => {
@@ -71,6 +72,31 @@ export default function App() {
   const [isShuffle, setIsShuffle] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+
+  // Kanji Section States
+  const [currentKanjiIndex, setCurrentKanjiIndex] = useState(0);
+  const [isKanjiFlipped, setIsKanjiFlipped] = useState(false);
+  const [selectedKanjiUnit, setSelectedKanjiUnit] = useState<number | 'All'>('All');
+
+  const filteredKanji = useMemo(() => {
+    if (selectedKanjiUnit === 'All') return kanjiData;
+    return kanjiData.filter(k => k.unit === selectedKanjiUnit);
+  }, [selectedKanjiUnit]);
+
+  // Safe retrieval of current Kanji
+  const currentKanji = useMemo(() => {
+    if (filteredKanji.length === 0) return null;
+    if (currentKanjiIndex >= filteredKanji.length) {
+      return filteredKanji[0];
+    }
+    return filteredKanji[currentKanjiIndex];
+  }, [filteredKanji, currentKanjiIndex]);
+
+  // Reset Kanji Index when Unit filter changes
+  useEffect(() => {
+    setCurrentKanjiIndex(0);
+    setIsKanjiFlipped(false);
+  }, [selectedKanjiUnit]);
 
   // Search screen query state
   const [searchQuery, setSearchQuery] = useState('');
@@ -1126,29 +1152,225 @@ export default function App() {
 
             </div>
           ) : activeTab === 'Kanji' ? (
-            /* --- KANJI SCREEN (Placeholder for now) --- */
-            <div className="flex flex-col gap-6 flex-1 py-12 justify-center items-center text-center animate-fade-in max-w-2xl mx-auto w-full select-none">
-              <div className="w-20 h-20 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-center text-3xl shrink-0 shadow-lg glow-pulse mb-2">
-                🏮
-              </div>
-              <h2 className="font-extrabold text-2xl lg:text-3xl text-indigo-600 dark:text-indigo-400 tracking-wide">
-                N3 Kanji 361
-              </h2>
-              <div className="w-16 h-1 bg-indigo-600 dark:bg-indigo-400 rounded-full my-1.5" />
-              <p className="text-sm font-bold text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed mt-1">
-                Coming Soon - Kanji content will be added soon
-              </p>
+            /* --- KANJI FLASHCARDS PANEL --- */
+            <div className="flex flex-col gap-6 flex-1 py-4 select-none max-w-2xl mx-auto w-full animate-fade-in">
               
-              <div className="mt-8 bg-lightSurface/80 dark:bg-slate-900/40 border border-slate-250/50 dark:border-slate-800/50 rounded-2xl p-6 max-w-md w-full">
-                <span className="px-2 py-0.5 text-[9px] uppercase tracking-widest font-black bg-indigo-650 text-white rounded-md">
-                  ROADMAP PREVIEW
-                </span>
-                <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-4 text-left leading-relaxed space-y-2">
-                  <span className="block">• 361 core N3 Kanji characters with Myanmar translation</span>
-                  <span className="block">• Detailed writing stroke orders and Kunyomi/Onyomi readings</span>
-                  <span className="block">• Kanji-focused flashcard decks, drawing practices & quick quiz modes</span>
+              {/* Header Info */}
+              <div className="text-center">
+                <h2 className="font-extrabold text-2xl lg:text-3xl text-indigo-600 dark:text-indigo-400 tracking-wide flex items-center justify-center gap-2">
+                   N3 Kanji 361
+                </h2>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-1 uppercase tracking-wider">
+                  Master the writing & readings of JLPT N3 Characters
                 </p>
               </div>
+
+              {/* Unit Selector Toolbar */}
+              <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 justify-center self-center overflow-x-auto max-w-full">
+                {([ 'All', 1, 2, 3 ] as const).map((unit) => {
+                  const isCur = selectedKanjiUnit === unit;
+                  let count = kanjiData.length;
+                  if (unit !== 'All') {
+                    count = kanjiData.filter(k => k.unit === unit).length;
+                  }
+                  return (
+                    <button
+                      key={unit}
+                      onClick={() => setSelectedKanjiUnit(unit)}
+                      className={`px-3.5 py-1.5 font-bold text-xs rounded-lg transition-all duration-200 shrink-0 ${
+                        isCur
+                          ? 'bg-indigo-600 text-white shadow-sm'
+                          : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                      }`}
+                    >
+                      {unit === 'All' ? 'All' : `Unit ${unit}`} <span className={`text-[10px] ml-1 opacity-70 ${isCur ? 'text-indigo-250' : 'text-slate-400'}`}>({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {currentKanji ? (
+                <div className="flex-1 flex flex-col gap-4">
+                  
+                  {/* Progress info and navigation tools */}
+                  <div className="flex items-center justify-between text-xs px-2">
+                    <span className="font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                      Progress
+                    </span>
+                    <span className="font-black text-indigo-600 dark:text-indigo-400">
+                      {currentKanjiIndex + 1} / {filteredKanji.length}
+                    </span>
+                  </div>
+
+                  {/* Horizontal visual indicator bar */}
+                  <div className="w-full h-1 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-indigo-600 dark:bg-indigo-400 transition-all duration-350"
+                      style={{ width: `${((currentKanjiIndex + 1) / filteredKanji.length) * 100}%` }}
+                    />
+                  </div>
+
+                  {/* FLASHCARD BODY CONTAINER */}
+                  <div 
+                    onClick={() => setIsKanjiFlipped(!isKanjiFlipped)}
+                    className="h-[360px] cursor-pointer perspective-1000 select-none touch-pan-y"
+                  >
+                    <div className={`w-full h-full duration-500 transform-style-3d relative ${isKanjiFlipped ? 'rotate-y-180' : ''}`}>
+                      
+                      {/* FRONT PANEL */}
+                      <div className="absolute inset-0 w-full h-full rounded-3xl bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-6 shadow-md shadow-slate-100 dark:shadow-none backface-hidden flex flex-col justify-between items-center text-center">
+                        
+                        {/* Top corner data */}
+                        <div className="w-full flex items-center justify-between">
+                          <span className="px-2.5 py-1 text-[10px] uppercase tracking-wider font-extrabold bg-slate-100 dark:bg-slate-800/80 text-indigo-600 dark:text-indigo-400 rounded-md">
+                            Unit {currentKanji.unit}
+                          </span>
+                          
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider font-extrabold bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400 rounded-md border border-amber-500/20">
+                              {currentKanji.strokes} Strokes
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                speak(currentKanji.kanji);
+                              }}
+                              className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition shrink-0 active-press"
+                              title="Listen Pronunciation"
+                            >
+                              <Volume2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Large Kanji Display */}
+                        <div className="flex-1 flex flex-col justify-center items-center gap-4 py-4">
+                          <h3 className="text-8xl font-black text-slate-900 dark:text-slate-50 leading-none tracking-normal font-sans">
+                            {currentKanji.kanji}
+                          </h3>
+                        </div>
+
+                        {/* Prompt hint */}
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-auto">
+                          Tap card to reveal readings & translations
+                        </p>
+                      </div>
+
+                      {/* BACK PANEL */}
+                      <div className="absolute inset-0 w-full h-full rounded-3xl bg-indigo-650 dark:bg-indigo-950 text-white p-6 shadow-xl backface-hidden rotate-y-180 flex flex-col justify-between items-center text-center border border-indigo-500/10">
+                        
+                        {/* Back Panel Header */}
+                        <div className="w-full flex items-center justify-between">
+                          <span className="px-2.5 py-1 text-[10px] uppercase tracking-wider font-extrabold bg-white/15 text-white/90 rounded-md font-sans">
+                            Unit {currentKanji.unit}
+                          </span>
+                          
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider font-black bg-white/15 text-white/90 rounded-md">
+                              {currentKanji.strokes} Strokes
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                speak(currentKanji.kanji);
+                              }}
+                              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition shrink-0 active-press"
+                              title="Listen"
+                            >
+                              <Volume2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Back Content Area */}
+                        <div className="flex-1 flex flex-col justify-center items-center py-2 max-w-sm w-full gap-4">
+                          
+                          {/* Large Myanmar Translation */}
+                          <div className="flex flex-col items-center gap-1">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">Myanmar Meaning</span>
+                            <h4 className="text-2xl font-black text-amber-300 leading-snug drop-shadow-sm font-sans">
+                              {currentKanji.meaning_mm}
+                            </h4>
+                            <p className="text-xs text-white/70 font-bold">({currentKanji.meaning_en})</p>
+                          </div>
+                          
+                          {/* Onyomi / Kunyomi Labels */}
+                          <div className="grid grid-cols-2 gap-3 w-full mt-1 bg-black/15 p-3 rounded-2xl border border-white/5">
+                            <div className="flex flex-col gap-1 items-center border-r border-white/10 pr-2">
+                              <span className="text-[9px] font-extrabold uppercase tracking-widest text-red-300">Onyomi (音読み)</span>
+                              <span className="text-sm font-bold text-white tracking-wide">{currentKanji.onyomi}</span>
+                            </div>
+                            <div className="flex flex-col gap-1 items-center pl-2">
+                              <span className="text-[9px] font-extrabold uppercase tracking-widest text-blue-300">Kunyomi (訓読み)</span>
+                              <span className="text-sm font-bold text-white tracking-wide">{currentKanji.kunyomi}</span>
+                            </div>
+                          </div>
+
+                          {/* Example Showcase */}
+                          <div className="w-full bg-white/10 border border-white/10 p-3 rounded-2xl text-left flex flex-col gap-1.5 hover:bg-white/15 transition-all">
+                            <div className="flex justify-between items-center">
+                              <span className="text-[9px] font-black tracking-widest uppercase text-indigo-200">Example Compound</span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  speak(currentKanji.example_word);
+                                }}
+                                className="h-5 px-2 bg-white/15 hover:bg-white/25 text-[9px] font-bold rounded-lg flex items-center gap-1 transition shrink-0 active-press"
+                              >
+                                <Volume2 size={10} />
+                                <span>Pronounce</span>
+                              </button>
+                            </div>
+                            <div className="flex items-baseline gap-2">
+                              <h5 className="text-lg font-black text-white">{currentKanji.example_word}</h5>
+                              <span className="text-xs text-indigo-100 font-bold">【{currentKanji.example_reading}】</span>
+                            </div>
+                            <p className="text-xs font-semibold text-amber-200 border-t border-white/5 pt-1.5">{currentKanji.example_meaning}</p>
+                          </div>
+
+                        </div>
+
+                        {/* Prompt hint back */}
+                        <p className="text-[10px] text-white/50 font-bold tracking-wider uppercase">
+                          Tap card to flip back
+                        </p>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* NAVIGATION CONTROLS */}
+                  <div className="flex gap-4 items-center mt-2">
+                    <button
+                      onClick={() => {
+                        setIsKanjiFlipped(false);
+                        setCurrentKanjiIndex(prev => (prev === 0 ? filteredKanji.length - 1 : prev - 1));
+                      }}
+                      className="flex-1 h-12 rounded-2xl border border-lightBorder dark:border-darkBorder bg-lightSurface dark:bg-darkSurface text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850 font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-sm transition active-press"
+                    >
+                      <ChevronLeft size={18} />
+                      <span>Prev</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setIsKanjiFlipped(false);
+                        setCurrentKanjiIndex(prev => (prev === filteredKanji.length - 1 ? 0 : prev + 1));
+                      }}
+                      className="flex-1 h-12 rounded-2xl bg-indigo-650 dark:bg-indigo-550 hover:bg-indigo-750 dark:hover:bg-indigo-600 text-white font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition active-press"
+                    >
+                      <span>Next</span>
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+
+                </div>
+              ) : (
+                <div className="py-12 text-center text-slate-500 dark:text-slate-400 font-bold text-sm">
+                  No Kanji entries found for this category.
+                </div>
+              )}
+
             </div>
           ) : (
             /* --- DICTIONARY SEARCH SCREEN --- */
