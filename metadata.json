@@ -1,0 +1,8 @@
+{
+  "name": "Remix: N3 Standard 2400-web",
+  "description": "Daily Japanese N3 Vocabulary Companion with cards, list views, and smart Japanese-Myanmar tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
