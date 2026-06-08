@@ -1166,8 +1166,8 @@ export default function App() {
               </div>
 
               {/* Unit Selector Toolbar */}
-              <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 justify-center self-center overflow-x-auto max-w-full">
-                {([ 'All', 1, 2, 3 ] as const).map((unit) => {
+              <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 justify-start self-center overflow-x-auto max-w-full px-2 py-1.5 scrollbar-thin">
+                {(['All' as const, ...Array.from({ length: 18 }, (_, i) => (i + 1) as number)]).map((unit) => {
                   const isCur = selectedKanjiUnit === unit;
                   let count = kanjiData.length;
                   if (unit !== 'All') {
@@ -1183,7 +1183,7 @@ export default function App() {
                           : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
                       }`}
                     >
-                      {unit === 'All' ? 'All' : `Unit ${unit}`} <span className={`text-[10px] ml-1 opacity-70 ${isCur ? 'text-indigo-250' : 'text-slate-400'}`}>({count})</span>
+                      {unit === 'All' ? 'All' : `U${unit}`} <span className={`text-[10px] ml-0.5 opacity-70 ${isCur ? 'text-indigo-200' : 'text-slate-400'}`}>({count})</span>
                     </button>
                   );
                 })}
