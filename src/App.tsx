@@ -620,7 +620,7 @@ export default function App() {
         </div>
 
         {/* MAIN BODY AREA */}
-        <main className="flex-1 overflow-y-auto px-4 py-4 lg:px-8 lg:py-8 flex flex-col gap-4">
+        <main className={`flex-1 overflow-y-auto px-4 pt-4 lg:px-8 lg:pt-8 flex flex-col gap-4 ${selectedUnit === null ? 'pb-16 lg:pb-8' : 'pb-4 lg:pb-8'}`}>
           <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col gap-6">
           
           {/* SCREEN DISPATCHER */}
@@ -1465,32 +1465,32 @@ export default function App() {
 
         {/* BOTTOM NAVIGATION TAB BAR */}
         {selectedUnit === null && (
-          <nav className="lg:hidden sticky bottom-0 z-40 bg-lightSurface dark:bg-darkSurface border-t border-lightBorder dark:border-darkBorder px-6 py-2 pb-3.5 flex items-center justify-around shadow-lg transition-colors duration-200">
+          <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full sm:max-w-md lg:hidden z-40 bg-lightSurface dark:bg-darkSurface border-t border-lightBorder dark:border-darkBorder px-4 py-1 pb-1.5 flex items-center justify-around shadow-[0_-4px_12px_rgba(0,0,0,0.05)] transition-colors duration-200">
             {/* Home Tab */}
             <button
               onClick={() => setActiveTab('Home')}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${activeTab === 'Home' ? 'text-indigo-600 dark:text-indigo-400 font-black' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`flex flex-col items-center gap-0.5 p-1 rounded-lg transition ${activeTab === 'Home' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : 'text-slate-400 hover:text-slate-600'}`}
             >
-              <Book size={20} className={activeTab === 'Home' ? 'stroke-[2.5px]' : ''} />
-              <span className="text-[10px] uppercase tracking-wider">Meaning</span>
+              <Book size={16} className={activeTab === 'Home' ? 'stroke-[2.5px]' : ''} />
+              <span className="text-[9px] font-extrabold uppercase tracking-wider">Meaning</span>
             </button>
 
             {/* Kanji Tab */}
             <button
               onClick={() => setActiveTab('Kanji')}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${activeTab === 'Kanji' ? 'text-indigo-600 dark:text-indigo-400 font-black' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`flex flex-col items-center gap-0.5 p-1 rounded-lg transition ${activeTab === 'Kanji' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : 'text-slate-400 hover:text-slate-600'}`}
             >
-              <Sparkles size={20} className={activeTab === 'Kanji' ? 'stroke-[2.5px]' : ''} />
-              <span className="text-[10px] uppercase tracking-wider">Kanji</span>
+              <Sparkles size={16} className={activeTab === 'Kanji' ? 'stroke-[2.5px]' : ''} />
+              <span className="text-[9px] font-extrabold uppercase tracking-wider">Kanji</span>
             </button>
 
             {/* Search Tab */}
             <button
               onClick={() => setActiveTab('Search')}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition ${activeTab === 'Search' ? 'text-indigo-600 dark:text-indigo-400 font-black' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`flex flex-col items-center gap-0.5 p-1 rounded-lg transition ${activeTab === 'Search' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : 'text-slate-400 hover:text-slate-600'}`}
             >
-              <SearchIcon size={20} className={activeTab === 'Search' ? 'stroke-[2.5px]' : ''} />
-              <span className="text-[10px] uppercase tracking-wider">Search</span>
+              <SearchIcon size={16} className={activeTab === 'Search' ? 'stroke-[2.5px]' : ''} />
+              <span className="text-[9px] font-extrabold uppercase tracking-wider">Search</span>
             </button>
           </nav>
         )}
