@@ -352,9 +352,97 @@ export default function App() {
   }, [allWords, masteredCount]);
 
   return (
-    <div className="bg-slate-100 dark:bg-slate-950 min-h-screen flex items-center justify-center py-0 sm:py-8 transition-colors duration-200">
-      {/* Mobile Frame Container */}
-      <div className="w-full sm:max-w-md bg-lightBg dark:bg-darkBg min-h-screen sm:min-h-[85vh] sm:rounded-2xl sm:shadow-2xl sm:border border-slate-200 dark:border-darkBorder flex flex-col relative overflow-hidden">
+    <div className="bg-slate-100 dark:bg-slate-950 min-h-screen flex items-center justify-center py-0 sm:py-8 lg:px-4 transition-colors duration-200">
+      <div className="w-full max-w-full lg:max-w-5xl flex flex-col lg:flex-row lg:items-center lg:justify-center lg:gap-12 p-0 lg:p-4">
+        
+        {/* Left Decorative/Info Dashboard - Visible on lg (1024px) & above */}
+        <div className="hidden lg:flex flex-col w-[360px] h-[780px] bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-900 rounded-3xl p-8 text-white shadow-2xl border border-indigo-900/40 justify-between relative overflow-hidden shrink-0">
+          {/* Subtle background decoration */}
+          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-2xl -ml-16 -mb-16 pointer-events-none" />
+          
+          <div className="flex flex-col gap-6 z-10">
+            {/* Logo/Branding */}
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600/30 backdrop-blur-md flex items-center justify-center border border-indigo-400/25 shadow-lg shadow-indigo-950/40">
+                <span className="text-2xl">📚</span>
+              </div>
+              <div>
+                <span className="px-2 py-0.5 text-[8px] uppercase tracking-widest font-black bg-indigo-600 text-white rounded-md">WEB COMPANION</span>
+                <h1 className="font-extrabold text-lg leading-tight tracking-wide text-slate-100">N3 Standard 2400</h1>
+              </div>
+            </div>
+
+            {/* Title & Slogan */}
+            <div className="mt-2 space-y-2">
+              <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-indigo-100 leading-tight">
+                継続は力なり
+              </h2>
+              <p className="text-xs text-indigo-200/70 font-medium leading-relaxed">
+                "Perseverance is power." Master 2,400 selected N3 level Japanese-Myanmar vocabulary words with ease.
+              </p>
+            </div>
+
+            {/* Overall stats list */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mt-2 space-y-3.5">
+              <h3 className="text-[10px] font-extrabold tracking-wider uppercase text-indigo-300">Your Study Progress</h3>
+              
+              <div className="space-y-2.5">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-300 font-medium">Mastered Terms</span>
+                  <span className="font-bold text-white">{masteredCount} / {allWords.length}</span>
+                </div>
+                
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-300 font-medium">Completion Rate</span>
+                  <span className="font-bold text-emerald-400">{totalProgressPercent}%</span>
+                </div>
+
+                <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-emerald-400 transition-all duration-300 rounded-full" 
+                    style={{ width: `${totalProgressPercent}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Split layout interactive features */}
+            <div className="space-y-3">
+              <h3 className="text-[10px] font-extrabold tracking-wider uppercase text-indigo-300">Flashcard Shortcuts</h3>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                  <span className="text-lg block mb-1">🔁</span>
+                  <span className="text-[10px] font-bold text-slate-200 block">Shuffle List</span>
+                </div>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                  <span className="text-lg block mb-1">▶️</span>
+                  <span className="text-[10px] font-bold text-slate-200 block">Autoplay</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 z-10">
+            {/* Smart tools notice */}
+            <div className="bg-indigo-950/50 border border-indigo-800/40 rounded-xl p-3.5 flex items-start gap-2.5">
+              <span className="text-base shrink-0">✨</span>
+              <div className="text-[11px] leading-relaxed text-indigo-200 font-medium">
+                <strong className="text-indigo-400 block font-bold">API Synonyms/Antonyms</strong>
+                Get instant Japanese suggestions in real-time powered by Google's <span className="font-bold text-indigo-300">gemini-3.5-flash</span>.
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between border-t border-white/10 pt-4 text-[10px] text-slate-400 font-bold">
+              <span>N3 Standard web-remix</span>
+              <span>v1.0.0</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Frame Container */}
+        <div className="w-full sm:max-w-md lg:w-[430px] lg:max-w-[430px] bg-lightBg dark:bg-darkBg min-h-screen sm:min-h-[85vh] lg:h-[780px] sm:rounded-2xl sm:shadow-2xl sm:border border-slate-200 dark:border-darkBorder flex flex-col relative overflow-hidden transition-all duration-200 shrink-0">
         
         {/* TOP HEADER */}
         <header className="sticky top-0 z-40 bg-lightSurface dark:bg-darkSurface border-b border-lightBorder dark:border-darkBorder py-3.5 px-4 shadow-sm flex items-center justify-between transition-colors duration-200">
@@ -1033,5 +1121,6 @@ export default function App() {
 
       </div>
     </div>
-  );
+  </div>
+);
 }
