@@ -25,6 +25,7 @@ import { Word } from './types';
 import { loadVocabulary } from './data/VocabularyLoader';
 import { getSynonymsOrAntonyms } from './data/GeminiNetwork';
 import { kanjiData } from './data/kanji_n3';
+import { grammarData } from './data/grammar_n3';
 import { KanjiStrokeAnimator } from './components/KanjiStrokeAnimator';
 import { ListeningTab } from './components/ListeningTab';
 import { BooksTab } from './components/BooksTab';
@@ -84,6 +85,32 @@ export default function App() {
   const [isKanjiFlipped, setIsKanjiFlipped] = useState(false);
   const [selectedKanjiUnit, setSelectedKanjiUnit] = useState<number | 'All' | null>(null);
   const [kanjiGridFilter, setKanjiGridFilter] = useState<'All' | 'Units 1-9' | 'Units 10-18'>('All');
+
+  // Grammar Section States
+  const [grammarSearchQuery, setGrammarSearchQuery] = useState('');
+  const [selectedGrammarCategory, setSelectedGrammarCategory] = useState<
+    'All' | 'Conditional' | 'Causative' | 'Passive' | 'Giving/Receiving' | 'Conjunctions' | 'Expressing opinions' | 'Potential' | 'Other'
+  >('All');
+  const [expandedGrammarId, setExpandedGrammarId] = useState<number | null>(null);
+
+  const filteredGrammar = useMemo(() => {
+    return grammarData.filter((item) => {
+      // Category filter
+      if (selectedGrammarCategory !== 'All' && item.category !== selectedGrammarCategory) {
+        return false;
+      }
+      // Search filter
+      if (grammarSearchQuery.trim()) {
+        const query = grammarSearchQuery.toLowerCase();
+        const matchPattern = item.pattern.toLowerCase().includes(query);
+        const matchReading = item.reading.toLowerCase().includes(query);
+        const matchMeaning = item.meaning_mm.toLowerCase().includes(query);
+        const matchExplanation = item.explanation_mm.toLowerCase().includes(query);
+        return matchPattern || matchReading || matchMeaning || matchExplanation;
+      }
+      return true;
+    });
+  }, [selectedGrammarCategory, grammarSearchQuery]);
 
   const filteredKanji = useMemo(() => {
     if (selectedKanjiUnit === 'All' || selectedKanjiUnit === null) return kanjiData;
@@ -1848,20 +1875,179 @@ export default function App() {
             </div>
           ) : (
             /* --- GRAMMAR SCREEN --- */
-            <div className="flex flex-col items-center justify-center py-20 px-6 min-h-[400px] text-center bg-slate-900 border border-slate-800 rounded-3xl shadow-xl max-w-lg mx-auto gap-4">
-              <div className="w-16 h-16 rounded-full bg-indigo-950 flex items-center justify-center text-2xl shadow-lg border border-indigo-500/20 animate-pulse">
-                📑
+            <div className="flex flex-col gap-6 select-none max-w-4xl mx-auto w-full animate-fade-in pb-12">
+              {/* Header Info */}
+              <div className="text-center">
+                <h2 className="font-extrabold text-2xl lg:text-3xl text-indigo-600 dark:text-indigo-400 tracking-wide flex items-center justify-center gap-2">
+                   N3 Grammar (文法)
+                </h2>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-1 uppercase tracking-wider">
+                  Master 65 Crucial JLPT N3 Grammar Patterns by Category
+                </p>
               </div>
-              <h3 className="text-xl font-black text-slate-100 uppercase tracking-widest">
-                Grammar Study
-              </h3>
-              <div className="h-[2px] w-12 bg-indigo-500/30 rounded-full" />
-              <p className="text-sm font-bold text-amber-400">
-                Coming Soon...
-              </p>
-              <p className="text-xs text-slate-400 max-w-sm leading-relaxed px-4">
-                Structured grammar lessons, particle guides, and JLPT N3 practice patterns are coming soon. Stay tuned!
-              </p>
+
+              {/* SEARCH BAR */}
+              <div className="relative">
+                <SearchIcon size={18} className="absolute left-4 top-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search grammar patterns, reading, meaning or explanation..."
+                  value={grammarSearchQuery}
+                  onChange={(e) => {
+                    setGrammarSearchQuery(e.target.value);
+                    setExpandedGrammarId(null);
+                  }}
+                  className="w-full h-11 pl-11 pr-11 border border-lightBorder dark:border-darkBorder bg-lightSurface dark:bg-darkSurface focus:border-indigo-600 text-sm font-medium rounded-xl outline-none text-slate-800 dark:text-slate-100 transition shadow-inner"
+                />
+                {grammarSearchQuery && (
+                  <button
+                    onClick={() => {
+                      setGrammarSearchQuery('');
+                      setExpandedGrammarId(null);
+                    }}
+                    className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600"
+                  >
+                    <X size={15} />
+                  </button>
+                )}
+              </div>
+
+              {/* CATEGORY TABS (Scrollable Horizontal) */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 whitespace-nowrap scrollbar-hide">
+                {([
+                  { label: 'All Patterns', value: 'All' },
+                  { label: 'Conditional (条件)', value: 'Conditional' },
+                  { label: 'Causative (使役)', value: 'Causative' },
+                  { label: 'Passive (受身)', value: 'Passive' },
+                  { label: 'Giving/Receiving', value: 'Giving/Receiving' },
+                  { label: 'Conjunctions', value: 'Conjunctions' },
+                  { label: 'Expressing opinions', value: 'Expressing opinions' },
+                  { label: 'Potential', value: 'Potential' },
+                  { label: 'Other Patterns', value: 'Other' }
+                ] as const).map((tab) => {
+                  const selected = selectedGrammarCategory === tab.value;
+                  return (
+                    <button
+                      key={tab.value}
+                      onClick={() => {
+                        setSelectedGrammarCategory(tab.value);
+                        setExpandedGrammarId(null);
+                      }}
+                      className={`h-9 px-4 font-bold text-xs rounded-xl transition active-press whitespace-nowrap shrink-0 border ${
+                        selected 
+                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' 
+                          : 'bg-lightSurface hover:bg-slate-50 border-lightBorder text-slate-600 dark:bg-darkSurface dark:hover:bg-slate-850 dark:border-darkBorder dark:text-slate-300'
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* STATS SUMMARY */}
+              <div className="flex items-center justify-between text-xs font-bold text-slate-400 px-1">
+                <span>FOUND {filteredGrammar.length} GRAMMAR PATTERNS</span>
+                <span>JLPT N3 SYLLABUS</span>
+              </div>
+
+              {/* GRAMMAR ACCORDION LIST */}
+              {filteredGrammar.length > 0 ? (
+                <div className="flex flex-col gap-3.5">
+                  {filteredGrammar.map((item) => {
+                    const isExpanded = expandedGrammarId === item.id;
+                    return (
+                      <div
+                        key={item.id}
+                        className={`overflow-hidden border rounded-2xl transition duration-200 ${
+                          isExpanded 
+                            ? 'bg-lightSurface dark:bg-darkSurface border-indigo-500/40 shadow-md ring-1 ring-indigo-500/10' 
+                            : 'bg-lightSurface dark:bg-darkSurface border-lightBorder dark:border-darkBorder shadow-sm hover:shadow-md'
+                        }`}
+                      >
+                        {/* Compact Header Trigger Summary */}
+                        <div
+                          onClick={() => setExpandedGrammarId(isExpanded ? null : item.id)}
+                          className="flex items-center justify-between p-4 cursor-pointer select-none"
+                        >
+                          <div className="flex items-baseline gap-2 min-w-0">
+                            <span className="text-sm font-extrabold text-indigo-650 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded">
+                              {item.id}
+                            </span>
+                            <span className="font-extrabold text-base sm:text-lg text-slate-850 dark:text-slate-100 truncate">
+                              {item.pattern}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-2 shrink-0 ml-4">
+                            <span className="text-xs sm:text-sm font-extrabold text-indigo-650 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-lg">
+                              {item.meaning_mm}
+                            </span>
+                            <span className="text-slate-400 dark:text-slate-655">
+                              <ChevronRight 
+                                size={18} 
+                                className={`transition-transform duration-200 transform ${isExpanded ? 'rotate-90' : 'rotate-0'}`} 
+                              />
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Collapsible Details Body */}
+                        {isExpanded && (
+                          <div className="px-4 pb-5 pt-1 border-t border-slate-100 dark:border-slate-900 border-dashed animate-fade-in flex flex-col gap-4">
+                            <div>
+                              <span className="text-[10px] font-black uppercase text-indigo-500 tracking-wider">Reading</span>
+                              <p className="font-bold text-sm text-slate-700 dark:text-slate-300 font-mono mt-0.5">
+                                {item.reading}
+                              </p>
+                            </div>
+
+                            <div>
+                              <span className="text-[10px] font-black uppercase text-indigo-500 tracking-wider">Myanmar Translation</span>
+                              <p className="font-black text-sm sm:text-base text-slate-850 dark:text-slate-100 mt-0.5">
+                                {item.meaning_mm}
+                              </p>
+                            </div>
+
+                            <div>
+                              <span className="text-[10px] font-black uppercase text-indigo-500 tracking-wider font-sans">Explanation</span>
+                              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/40 p-10 rounded-xl border border-slate-100 dark:border-slate-850 mt-1 leading-relaxed font-bold">
+                                {item.explanation_mm}
+                              </p>
+                            </div>
+
+                            <div>
+                              <span className="text-[10px] font-black uppercase text-amber-500 tracking-wider">Example Sentences ({item.examples.length})</span>
+                              <div className="flex flex-col gap-3.5 mt-2">
+                                {item.examples.map((ex, exIdx) => (
+                                  <div 
+                                    key={exIdx} 
+                                    className="p-3 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100/60 dark:border-slate-800/60 rounded-xl"
+                                  >
+                                    <p className="text-base sm:text-[17px] font-extrabold text-slate-800 dark:text-slate-100 tracking-wide">
+                                      {ex.japanese}
+                                    </p>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-mono font-medium">
+                                      {ex.reading}
+                                    </p>
+                                    <p className="text-xs sm:text-sm text-amber-600 dark:text-amber-400 font-bold mt-1.5 leading-relaxed">
+                                      {ex.myanmar}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-12 text-center text-slate-500 dark:text-slate-400 font-bold text-sm bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder rounded-2xl">
+                  No Grammar entries found matching "{grammarSearchQuery}".
+                </div>
+              )}
             </div>
           )}
 
