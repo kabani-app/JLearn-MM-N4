@@ -29,6 +29,7 @@ import { grammarData } from './data/grammar_n3';
 import { KanjiStrokeAnimator } from './components/KanjiStrokeAnimator';
 import { ListeningTab } from './components/ListeningTab';
 import { BooksTab } from './components/BooksTab';
+import { JMediaTab } from './components/JMediaTab';
 
 // Caching helper functions for Gemini Vocabulary results
 const getCacheKey = (wordId: string, mode: 'same' | 'diff') => {
@@ -71,6 +72,54 @@ export default function App() {
   });
 
   const [activeTab, setActiveTab] = useState<'Home' | 'Kanji' | 'Search' | 'Listening' | 'Books' | 'J-Media' | 'Grammar'>('Home');
+
+  // J-Media Admin States
+  const [logoClicks, setLogoClicks] = useState(0);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => {
+    return localStorage.getItem('isAdminLoggedIn') === 'true';
+  });
+  const [adminUsername, setAdminUsername] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminLoginError, setAdminLoginError] = useState('');
+
+  const handleLogoClick = () => {
+    setLogoClicks(prev => {
+      const next = prev + 1;
+      if (next >= 5) {
+        setShowAdminLogin(true);
+        setAdminUsername('');
+        setAdminPassword('');
+        setAdminLoginError('');
+        return 0;
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (logoClicks > 0) {
+      const timer = setTimeout(() => {
+        setLogoClicks(0);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [logoClicks]);
+
+  const handleAdminSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminUsername.trim() === 'jlearn_admin' && adminPassword === 'JLearn@2024') {
+      localStorage.setItem('isAdminLoggedIn', 'true');
+      setIsAdminLoggedIn(true);
+      setShowAdminLogin(false);
+      setAdminUsername('');
+      setAdminPassword('');
+      setAdminLoginError('');
+      setActiveTab('J-Media');
+    } else {
+      setAdminLoginError('Invalid Credentials! Hint: jlearn_admin / JLearn@2024');
+    }
+  };
   const [activePart, setActivePart] = useState<'Part 1' | 'Part 2'>('Part 1');
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
 
@@ -570,6 +619,7 @@ export default function App() {
                   {/* Branding */}
                   <div 
                     onClick={() => {
+                      handleLogoClick();
                       setActiveTab('Home');
                       setSelectedUnit(null);
                       setSelectedKanjiUnit(null);
@@ -674,6 +724,7 @@ export default function App() {
                   {/* Branding (Always visible, always clickable) */}
                   <div 
                     onClick={() => {
+                      handleLogoClick();
                       setActiveTab('Home');
                       setSelectedUnit(null);
                       setSelectedKanjiUnit(null);
@@ -1858,21 +1909,10 @@ export default function App() {
             <BooksTab />
           ) : activeTab === 'J-Media' ? (
             /* --- J-MEDIA SCREEN --- */
-            <div className="flex flex-col items-center justify-center py-20 px-6 min-h-[400px] text-center bg-slate-900 border border-slate-800 rounded-3xl shadow-xl max-w-lg mx-auto gap-4">
-              <div className="w-16 h-16 rounded-full bg-indigo-950 flex items-center justify-center text-3xl shadow-lg border border-indigo-500/20 animate-pulse">
-                📺
-              </div>
-              <h3 className="text-xl font-black text-slate-100 uppercase tracking-widest">
-                J-Media
-              </h3>
-              <div className="h-[2px] w-12 bg-indigo-500/30 rounded-full" />
-              <p className="text-sm font-bold text-amber-400">
-                Coming Soon...
-              </p>
-              <p className="text-xs text-slate-400 max-w-sm leading-relaxed px-4">
-                We are preparing Japanese video, audio, and news media content here. Check back later!
-              </p>
-            </div>
+            <JMediaTab
+              isAdminLoggedIn={isAdminLoggedIn}
+              setIsAdminLoggedIn={setIsAdminLoggedIn}
+            />
           ) : (
             /* --- GRAMMAR SCREEN --- */
             <div className="flex flex-col gap-6 select-none max-w-4xl mx-auto w-full animate-fade-in pb-12">
@@ -2181,6 +2221,77 @@ export default function App() {
                 </button>
               </div>
 
+            </div>
+          </div>
+        )}
+
+        {/* --- ADMIN LOGIN MODAL --- */}
+        {showAdminLogin && (
+          <div 
+            className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+            onClick={() => setShowAdminLogin(false)}
+          >
+            <div 
+              className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-2xl p-6 flex flex-col gap-4 animate-scale-up"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <form 
+                onSubmit={handleAdminSubmit}
+                className="flex flex-col gap-4"
+              >
+                <div className="flex items-center justify-between border-b border-lightBorder dark:border-darkBorder pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🔐</span>
+                    <h3 className="font-extrabold text-[12.5px] text-slate-800 dark:text-slate-100 uppercase tracking-widest mt-0.5">
+                      Admin Portal Login
+                    </h3>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => setShowAdminLogin(false)}
+                    className="w-7 h-7 rounded-full bg-slate-150 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-705 text-slate-500 dark:text-slate-400 hover:text-slate-100 transition flex items-center justify-center border border-slate-200/50 dark:border-slate-800"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+
+                {adminLoginError && (
+                  <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-black select-none text-center leading-normal">
+                    {adminLoginError}
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Username</label>
+                  <input
+                    type="text"
+                    required
+                    value={adminUsername}
+                    onChange={(e) => setAdminUsername(e.target.value)}
+                    placeholder="e.g. jlearn_admin"
+                    className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 focus:outline-none focus:border-indigo-500 text-slate-850 dark:text-slate-100"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Password</label>
+                  <input
+                    type="password"
+                    required
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    placeholder="Enter admin password"
+                    className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 focus:outline-none focus:border-indigo-500 text-slate-850 dark:text-slate-100"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full mt-2 py-3 bg-[#EF4444] hover:bg-red-650 text-white font-black text-[11px] uppercase tracking-widest rounded-xl shadow-lg transition active-press"
+                >
+                  Verify authorization
+                </button>
+              </form>
             </div>
           </div>
         )}
