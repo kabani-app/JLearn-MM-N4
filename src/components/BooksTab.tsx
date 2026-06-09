@@ -12,18 +12,27 @@ interface BookItem {
 
 const BOOK_DATA: BookItem[] = [
   {
-    title: "新完全マスター聴解日本語能力試験N3",
-    description: "Shin Kanzen Master N3 Listening",
+    title: "N3 Kanji Master",
+    description: "N3 Kanji practice book",
     fileId: "1W5LUyEJZIyE91IhXNl5Kii3S2amZ-2bw",
-    size: "~50 MB",
-    category: "Listening",
+    size: "3.4 MB",
+    category: "N3 Books",
     color: "#6C63FF"
+  },
+  {
+    title: "N3 Exam မေးခွန်းဟောင်းများ",
+    description: "N3 JLPT past collection paper and key",
+    fileId: "1W5LUyEJZIyE91IhXNl5Kii3S2amZ-2bw",
+    size: "1.2 MB",
+    category: "မေးခွန်းဟောင်း",
+    color: "#EF4444"
   }
 ];
 
 export const BooksTab: React.FC = () => {
   const [selectedBook, setSelectedBook] = useState<BookItem | null>(null);
   const [iframeLoading, setIframeLoading] = useState<boolean>(true);
+  const [selectedCategory, setSelectedCategory] = useState<'All' | 'N3 Books' | 'မေးခွန်းဟောင်း'>('All');
 
   const openPdfViewer = (book: BookItem) => {
     setSelectedBook(book);
@@ -35,14 +44,18 @@ export const BooksTab: React.FC = () => {
     setIframeLoading(true);
   };
 
+  const filteredBooks = BOOK_DATA.filter(book => 
+    selectedCategory === 'All' ? true : book.category === selectedCategory
+  );
+
   return (
     <div className="flex flex-col flex-1 pb-24 md:pb-28">
       {/* Header Section */}
-      <div className="flex flex-col gap-1 mb-6">
+      <div className="flex flex-col gap-1 mb-5">
         <h2 className="font-extrabold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
           <span>📚 PDF Study Books</span>
           <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-500/10 rounded-md">
-            Shin Kanzen Master
+            Shin Kanzen Master & More
           </span>
         </h2>
         <p className="text-xs text-slate-400 dark:text-slate-500">
@@ -50,9 +63,26 @@ export const BooksTab: React.FC = () => {
         </p>
       </div>
 
+      {/* Category filter tabs */}
+      <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-900/60 rounded-xl mb-6 border border-slate-250/20 dark:border-slate-800/40 max-w-md">
+        {(['All', 'N3 Books', 'မေးခွန်းဟောင်း'] as const).map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`flex-1 py-1.5 text-center text-xs font-bold rounded-lg transition-all active-press ${
+              selectedCategory === cat
+                ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-xs border border-slate-200/20'
+                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+            }`}
+          >
+            {cat === 'All' ? '📂 All' : cat === 'N3 Books' ? '📖 N3 Books' : '📝 မေးခွန်းဟောင်း'}
+          </button>
+        ))}
+      </div>
+
       {/* MOBILE LIST LAYOUT (Single horizontal row, small icon on left, title/desc center, read right) */}
       <div className="flex flex-col gap-3 md:hidden">
-        {BOOK_DATA.map((book) => (
+        {filteredBooks.map((book) => (
           <div
             key={book.fileId}
             className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder rounded-2xl p-3 flex items-center justify-between gap-3 shadow-xs hover:shadow-sm"
@@ -85,11 +115,16 @@ export const BooksTab: React.FC = () => {
             </button>
           </div>
         ))}
+        {filteredBooks.length === 0 && (
+          <div className="text-center py-8 text-xs text-slate-400 dark:text-slate-500 font-bold">
+            No books found under this category.
+          </div>
+        )}
       </div>
 
       {/* DESKTOP GRID LAYOUT (Grid of cards) */}
       <div className="hidden md:grid md:grid-cols-2 gap-5">
-        {BOOK_DATA.map((book) => (
+        {filteredBooks.map((book) => (
           <div
             key={book.fileId}
             className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder rounded-3xl overflow-hidden shadow-xs hover:shadow-md transition-shadow duration-300 flex flex-col md:flex-row"
