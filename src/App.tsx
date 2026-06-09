@@ -81,10 +81,11 @@ export default function App() {
   // Kanji Section States
   const [currentKanjiIndex, setCurrentKanjiIndex] = useState(0);
   const [isKanjiFlipped, setIsKanjiFlipped] = useState(false);
-  const [selectedKanjiUnit, setSelectedKanjiUnit] = useState<number | 'All'>('All');
+  const [selectedKanjiUnit, setSelectedKanjiUnit] = useState<number | 'All' | null>(null);
+  const [kanjiGridFilter, setKanjiGridFilter] = useState<'All' | 'Units 1-9' | 'Units 10-18'>('All');
 
   const filteredKanji = useMemo(() => {
-    if (selectedKanjiUnit === 'All') return kanjiData;
+    if (selectedKanjiUnit === 'All' || selectedKanjiUnit === null) return kanjiData;
     return kanjiData.filter(k => k.unit === selectedKanjiUnit);
   }, [selectedKanjiUnit]);
 
@@ -99,8 +100,10 @@ export default function App() {
 
   // Reset Kanji Index when Unit filter changes
   useEffect(() => {
-    setCurrentKanjiIndex(0);
-    setIsKanjiFlipped(false);
+    if (selectedKanjiUnit !== null) {
+      setCurrentKanjiIndex(0);
+      setIsKanjiFlipped(false);
+    }
   }, [selectedKanjiUnit]);
 
   // Search screen query state
@@ -144,7 +147,7 @@ export default function App() {
 
   // Track last study for Kanji
   useEffect(() => {
-    if (activeTab === 'Kanji') {
+    if (activeTab === 'Kanji' && selectedKanjiUnit !== null) {
       localStorage.setItem('lastStudy_tab', 'kanji');
       localStorage.setItem('lastStudy_kanji_unit', String(selectedKanjiUnit));
       localStorage.setItem('lastStudy_kanji_index', String(currentKanjiIndex));
@@ -389,21 +392,12 @@ export default function App() {
 
   const handleMeaningTabClick = () => {
     setActiveTab('Home');
-    const defaultUnit = Object.keys(vocabData['Part 1'])[0] || '';
-    const lastUnit = localStorage.getItem('lastStudy_meaning_unit') || defaultUnit;
-    const index = parseInt(localStorage.getItem('lastStudy_meaning_index') || '0', 10);
-    if (lastUnit) {
-      openUnit(lastUnit, index);
-    }
+    setSelectedUnit(null);
   };
 
   const handleKanjiTabClick = () => {
     setActiveTab('Kanji');
-    const lastKanjiUnitRaw = localStorage.getItem('lastStudy_kanji_unit') || 'All';
-    const lastKanjiUnit = lastKanjiUnitRaw === 'All' ? 'All' : (parseInt(lastKanjiUnitRaw, 10) || 'All');
-    const index = parseInt(localStorage.getItem('lastStudy_kanji_index') || '0', 10);
-    setSelectedKanjiUnit(lastKanjiUnit as number | 'All');
-    setCurrentKanjiIndex(index);
+    setSelectedKanjiUnit(null);
   };
 
   const toggleLearned = (wordId: string) => {
@@ -542,7 +536,7 @@ export default function App() {
         {/* TOP HEADER / NAVBAR */}
         <header className="sticky top-0 z-40 bg-lightSurface dark:bg-darkSurface border-b border-lightBorder dark:border-darkBorder py-3.5 px-4 lg:px-8 shadow-sm transition-colors duration-200">
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
-            {selectedUnit === null ? (
+            {selectedUnit === null && selectedKanjiUnit === null ? (
               <>
                 <div className="flex items-center gap-3 lg:gap-8">
                   {/* Branding */}
@@ -550,6 +544,7 @@ export default function App() {
                     onClick={() => {
                       setActiveTab('Home');
                       setSelectedUnit(null);
+                      setSelectedKanjiUnit(null);
                     }}
                     className="flex items-center gap-3 cursor-pointer select-none active:opacity-80 shrink-0"
                   >
@@ -619,6 +614,7 @@ export default function App() {
                     onClick={() => {
                       setActiveTab('Search');
                       setSelectedUnit(null);
+                      setSelectedKanjiUnit(null);
                     }}
                     className="w-8.5 h-8.5 rounded-full border border-lightBorder dark:border-darkBorder flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition active-press"
                     aria-label="Dictionary Search"
@@ -631,6 +627,7 @@ export default function App() {
                     onClick={() => {
                       setActiveTab('J-Media');
                       setSelectedUnit(null);
+                      setSelectedKanjiUnit(null);
                     }}
                     className={`h-8.5 px-3 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm active-press ${activeTab === 'J-Media' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/25'}`}
                   >
@@ -647,6 +644,7 @@ export default function App() {
                     onClick={() => {
                       setActiveTab('Home');
                       setSelectedUnit(null);
+                      setSelectedKanjiUnit(null);
                     }}
                     className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none active:opacity-80 shrink-0"
                   >
@@ -662,15 +660,25 @@ export default function App() {
                   {/* Study Mode details */}
                   <div className="flex items-center gap-2 border-l border-slate-200 dark:border-slate-800 pl-2.5 sm:pl-3">
                     <button 
-                      onClick={closeUnit}
+                      onClick={() => {
+                        if (selectedUnit !== null) {
+                          closeUnit();
+                        } else {
+                          setSelectedKanjiUnit(null);
+                        }
+                      }}
                       className="w-8 h-8 rounded-lg border border-lightBorder dark:border-darkBorder flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 transition shrink-0"
                       aria-label="Back"
                     >
                       <ArrowLeft size={14} />
                     </button>
                     <div className="leading-none max-w-[80px] xs:max-w-[120px] sm:max-w-[200px] truncate">
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider">Study</span>
-                      <p className="font-extrabold text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 truncate mt-0.5" title={selectedUnit}>{selectedUnit}</p>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider">
+                        {selectedUnit !== null ? 'Vocabulary' : 'Kanji'}
+                      </span>
+                      <p className="font-extrabold text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 truncate mt-0.5" title={selectedUnit || (selectedKanjiUnit === 'All' ? 'All Kanji' : `Unit ${selectedKanjiUnit}`)}>
+                        {selectedUnit !== null ? selectedUnit : (selectedKanjiUnit === 'All' ? 'All Kanji' : `Unit ${selectedKanjiUnit}`)}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -700,7 +708,7 @@ export default function App() {
         </div>
 
         {/* MAIN BODY AREA */}
-        <main className={`flex-1 overflow-y-auto px-4 pt-4 lg:px-8 lg:pt-8 flex flex-col gap-4 ${selectedUnit === null ? 'pb-16 lg:pb-8' : 'pb-4 lg:pb-8'}`}>
+        <main className={`flex-1 overflow-y-auto px-4 pt-4 lg:px-8 lg:pt-8 flex flex-col gap-4 ${(selectedUnit === null && selectedKanjiUnit === null) ? 'pb-16 lg:pb-8' : 'pb-4 lg:pb-8'}`}>
           <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col gap-6">
           
           {/* SCREEN DISPATCHER */}
@@ -1143,21 +1151,44 @@ export default function App() {
                 </div>
               </div>
 
-              {/* SECTION TABS FOR PART 1 / PART 2 */}
-              <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 self-start min-w-[280px]">
-                {(['Part 1', 'Part 2'] as const).map((part) => {
-                  const selected = activePart === part;
-                  const count = Object.keys(vocabData[part]).length;
-                  return (
-                    <button
-                      key={part}
-                      onClick={() => setActivePart(part)}
-                      className={`flex-1 py-2 font-bold text-xs rounded-lg transition active-press ${selected ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'}`}
-                    >
-                      {part} ({count} Units)
-                    </button>
-                  );
-                })}
+              {/* SECTION TABS FOR PART 1 / PART 2 & LAST STUDY BUTTON */}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 min-w-[280px]">
+                  {(['Part 1', 'Part 2'] as const).map((part) => {
+                    const selected = activePart === part;
+                    const count = Object.keys(vocabData[part]).length;
+                    return (
+                      <button
+                        key={part}
+                        onClick={() => setActivePart(part)}
+                        className={`flex-1 py-2 font-bold text-xs rounded-lg transition active-press ${selected ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'}`}
+                      >
+                        {part} ({count} Units)
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {localStorage.getItem('lastStudy_meaning_unit') ? (
+                  <button
+                    onClick={() => {
+                      const lastUnit = localStorage.getItem('lastStudy_meaning_unit')!;
+                      const index = parseInt(localStorage.getItem('lastStudy_meaning_index') || '0', 10);
+                      openUnit(lastUnit, index);
+                    }}
+                    className="h-10 px-4 bg-indigo-650 hover:bg-indigo-750 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition shadow-md active-press"
+                  >
+                    <span className="text-xs">⚡</span>
+                    <span>Last Study: {localStorage.getItem('lastStudy_meaning_unit')?.split(': ')?.[0] || localStorage.getItem('lastStudy_meaning_unit')}</span>
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    className="h-10 px-4 bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-650 font-bold text-xs rounded-xl flex items-center gap-1 border border-slate-200/20 cursor-not-allowed opacity-60"
+                  >
+                    <span>No history yet</span>
+                  </button>
+                )}
               </div>
 
               {/* LIST OF STUDY UNITS FOR SELECTED PART */}
@@ -1233,8 +1264,9 @@ export default function App() {
 
             </div>
           ) : activeTab === 'Kanji' ? (
-            /* --- KANJI FLASHCARDS PANEL --- */
-            <div className="flex flex-col gap-6 flex-1 py-4 select-none max-w-2xl mx-auto w-full animate-fade-in">
+            selectedKanjiUnit !== null ? (
+              /* --- KANJI FLASHCARDS PANEL --- */
+              <div className="flex flex-col gap-6 flex-1 py-4 select-none max-w-2xl mx-auto w-full animate-fade-in">
               
               {/* Header Info */}
               <div className="text-center">
@@ -1486,8 +1518,227 @@ export default function App() {
                   No Kanji entries found for this category.
                 </div>
               )}
-
             </div>
+          ) : (
+              /* --- KANJI DASHBOARD HOME SCREEN --- */
+              <div className="flex flex-col gap-6 select-none max-w-4xl mx-auto w-full animate-fade-in">
+                {/* Header Info */}
+                <div className="text-center">
+                  <h2 className="font-extrabold text-2xl lg:text-3xl text-indigo-600 dark:text-indigo-400 tracking-wide flex items-center justify-center gap-2">
+                     N3 Kanji 361
+                  </h2>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-1 uppercase tracking-wider">
+                    Master the writing & readings of JLPT N3 Characters
+                  </p>
+                </div>
+
+                {/* RESPONSIVE KANJI STATS BANNER VIEW */}
+                <div>
+                  {/* Mobile version */}
+                  <div className="flex lg:hidden gap-3">
+                    {/* Characters Count Metric Box */}
+                    <div className="flex-1 bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-4 rounded-2xl flex items-center gap-3 shadow-sm transition hover:shadow-md">
+                      <div className="w-11 h-11 rounded-full bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 flex items-center justify-center text-lg shrink-0">
+                        ⛩️
+                      </div>
+                      <div>
+                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-sans">Total Characters</h4>
+                        <p className="font-extrabold text-base text-slate-800 dark:text-slate-100 font-sans">
+                          361 <span className="text-[11px] text-slate-400 font-semibold font-sans">Kanji</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Progress Metric Box */}
+                    <div className="flex-1 bg-gradient-to-br from-indigo-650 to-indigo-850 p-4 rounded-2xl text-white shadow-lg flex flex-col justify-between">
+                      <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest block font-sans">Study Units</span>
+                      <div className="flex items-baseline gap-1 mt-1">
+                        <span className="text-2xl font-black font-sans">18 Units</span>
+                        <span className="text-[10px] text-white/70 font-bold font-sans">Standard</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-white/20 rounded-full mt-2.5 overflow-hidden">
+                        <div className="h-full bg-white rounded-full transition-all duration-300" style={{ width: `100%` }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desktop Version - Wide stats row cards at the top */}
+                  <div className="hidden lg:grid grid-cols-3 gap-6">
+                    {/* Total Kanji Card */}
+                    <div className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-6 rounded-2xl shadow-sm flex items-center gap-4 hover:shadow-md transition">
+                      <div className="w-14 h-14 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center text-2xl shrink-0">
+                        ⛩️
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black block font-sans">Kanji Syllabus</span>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-3xl font-black text-slate-850 dark:text-slate-150 font-sans">361</span>
+                          <span className="text-sm text-slate-450 dark:text-slate-400 font-semibold font-sans">Standard JLPT N3 Characters</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Total Units Card */}
+                    <div className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-6 rounded-2xl shadow-sm flex items-center gap-4 hover:shadow-md transition">
+                      <div className="w-14 h-14 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center text-2xl shrink-0">
+                        📖
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black block font-sans">Study Structure</span>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400 font-sans">18 Units</span>
+                          <span className="text-sm text-slate-450 dark:text-slate-400 font-semibold font-sans">~20 characters each</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Last Studied Kanji Card */}
+                    <div className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-6 rounded-2xl shadow-sm flex items-center gap-4 hover:shadow-md transition">
+                      <div className="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 flex items-center justify-center text-2xl shrink-0">
+                        ⚡
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-widest font-black block font-sans">Last Session</span>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-[20px] font-black text-emerald-600 dark:text-emerald-400 font-sans">
+                            {localStorage.getItem('lastStudy_kanji_unit') 
+                              ? `Unit ${localStorage.getItem('lastStudy_kanji_unit')}` 
+                              : 'No history yet'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION TABS FOR KANJI GROUPS & LAST STUDY BUTTON */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 min-w-[300px]">
+                    {([
+                      { label: 'All Units', value: 'All' },
+                      { label: 'Units 1–9', value: 'Units 1-9' },
+                      { label: 'Units 10–18', value: 'Units 10-18' }
+                    ] as const).map((tab) => {
+                      const selected = kanjiGridFilter === tab.value;
+                      return (
+                        <button
+                          key={tab.value}
+                          onClick={() => setKanjiGridFilter(tab.value)}
+                          className={`flex-1 py-2 font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-3 ${selected ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-850 dark:hover:text-slate-300'}`}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {localStorage.getItem('lastStudy_kanji_unit') ? (
+                    <button
+                      onClick={() => {
+                        const lastUnitRaw = localStorage.getItem('lastStudy_kanji_unit')!;
+                        const lastUnit = lastUnitRaw === 'All' ? 'All' : parseInt(lastUnitRaw, 10);
+                        const index = parseInt(localStorage.getItem('lastStudy_kanji_index') || '0', 10);
+                        setSelectedKanjiUnit(lastUnit as number | 'All');
+                        setCurrentKanjiIndex(index);
+                      }}
+                      className="h-10 px-4 bg-indigo-650 hover:bg-indigo-750 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition shadow-md active-press"
+                    >
+                      <span className="text-xs">⚡</span>
+                      <span>Last Study: U-{localStorage.getItem('lastStudy_kanji_unit')}</span>
+                    </button>
+                  ) : (
+                    <button
+                      disabled
+                      className="h-10 px-4 bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-650 font-bold text-xs rounded-xl flex items-center gap-1 border border-slate-200/20 cursor-not-allowed opacity-60"
+                    >
+                      <span>No history yet</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* KANJI UNIT GRID */}
+                <div className="flex flex-col gap-3">
+                  <h3 className="font-extrabold text-xs text-slate-400 tracking-wider uppercase">Study Units</h3>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-12">
+                    {/* Include an "All Kanji Combined" Card as the very first card if they are on 'All' group! */}
+                    {kanjiGridFilter === 'All' && (
+                      <div
+                        onClick={() => {
+                          setSelectedKanjiUnit('All');
+                          setCurrentKanjiIndex(0);
+                        }}
+                        className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white p-4.5 rounded-2xl flex flex-col justify-between gap-4 cursor-pointer shadow-lg hover:shadow-xl transition active-press group min-h-[110px]"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-extrabold text-sm text-white group-hover:text-purple-100 transition whitespace-nowrap">
+                            All 361 Kanji
+                          </h4>
+                          <span className="text-[10px] text-indigo-100 font-bold uppercase tracking-wider block mt-0.5">
+                            Full Deck
+                          </span>
+                          <p className="text-[11px] text-white/80 font-medium leading-relaxed mt-2 font-sans">
+                            Study all Japanese N3 characters combined in one master deck.
+                          </p>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-white/15 text-white flex items-center justify-center text-sm shrink-0">
+                          🏆
+                        </div>
+                      </div>
+                    )}
+
+                    {Array.from({ length: 18 }, (_, idx) => idx + 1)
+                      .filter((unitNum) => {
+                        if (kanjiGridFilter === 'Units 1-9') return unitNum >= 1 && unitNum <= 9;
+                        if (kanjiGridFilter === 'Units 10-18') return unitNum >= 10 && unitNum <= 18;
+                        return true;
+                      })
+                      .map((unitNum) => {
+                        const unitKanji = kanjiData.filter(k => k.unit === unitNum);
+                        const unitKanjiCount = unitKanji.length;
+                        // Preview first 5 characters
+                        const previewCharacters = unitKanji.slice(0, 5);
+
+                        return (
+                          <div
+                            key={unitNum}
+                            onClick={() => {
+                              setSelectedKanjiUnit(unitNum);
+                              setCurrentKanjiIndex(0);
+                            }}
+                            className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-4 rounded-2xl flex items-center justify-between gap-4 cursor-pointer hover:shadow-md transition active-press group"
+                          >
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-extrabold text-sm text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
+                                Unit {unitNum}
+                              </h4>
+                              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider block mt-0.5">
+                                {unitKanjiCount} Characters
+                              </span>
+                              
+                              {/* Preview list */}
+                              <div className="flex flex-wrap gap-1 mt-2.5">
+                                {previewCharacters.map((k, idx) => (
+                                  <span 
+                                    key={idx} 
+                                    className="w-6 h-6 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-300"
+                                  >
+                                    {k.kanji}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="w-9 h-9 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 flex items-center justify-center text-sm shrink-0 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900 transition font-sans">
+                              ⛩️
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              </div>
+            )
           ) : activeTab === 'Search' ? (
             /* --- DICTIONARY SEARCH SCREEN --- */
             <div className="flex flex-col gap-4 flex-1">
@@ -1613,7 +1864,7 @@ export default function App() {
         </main>
 
         {/* BOTTOM NAVIGATION TAB BAR */}
-        {selectedUnit === null && (
+        {selectedUnit === null && selectedKanjiUnit === null && (
           <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full sm:max-w-md lg:hidden z-40 bg-lightSurface dark:bg-darkSurface border-t border-lightBorder dark:border-darkBorder px-4 py-1 pb-1.5 flex items-center justify-around shadow-[0_-4px_12px_rgba(0,0,0,0.05)] transition-colors duration-200">
             {/* Home Tab */}
             <button
