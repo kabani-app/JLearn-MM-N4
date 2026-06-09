@@ -5,7 +5,8 @@ import {
   LogOut, ExternalLink, Play, X, Loader2, RefreshCw, 
   Eye, CheckCircle, AlertCircle, ChevronRight, 
   PlusCircle, Check, Info, Settings, ShieldAlert,
-  ArrowLeft, Folder, Layers, Film, Book
+  ArrowLeft, Folder, Layers, Film, Book,
+  ArrowUp, ArrowDown, ListOrdered, Move
 } from 'lucide-react';
 
 interface JMediaTabProps {
@@ -39,6 +40,7 @@ interface YouTubeChannel {
   description_mm: string;
   playlist_id?: string | number | null;
   created_at?: string;
+  sort_order?: number;
 }
 
 interface NewsPodcast {
@@ -133,6 +135,99 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
 
   // Modal styling states for Admin Forms
   const [isFormModalOpen, setIsFormModalOpen] = useState<boolean>(false);
+  
+  // Reorder/Sort Modal States
+  const [isSortModalOpen, setIsSortModalOpen] = useState<boolean>(false);
+  const [selectedSortPlaylist, setSelectedSortPlaylist] = useState<Playlist | null>(null);
+  const [sortItemList, setSortItemList] = useState<YouTubeChannel[]>([]);
+  const [savingSortOrder, setSavingSortOrder] = useState<boolean>(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const handleOpenSortModal = (playlist: Playlist) => {
+    setSelectedSortPlaylist(playlist);
+    // Find videos for this playlist and sort them by existing sort_order (fall back to id index)
+    const plistVideos = lessons
+      .filter(l => String(l.playlist_id) === String(playlist.id))
+      .sort((a, b) => {
+        const orderA = a.sort_order !== undefined && a.sort_order !== null ? a.sort_order : 999999;
+        const orderB = b.sort_order !== undefined && b.sort_order !== null ? b.sort_order : 999999;
+        if (orderA !== orderB) return orderA - orderB;
+        return Number(a.id) - Number(b.id);
+      });
+    setSortItemList(plistVideos);
+    setIsSortModalOpen(true);
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', index.toString());
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    
+    const updated = [...sortItemList];
+    const draggedItem = updated[draggedIndex];
+    updated.splice(draggedIndex, 1);
+    updated.splice(index, 0, draggedItem);
+    
+    setDraggedIndex(index);
+    setSortItemList(updated);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
+
+  const moveItemUp = (index: number) => {
+    if (index === 0) return;
+    const updated = [...sortItemList];
+    const temp = updated[index];
+    updated[index] = updated[index - 1];
+    updated[index - 1] = temp;
+    setSortItemList(updated);
+  };
+
+  const moveItemDown = (index: number) => {
+    if (index === sortItemList.length - 1) return;
+    const updated = [...sortItemList];
+    const temp = updated[index];
+    updated[index] = updated[index + 1];
+    updated[index + 1] = temp;
+    setSortItemList(updated);
+  };
+
+  const handleSaveSortOrder = async () => {
+    if (!supabase || !selectedSortPlaylist) return;
+    setSavingSortOrder(true);
+    setErrorBanner(null);
+    setSuccessBanner(null);
+    try {
+      const promises = sortItemList.map((item, index) => {
+        return supabase
+          .from('youtube_channels')
+          .update({ sort_order: index + 1 })
+          .eq('id', item.id);
+      });
+      
+      const results = await Promise.all(promises);
+      const failed = results.find(r => r.error);
+      if (failed) throw failed.error;
+      
+      setSuccessBanner("Video playlist order saved successfully!");
+      setIsSortModalOpen(false);
+      fetchLessons();
+    } catch (err: any) {
+      console.error("Failed to save sort order:", err);
+      setErrorBanner(err.message || "Failed to update video sort sequence.");
+    } finally {
+      setSavingSortOrder(false);
+    }
+  };
   const [formType, setFormType] = useState<'add' | 'edit'>('add');
   const [formActiveManager, setFormActiveManager] = useState<'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books'>('Songs');
 
@@ -218,7 +313,8 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
       const { data, error } = await supabase
         .from('youtube_channels')
         .select('*')
-        .order('id', { ascending: false });
+        .order('sort_order', { ascending: true })
+        .order('id', { ascending: true });
 
       if (error) throw error;
       setLessons(data || []);
@@ -1295,6 +1391,13 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                             <td className="py-2.5 px-4 text-right">
                               <div className="inline-flex items-center gap-1.5">
                                 <button
+                                  onClick={() => handleOpenSortModal(playlist)}
+                                  className="p-1.5 rounded-lg border border-slate-200/55 dark:border-slate-800 bg-indigo-50 dark:bg-indigo-950/20 hover:bg-indigo-600 dark:hover:bg-indigo-800 text-indigo-600 dark:text-indigo-400 hover:text-white dark:hover:text-white transition"
+                                  title="Reorder Playlist Videos"
+                                >
+                                  <ListOrdered size={12} />
+                                </button>
+                                <button
                                   onClick={() => openEditForm('Playlists', playlist)}
                                   className="p-1.5 rounded-lg border border-slate-200/55 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-indigo-400 transition"
                                   title="Edit Playlist"
@@ -2003,6 +2106,165 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 📑 PLAYLIST VIDEO REORDERING OVERLAY MODAL */}
+      {/* ========================================================================= */}
+      {isSortModalOpen && selectedSortPlaylist && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in text-left">
+          <div className="w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col gap-4 p-6 animate-scale-up">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-lightBorder dark:border-darkBorder pb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-base text-indigo-500">↕️</span>
+                <div className="flex flex-col">
+                  <h3 className="text-[14px] font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest leading-none">
+                    Sort Playlist Videos
+                  </h3>
+                  <span className="text-[10px] text-slate-450 dark:text-slate-500 font-bold mt-1.5 uppercase tracking-wide block">
+                    Playlist: {selectedSortPlaylist.title}
+                  </span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsSortModalOpen(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-100 transition flex items-center justify-center border border-slate-200/50 dark:border-slate-800"
+              >
+                <X size={12} />
+              </button>
+            </div>
+
+            {/* Sub-instruction statement */}
+            <div className="bg-slate-50 dark:bg-slate-955 p-3 rounded-xl border border-lightBorder dark:border-darkBorder font-sans leading-relaxed text-[11px] text-slate-500 dark:text-slate-400">
+              Drag rows using the handle (<Move size={10} className="inline vertical-middle" />) or use arrow buttons to arrange materials in order. Click <span className="font-bold text-slate-700 dark:text-slate-200">Save sorting sequence</span> to write to database.
+            </div>
+
+            {/* List space */}
+            <div className="flex flex-col gap-2 overflow-y-auto max-h-[50vh] py-1 px-0.5 font-sans">
+              {sortItemList.length === 0 ? (
+                <div className="p-8 text-center bg-slate-50 dark:bg-slate-955 rounded-2xl border border-dashed border-lightBorder dark:border-darkBorder text-slate-405 font-bold text-xs">
+                  This playlist has no videos yet. Add lessons to it first!
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  {sortItemList.map((item, index) => {
+                    const isDragging = draggedIndex === index;
+                    return (
+                      <div
+                        key={item.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragOver={(e) => handleDragOver(e, index)}
+                        onDragEnd={handleDragEnd}
+                        className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 transition-all ${
+                          isDragging 
+                            ? 'bg-indigo-50/70 border-indigo-500 dark:bg-indigo-950/20 scale-[0.98] opacity-50' 
+                            : 'bg-white dark:bg-slate-900/60 border-lightBorder dark:border-darkBorder hover:bg-slate-50 dark:hover:bg-slate-900'
+                        }`}
+                      >
+                        {/* Drag Handle & Index Badge */}
+                        <div className="flex items-center gap-2">
+                          <div className="cursor-grab p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 active:cursor-grabbing transition animate-pulse" title="Drag to reorder">
+                            <Move size={14} />
+                          </div>
+                          <span className="w-5 h-5 rounded bg-slate-100 dark:bg-slate-850 text-slate-500 text-[10px] font-black flex items-center justify-center select-none">
+                            {index + 1}
+                          </span>
+                        </div>
+
+                        {/* Thumbnail of video */}
+                        <div className="w-14 h-9 bg-slate-900 border border-lightBorder dark:border-darkBorder rounded overflow-hidden shrink-0 flex items-center justify-center relative">
+                          <img 
+                            src={`https://img.youtube.com/vi/${item.youtube_id}/mqdefault.jpg`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fallback if load fails
+                              e.currentTarget.style.display = 'none';
+                            }}
+                            alt=""
+                          />
+                        </div>
+
+                        {/* Details of video */}
+                        <div className="flex-grow min-w-0 text-left">
+                          <h4 className="text-xs font-black text-slate-850 dark:text-slate-200 truncate leading-snug">
+                            {item.channel_name}
+                          </h4>
+                          <span className="text-[9px] text-slate-400 dark:text-slate-550 uppercase tracking-widest font-black inline-block mt-0.5">
+                            Level: {item.level}
+                          </span>
+                        </div>
+
+                        {/* Manual shift arrows controls */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => moveItemUp(index)}
+                            disabled={index === 0}
+                            className={`p-1.5 rounded-lg border transition ${
+                              index === 0 
+                                ? 'bg-slate-50 dark:bg-slate-905 border-slate-100 dark:border-slate-850 text-slate-300 dark:text-slate-700 cursor-not-allowed' 
+                                : 'bg-slate-100 dark:bg-slate-800 border-lightBorder dark:border-darkBorder text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700 dark:text-slate-350'
+                            }`}
+                            title="Move Up"
+                          >
+                            <ArrowUp size={12} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveItemDown(index)}
+                            disabled={index === sortItemList.length - 1}
+                            className={`p-1.5 rounded-lg border transition ${
+                              index === sortItemList.length - 1 
+                                ? 'bg-slate-50 dark:bg-slate-905 border-slate-100 dark:border-slate-850 text-slate-300 dark:text-slate-700 cursor-not-allowed' 
+                                : 'bg-slate-100 dark:bg-slate-800 border-lightBorder dark:border-darkBorder text-slate-600 hover:bg-slate-200 dark:hover:bg-slate-700 dark:text-slate-355'
+                            }`}
+                            title="Move Down"
+                          >
+                            <ArrowDown size={12} />
+                          </button>
+                        </div>
+
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Actions for sorts panel */}
+            <div className="flex items-center justify-end gap-3 border-t border-lightBorder dark:border-darkBorder pt-4 font-sans mt-2">
+              <button
+                type="button"
+                onClick={() => setIsSortModalOpen(false)}
+                className="px-4 py-2.5 rounded-xl text-xs font-black bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-650 dark:text-slate-350 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveSortOrder}
+                disabled={savingSortOrder || sortItemList.length === 0}
+                className="px-5 py-2.5 rounded-xl text-xs font-black bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white flex items-center gap-1.5 shadow-md shadow-indigo-100 dark:shadow-none transition"
+              >
+                {savingSortOrder ? (
+                  <>
+                    <Loader2 size={12} className="animate-spin" />
+                    <span>Saving order...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check size={12} />
+                    <span>Save sorting sequence</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+          </div>
         </div>
       )}
 
