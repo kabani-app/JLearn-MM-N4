@@ -5,7 +5,7 @@ import {
   LogOut, ExternalLink, Play, X, Loader2, RefreshCw, 
   Eye, CheckCircle, AlertCircle, ChevronRight, 
   PlusCircle, Check, Info, Settings, ShieldAlert,
-  ArrowLeft, Folder, Layers, Film
+  ArrowLeft, Folder, Layers, Film, Book
 } from 'lucide-react';
 
 interface JMediaTabProps {
@@ -50,6 +50,16 @@ interface NewsPodcast {
   created_at?: string;
 }
 
+interface BookDbItem {
+  id: string | number;
+  title: string;
+  description_mm: string;
+  drive_file_id: string;
+  category: string;
+  file_size: string;
+  created_at?: string;
+}
+
 export const JMediaTab: React.FC<JMediaTabProps> = ({
   isAdminLoggedIn,
   setIsAdminLoggedIn,
@@ -81,8 +91,8 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   // Tab State: Public View
   const [currentSection, setCurrentSection] = useState<'Songs' | 'Lessons' | 'News'>('Songs');
   
-  // Tab State: Admin Panel (allows Songs, Playlists, Lessons, News)
-  const [adminSection, setAdminSection] = useState<'Songs' | 'Playlists' | 'Lessons' | 'News'>('Songs');
+  // Tab State: Admin Panel (allows Songs, Playlists, Lessons, News, Books)
+  const [adminSection, setAdminSection] = useState<'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books'>('Songs');
   
   // Whether we are currently in Admin Dashboard view vs Public view (for authorized admin)
   const [viewMode, setViewMode] = useState<'public' | 'admin'>(isAdminLoggedIn ? 'admin' : 'public');
@@ -101,12 +111,14 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [lessons, setLessons] = useState<YouTubeChannel[]>([]);
   const [newsList, setNewsList] = useState<NewsPodcast[]>([]);
+  const [books, setBooks] = useState<BookDbItem[]>([]);
 
   // Loading states
   const [loadingSongs, setLoadingSongs] = useState<boolean>(false);
   const [loadingPlaylists, setLoadingPlaylists] = useState<boolean>(false);
   const [loadingLessons, setLoadingLessons] = useState<boolean>(false);
   const [loadingNews, setLoadingNews] = useState<boolean>(false);
+  const [loadingBooks, setLoadingBooks] = useState<boolean>(false);
 
   // Active public playlist selection state
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
@@ -122,7 +134,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   // Modal styling states for Admin Forms
   const [isFormModalOpen, setIsFormModalOpen] = useState<boolean>(false);
   const [formType, setFormType] = useState<'add' | 'edit'>('add');
-  const [formActiveManager, setFormActiveManager] = useState<'Songs' | 'Playlists' | 'Lessons' | 'News'>('Songs');
+  const [formActiveManager, setFormActiveManager] = useState<'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books'>('Songs');
 
   // Form Fields State
   const [selectedItemId, setSelectedItemId] = useState<string | number | null>(null);
@@ -145,6 +157,13 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   const [channelLevel, setChannelLevel] = useState('Beginner');
   const [channelDesc, setChannelDesc] = useState('');
   const [channelPlaylistId, setChannelPlaylistId] = useState<string | number>('');
+
+  // Books Form Fields
+  const [bookTitle, setBookTitle] = useState('');
+  const [bookDesc, setBookDesc] = useState('');
+  const [bookCategory, setBookCategory] = useState('N3 Books');
+  const [bookFileSize, setBookFileSize] = useState('');
+  const [bookDriveFileId, setBookDriveFileId] = useState('');
 
   // News/Podcast Form Fields
   const [newsTitle, setNewsTitle] = useState('');
@@ -230,6 +249,25 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
     }
   };
 
+  const fetchBooks = async () => {
+    if (!supabase) return;
+    setLoadingBooks(true);
+    try {
+      const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .order('id', { ascending: false });
+
+      if (error) throw error;
+      setBooks(data || []);
+    } catch (err: any) {
+      console.error('Error fetching books:', err);
+      setErrorBanner(err.message || 'Error occurred fetching books from Supabase.');
+    } finally {
+      setLoadingBooks(false);
+    }
+  };
+
   // Fetch all on mount or when supabase becomes available
   useEffect(() => {
     if (supabase) {
@@ -237,6 +275,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
       fetchPlaylists();
       fetchLessons();
       fetchNews();
+      fetchBooks();
     }
   }, [supabase]);
 
@@ -256,7 +295,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   }, [successBanner]);
 
   // Helper to open Add Model Form
-  const openAddForm = (manager: 'Songs' | 'Playlists' | 'Lessons' | 'News') => {
+  const openAddForm = (manager: 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books') => {
     setFormActiveManager(manager);
     setFormType('add');
     setSelectedItemId(null);
@@ -284,11 +323,17 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
     setNewsType('News');
     setNewsDesc('');
 
+    setBookTitle('');
+    setBookDesc('');
+    setBookCategory('N3 Books');
+    setBookFileSize('');
+    setBookDriveFileId('');
+
     setIsFormModalOpen(true);
   };
 
   // Helper to open Edit Model Form
-  const openEditForm = (manager: 'Songs' | 'Playlists' | 'Lessons' | 'News', item: any) => {
+  const openEditForm = (manager: 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books', item: any) => {
     setFormActiveManager(manager);
     setFormType('edit');
     setSelectedItemId(item.id);
@@ -315,6 +360,12 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
       setNewsUrl(item.url || '');
       setNewsType(item.type || 'News');
       setNewsDesc(item.description_mm || '');
+    } else if (manager === 'Books') {
+      setBookTitle(item.title || '');
+      setBookDesc(item.description_mm || '');
+      setBookCategory(item.category || 'N3 Books');
+      setBookFileSize(item.file_size || '');
+      setBookDriveFileId(item.drive_file_id || '');
     }
 
     setIsFormModalOpen(true);
@@ -425,6 +476,30 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
           setSuccessBanner("News/Podcast item updated successfully!");
         }
         fetchNews();
+      } else if (formActiveManager === 'Books') {
+        if (!bookTitle.trim() || !bookCategory.trim() || !bookDriveFileId.trim() || !bookFileSize.trim()) {
+          setErrorBanner("Book Title, Category, File Size and Google Drive File ID are required!");
+          return;
+        }
+
+        const bookData = {
+          title: bookTitle.trim(),
+          description_mm: bookDesc.trim(),
+          category: bookCategory.trim(),
+          file_size: bookFileSize.trim(),
+          drive_file_id: bookDriveFileId.trim(),
+        };
+
+        if (formType === 'add') {
+          const { error } = await supabase.from('books').insert([bookData]);
+          if (error) throw error;
+          setSuccessBanner("Book added successfully!");
+        } else {
+          const { error } = await supabase.from('books').update(bookData).eq('id', selectedItemId);
+          if (error) throw error;
+          setSuccessBanner("Book updated successfully!");
+        }
+        fetchBooks();
       }
 
       setIsFormModalOpen(false);
@@ -435,7 +510,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   };
 
   // Delete option
-  const handleDelete = async (manager: 'Songs' | 'Playlists' | 'Lessons' | 'News', id: string | number) => {
+  const handleDelete = async (manager: 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books', id: string | number) => {
     if (!supabase) return;
     if (!window.confirm("Are you sure you want to delete this item?")) return;
 
@@ -445,6 +520,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
       else if (manager === 'Playlists') table = 'playlists';
       else if (manager === 'Lessons') table = 'youtube_channels';
       else if (manager === 'News') table = 'news_podcasts';
+      else if (manager === 'Books') table = 'books';
 
       const { error } = await supabase.from(table).delete().eq('id', id);
       if (error) throw error;
@@ -459,6 +535,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
       }
       else if (manager === 'Lessons') fetchLessons();
       else if (manager === 'News') fetchNews();
+      else if (manager === 'Books') fetchBooks();
     } catch (err: any) {
       console.error("Delete failed:", err);
       setErrorBanner(err.message || "Failed to delete item.");
@@ -1070,6 +1147,13 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
               <FileText size={13} />
               News
             </button>
+            <button
+              onClick={() => setAdminSection('Books')}
+              className={`flex-1 min-w-[100px] py-1.5 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${adminSection === 'Books' ? 'bg-[#EF4444] text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}
+            >
+              <Book size={13} />
+              Books
+            </button>
           </div>
 
           {/* ==================== SONGS MANAGER PANEL ==================== */}
@@ -1338,7 +1422,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
 
           {/* ==================== NEWS & PODCASTS MANAGER PANEL ==================== */}
           {adminSection === 'News' && (
-            <div className="flex flex-col gap-4 animate-fade-in">
+            <div className="flex flex-col gap-4 animate-fade-in text-left">
               <div className="flex justify-between items-center sm:gap-4 flex-wrap gap-2">
                 <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-1">
                   <span>🟢</span> NEWS & PODCAST DATABASE ({newsList.length})
@@ -1393,7 +1477,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                                 <ExternalLink size={9} />
                               </a>
                             </td>
-                            <td className="py-3.5 px-4 hidden md:table-cell font-medium max-w-[200px] truncate-3 text-[11.5px] text-slate-500 leading-normal">
+                            <td className="py-3.5 px-4 hidden md:table-cell font-medium max-w-[200px] truncate text-[11.5px] text-slate-500 leading-normal">
                               {news.description_mm || <span className="italic text-slate-600">-</span>}
                             </td>
                             <td className="py-2.5 px-4 text-right">
@@ -1409,6 +1493,96 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                                   onClick={() => handleDelete('News', news.id)}
                                   className="p-1.5 rounded-lg border border-red-500/10 bg-red-500/5 hover:bg-red-500/15 text-red-400 transition"
                                   title="Delete Line Row"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ==================== BOOKS MANAGER PANEL ==================== */}
+          {adminSection === 'Books' && (
+            <div className="flex flex-col gap-4 animate-fade-in text-left">
+              <div className="flex justify-between items-center sm:gap-4 flex-wrap gap-2">
+                <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                  <span>📖</span> BOOKS DATABASE ({books.length})
+                </h4>
+                <button
+                  onClick={() => openAddForm('Books')}
+                  className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black flex items-center gap-1 shadow-md transition transform hover:scale-[1.02] active-press"
+                >
+                  <PlusCircle size={14} />
+                  Add New Book
+                </button>
+              </div>
+
+              {loadingBooks ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="animate-spin text-indigo-400" size={20} />
+                </div>
+              ) : books.length === 0 ? (
+                <div className="p-8 text-center bg-slate-100/50 dark:bg-slate-900/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                  <p className="text-xs font-bold text-slate-400">Database table 'books' returned 0 records.</p>
+                </div>
+              ) : (
+                <div className="flex flex-col border border-slate-200/65 dark:border-slate-850 bg-white dark:bg-slate-900/40 rounded-2xl overflow-hidden shadow-sm font-sans">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 dark:bg-slate-900 border-b border-lightBorder dark:border-darkBorder text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                          <th className="py-3 px-4">Book Title</th>
+                          <th className="py-3 px-4">Category</th>
+                          <th className="py-3 px-4">File Size</th>
+                          <th className="py-3 px-4">Drive File ID</th>
+                          <th className="py-3 px-4 hidden md:table-cell">Description MM</th>
+                          <th className="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-850/60 text-xs text-slate-700 dark:text-slate-300 font-bold">
+                        {books.map((book) => (
+                          <tr key={book.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition">
+                            <td className="py-3.5 px-4 font-black">
+                              <span className="text-indigo-400 text-[13px] block">{book.title}</span>
+                              <span className="text-[10px] text-slate-400 font-medium">ID: {book.id}</span>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border tracking-wide uppercase ${
+                                book.category === 'N3 Books' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 
+                                'bg-red-500/10 text-red-100 dark:text-red-400 border-red-500/20'
+                              }`}>
+                                {book.category}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4 font-mono font-bold text-[11px]">
+                              {book.file_size}
+                            </td>
+                            <td className="py-3.5 px-4 font-mono text-slate-400 text-[10px] max-w-[120px] truncate" title={book.drive_file_id}>
+                              {book.drive_file_id}
+                            </td>
+                            <td className="py-3.5 px-4 hidden md:table-cell font-medium max-w-[200px] truncate text-[11.5px] text-slate-500 leading-normal">
+                              {book.description_mm || <span className="italic text-slate-600">-</span>}
+                            </td>
+                            <td className="py-2.5 px-4 text-right">
+                              <div className="inline-flex items-center gap-1.5">
+                                <button
+                                  onClick={() => openEditForm('Books', book)}
+                                  className="p-1.5 rounded-lg border border-slate-200/55 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-indigo-400 transition"
+                                  title="Edit Book"
+                                >
+                                  <Edit size={12} />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete('Books', book.id)}
+                                  className="p-1.5 rounded-lg border border-red-500/10 bg-red-500/5 hover:bg-red-500/15 text-red-400 transition"
+                                  title="Delete Book"
                                 >
                                   <Trash2 size={12} />
                                 </button>
@@ -1738,6 +1912,71 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                       onChange={(e) => setNewsDesc(e.target.value)}
                       rows={3}
                       placeholder="Explain features in Myanmar, recommendations of study..."
+                      className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 resize-none leading-relaxed"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* BOOKS MANAGER FIELDS */}
+              {formActiveManager === 'Books' && (
+                <div className="flex flex-col gap-3.5 text-left font-sans">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Book Title</label>
+                    <input 
+                      type="text" 
+                      value={bookTitle}
+                      onChange={(e) => setBookTitle(e.target.value)}
+                      placeholder="e.g. Try! N3 Bunpou"
+                      className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</label>
+                    <select
+                      value={bookCategory}
+                      onChange={(e) => setBookCategory(e.target.value)}
+                      className="w-full text-xs font-black p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+                      required
+                    >
+                      <option value="N3 Books">N3 Books</option>
+                      <option value="မေးခွန်းဟောင်း">မေးခွန်းဟောင်း</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">File Size</label>
+                    <input 
+                      type="text" 
+                      value={bookFileSize}
+                      onChange={(e) => setBookFileSize(e.target.value)}
+                      placeholder="e.g. 14.5 MB"
+                      className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Google Drive File ID</label>
+                    <input 
+                      type="text" 
+                      value={bookDriveFileId}
+                      onChange={(e) => setBookDriveFileId(e.target.value)}
+                      placeholder="e.g. 1aBCdEfGhK_LMnoPqrStUvWxYz-123"
+                      className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-mono focus:outline-none focus:border-indigo-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Description Myanmar</label>
+                    <textarea 
+                      value={bookDesc}
+                      onChange={(e) => setBookDesc(e.target.value)}
+                      rows={3}
+                      placeholder="Explanation with Myanmar notes, description..."
                       className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 resize-none leading-relaxed"
                     />
                   </div>
