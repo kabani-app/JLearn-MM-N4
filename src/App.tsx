@@ -17,7 +17,8 @@ import {
   LayoutGrid,
   Headphones,
   BookOpen,
-  FileText
+  FileText,
+  Tv
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Word } from './types';
@@ -572,10 +573,14 @@ export default function App() {
                       Kanji
                     </button>
                     <button
-                      onClick={() => setActiveTab('Search')}
-                      className={`px-4 py-1.5 font-bold text-xs rounded-lg transition active-press ${activeTab === 'Search' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
+                      onClick={() => {
+                        setActiveTab('Grammar');
+                        setSelectedUnit(null);
+                        setSelectedKanjiUnit(null);
+                      }}
+                      className={`px-4 py-1.5 font-bold text-xs rounded-lg transition active-press ${activeTab === 'Grammar' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
                     >
-                      Dictionary Search
+                      Grammar
                     </button>
                     <button
                       onClick={() => setActiveTab('Listening')}
@@ -629,9 +634,9 @@ export default function App() {
                       setSelectedUnit(null);
                       setSelectedKanjiUnit(null);
                     }}
-                    className={`h-8.5 px-3 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm active-press ${activeTab === 'J-Media' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/25'}`}
+                    className={`h-9 px-3 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm active-press ${activeTab === 'J-Media' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/25'}`}
                   >
-                    <span className="text-xs">📺</span>
+                    <Tv size={14} style={{ color: '#EF4444' }} />
                     <span>J-Media</span>
                   </button>
                 </div>
