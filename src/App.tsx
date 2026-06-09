@@ -2011,18 +2011,18 @@ export default function App() {
                         {/* Compact Header Trigger Summary */}
                         <div
                           onClick={() => setExpandedGrammarId(isExpanded ? null : item.id)}
-                          className="flex items-center justify-between p-4 cursor-pointer select-none"
+                          className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 cursor-pointer select-none gap-1.5 sm:gap-0"
                         >
-                          <div className="flex items-baseline gap-2 min-w-0">
-                            <span className="text-sm font-extrabold text-indigo-650 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="text-sm font-extrabold text-indigo-650 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded shrink-0">
                               {item.id}
                             </span>
-                            <span className="font-extrabold text-base sm:text-lg text-slate-850 dark:text-slate-100 truncate">
+                            <span className="font-extrabold text-base sm:text-lg text-slate-850 dark:text-slate-100">
                               {item.pattern}
                             </span>
                           </div>
                           
-                          <div className="flex items-center gap-2 shrink-0 ml-4">
+                          <div className="flex items-center justify-between sm:justify-end gap-2 sm:shrink-0 sm:ml-4">
                             <span className="text-xs sm:text-sm font-extrabold text-indigo-650 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-lg">
                               {item.meaning_mm}
                             </span>
