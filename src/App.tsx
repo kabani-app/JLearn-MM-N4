@@ -1530,7 +1530,7 @@ export default function App() {
                               </button>
                             </div>
                             <div className="flex items-baseline gap-2">
-                              <h5 className="text-lg font-black text-white">{currentKanji.example_word}</h5>
+                              <h5 className="text-2xl font-black text-white">{currentKanji.example_word}</h5>
                               <span className="text-xs text-indigo-100 font-bold">【{currentKanji.example_reading}】</span>
                             </div>
                             <p className="text-xs font-semibold text-amber-200 border-t border-white/5 pt-1.5">{currentKanji.example_meaning}</p>
@@ -1549,7 +1549,7 @@ export default function App() {
                                   className="bg-black/15 hover:bg-black/25 border border-white/5 rounded-xl p-2.5 flex flex-col gap-1 transition-all"
                                 >
                                   <div className="flex justify-between items-baseline">
-                                    <h6 className="text-lg font-black text-white">{comp.word}</h6>
+                                    <h6 className="text-2xl font-black text-white">{comp.word}</h6>
                                     <span className="text-xs text-indigo-300 font-bold">{comp.reading}</span>
                                   </div>
                                   <p className="text-xs font-semibold text-amber-200">{comp.meaning_mm}</p>

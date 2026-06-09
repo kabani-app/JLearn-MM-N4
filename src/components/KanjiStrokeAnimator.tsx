@@ -143,7 +143,7 @@ export const KanjiStrokeAnimator: React.FC<KanjiStrokeAnimatorProps> = ({ kanji 
   return (
     <div className="flex flex-col items-center gap-2 mt-1">
       {/* Container display box */}
-      <div className="w-24 h-24 relative flex items-center justify-center bg-slate-50 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/60 rounded-2xl overflow-hidden shadow-inner p-2">
+      <div className="w-44 h-44 relative flex items-center justify-center bg-slate-50 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/60 rounded-2xl overflow-hidden shadow-inner p-2">
         {loading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xs z-10">
             <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
