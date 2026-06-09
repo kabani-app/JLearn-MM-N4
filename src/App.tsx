@@ -68,7 +68,7 @@ export default function App() {
     };
   });
 
-  const [activeTab, setActiveTab] = useState<'Home' | 'Kanji' | 'Search' | 'Listening' | 'Books'>('Home');
+  const [activeTab, setActiveTab] = useState<'Home' | 'Kanji' | 'Search' | 'Listening' | 'Books' | 'J-Media'>('Home');
   const [activePart, setActivePart] = useState<'Part 1' | 'Part 2'>('Part 1');
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
 
@@ -361,9 +361,9 @@ export default function App() {
   }, [currentIndex, activeList, selectedUnit, isAutoPlaying, isListView]);
 
   // Load Unit
-  const openUnit = (unitName: string) => {
+  const openUnit = (unitName: string, initialIndex: number = 0) => {
     setSelectedUnit(unitName);
-    setCurrentIndex(0);
+    setCurrentIndex(initialIndex);
     setIsFlipped(false);
     setIsShuffle(false);
     setIsAutoPlaying(false);
@@ -385,28 +385,25 @@ export default function App() {
     setActiveTab('Home');
   };
 
-  // Last Studied Unit Launcher
-  const launchLastStudy = () => {
-    const tab = localStorage.getItem('lastStudy_tab') || 'meaning';
-    if (tab === 'meaning') {
-      const defaultUnit = Object.keys(vocabData['Part 1'])[0] || '';
-      const lastUnit = localStorage.getItem('lastStudy_meaning_unit') || defaultUnit;
-      const index = parseInt(localStorage.getItem('lastStudy_meaning_index') || '0', 10);
-      
-      setActiveTab('Home');
-      if (lastUnit) {
-        openUnit(lastUnit);
-        setCurrentIndex(index);
-      }
-    } else {
-      const lastKanjiUnitRaw = localStorage.getItem('lastStudy_kanji_unit') || 'All';
-      const lastKanjiUnit = lastKanjiUnitRaw === 'All' ? 'All' : (parseInt(lastKanjiUnitRaw, 10) || 'All');
-      const index = parseInt(localStorage.getItem('lastStudy_kanji_index') || '0', 10);
-      
-      setActiveTab('Kanji');
-      setSelectedKanjiUnit(lastKanjiUnit as number | 'All');
-      setCurrentKanjiIndex(index);
+
+
+  const handleMeaningTabClick = () => {
+    setActiveTab('Home');
+    const defaultUnit = Object.keys(vocabData['Part 1'])[0] || '';
+    const lastUnit = localStorage.getItem('lastStudy_meaning_unit') || defaultUnit;
+    const index = parseInt(localStorage.getItem('lastStudy_meaning_index') || '0', 10);
+    if (lastUnit) {
+      openUnit(lastUnit, index);
     }
+  };
+
+  const handleKanjiTabClick = () => {
+    setActiveTab('Kanji');
+    const lastKanjiUnitRaw = localStorage.getItem('lastStudy_kanji_unit') || 'All';
+    const lastKanjiUnit = lastKanjiUnitRaw === 'All' ? 'All' : (parseInt(lastKanjiUnitRaw, 10) || 'All');
+    const index = parseInt(localStorage.getItem('lastStudy_kanji_index') || '0', 10);
+    setSelectedKanjiUnit(lastKanjiUnit as number | 'All');
+    setCurrentKanjiIndex(index);
   };
 
   const toggleLearned = (wordId: string) => {
@@ -568,13 +565,13 @@ export default function App() {
                   {/* Desktop Navigation Tabs */}
                   <div className="hidden lg:flex items-center gap-2 bg-slate-100 dark:bg-slate-900/60 px-1 py-1 rounded-xl border border-slate-200/40">
                     <button
-                      onClick={() => setActiveTab('Home')}
+                      onClick={handleMeaningTabClick}
                       className={`px-4 py-1.5 font-bold text-xs rounded-lg transition active-press ${activeTab === 'Home' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
                     >
                       Meaning
                     </button>
                     <button
-                      onClick={() => setActiveTab('Kanji')}
+                      onClick={handleKanjiTabClick}
                       className={`px-4 py-1.5 font-bold text-xs rounded-lg transition active-press ${activeTab === 'Kanji' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
                     >
                       Kanji
@@ -626,13 +623,16 @@ export default function App() {
                     <Settings size={16} />
                   </button>
 
-                  {/* Last Study */}
+                  {/* J-Media */}
                   <button
-                    onClick={launchLastStudy}
-                    className="h-8.5 px-3 bg-indigo-600 text-white font-semibold text-xs rounded-xl flex items-center gap-1 hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 dark:shadow-none active-press"
+                    onClick={() => {
+                      setActiveTab('J-Media');
+                      setSelectedUnit(null);
+                    }}
+                    className={`h-8.5 px-3 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm active-press ${activeTab === 'J-Media' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/25'}`}
                   >
-                    <Play size={12} className="fill-current" />
-                    <span>Last Study</span>
+                    <span className="text-xs">📺</span>
+                    <span>J-Media</span>
                   </button>
                 </div>
               </>
@@ -1567,9 +1567,26 @@ export default function App() {
           ) : activeTab === 'Listening' ? (
             /* --- LISTENING PRACTICE SCREEN --- */
             <ListeningTab />
-          ) : (
+          ) : activeTab === 'Books' ? (
             /* --- BOOKS LIBRARY SCREEN --- */
             <BooksTab />
+          ) : (
+            /* --- J-MEDIA SCREEN --- */
+            <div className="flex flex-col items-center justify-center py-20 px-6 min-h-[400px] text-center bg-slate-900 border border-slate-800 rounded-3xl shadow-xl max-w-lg mx-auto gap-4">
+              <div className="w-16 h-16 rounded-full bg-indigo-950 flex items-center justify-center text-3xl shadow-lg border border-indigo-500/20 animate-pulse">
+                📺
+              </div>
+              <h3 className="text-xl font-black text-slate-100 uppercase tracking-widest">
+                J-Media
+              </h3>
+              <div className="h-[2px] w-12 bg-indigo-500/30 rounded-full" />
+              <p className="text-sm font-bold text-amber-400">
+                Coming Soon...
+              </p>
+              <p className="text-xs text-slate-400 max-w-sm leading-relaxed px-4">
+                We are preparing Japanese video, audio, and news media content here. Check back later!
+              </p>
+            </div>
           )}
 
           </div>
@@ -1580,7 +1597,7 @@ export default function App() {
           <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full sm:max-w-md lg:hidden z-40 bg-lightSurface dark:bg-darkSurface border-t border-lightBorder dark:border-darkBorder px-4 py-1 pb-1.5 flex items-center justify-around shadow-[0_-4px_12px_rgba(0,0,0,0.05)] transition-colors duration-200">
             {/* Home Tab */}
             <button
-              onClick={() => setActiveTab('Home')}
+              onClick={handleMeaningTabClick}
               className={`flex flex-col items-center gap-0.5 p-1 rounded-lg transition ${activeTab === 'Home' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : 'text-slate-400 hover:text-slate-600'}`}
             >
               <Book size={16} className={activeTab === 'Home' ? 'stroke-[2.5px]' : ''} />
@@ -1589,7 +1606,7 @@ export default function App() {
 
             {/* Kanji Tab */}
             <button
-              onClick={() => setActiveTab('Kanji')}
+              onClick={handleKanjiTabClick}
               className={`flex flex-col items-center gap-0.5 p-1 rounded-lg transition ${activeTab === 'Kanji' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : 'text-slate-400 hover:text-slate-600'}`}
             >
               <Sparkles size={16} className={activeTab === 'Kanji' ? 'stroke-[2.5px]' : ''} />
