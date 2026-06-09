@@ -1995,6 +1995,15 @@ export default function App() {
                         {/* Collapsible Details Body */}
                         {isExpanded && (
                           <div className="px-4 pb-5 pt-1 border-t border-slate-100 dark:border-slate-900 border-dashed animate-fade-in flex flex-col gap-4">
+                            {/* Color Legend */}
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 p-2 px-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-lightBorder dark:border-darkBorder text-xs font-bold select-none">
+                              <span className="text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px] mr-1">Guide:</span>
+                              <span className="flex items-center gap-1.5 text-slate-800 dark:text-slate-100"><span className="text-[#FF6B6B]">🔴</span> Grammar</span>
+                              <span className="flex items-center gap-1.5 text-slate-800 dark:text-slate-100"><span className="text-[#60A5FA]">🔵</span> Verb</span>
+                              <span className="flex items-center gap-1.5 text-slate-800 dark:text-slate-100"><span className="text-[#FBBF24]">🟡</span> Noun</span>
+                              <span className="flex items-center gap-1.5 text-slate-800 dark:text-slate-100"><span className="text-[#34D399]">🟢</span> Particle</span>
+                            </div>
+
                             <div>
                               <span className="text-[10px] font-black uppercase text-indigo-500 tracking-wider">Reading</span>
                               <p className="font-bold text-sm text-slate-700 dark:text-slate-300 font-mono mt-0.5">
@@ -2011,7 +2020,7 @@ export default function App() {
 
                             <div>
                               <span className="text-[10px] font-black uppercase text-indigo-500 tracking-wider font-sans">Explanation</span>
-                              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/40 p-10 rounded-xl border border-slate-100 dark:border-slate-850 mt-1 leading-relaxed font-bold">
+                              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/40 p-4 rounded-xl border border-slate-100 dark:border-slate-850 mt-1 leading-relaxed font-bold">
                                 {item.explanation_mm}
                               </p>
                             </div>
@@ -2024,8 +2033,24 @@ export default function App() {
                                     key={exIdx} 
                                     className="p-3 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-100/60 dark:border-slate-800/60 rounded-xl"
                                   >
-                                    <p className="text-base sm:text-[17px] font-extrabold text-slate-800 dark:text-slate-100 tracking-wide">
-                                      {ex.japanese}
+                                    <p className="text-base sm:text-[17px] font-extrabold tracking-wide leading-relaxed">
+                                      {ex.japanese_parts && ex.japanese_parts.length > 0 ? (
+                                        ex.japanese_parts.map((part, pIdx) => {
+                                          let colorClass = "text-slate-800 dark:text-slate-100";
+                                          if (part.type === 'grammar') colorClass = "text-[#FF6B6B]";
+                                          else if (part.type === 'verb') colorClass = "text-[#60A5FA]";
+                                          else if (part.type === 'noun') colorClass = "text-[#FBBF24]";
+                                          else if (part.type === 'particle') colorClass = "text-[#34D399]";
+                                          else if (part.type === 'normal') colorClass = "text-slate-800 dark:text-white";
+                                          return (
+                                            <span key={pIdx} className={colorClass}>
+                                              {part.text}
+                                            </span>
+                                          );
+                                        })
+                                      ) : (
+                                        <span className="text-slate-800 dark:text-slate-100">{ex.japanese}</span>
+                                      )}
                                     </p>
                                     <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-mono font-medium">
                                       {ex.reading}
