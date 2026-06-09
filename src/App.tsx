@@ -1366,8 +1366,14 @@ export default function App() {
                           </div>
                         </div>
 
-                        {/* Back Content Area */}
-                        <div className="flex-1 flex flex-col justify-center items-center py-2 max-w-sm w-full gap-4">
+                        {/* Back Content Area (Scrollable to support compound words) */}
+                        <div 
+                          className="flex-1 overflow-y-auto w-full flex flex-col items-center py-2 max-w-sm gap-4 pr-1 scrollbar-thin scrollbar-thumb-white/20"
+                          onClick={(e) => {
+                            // Prevent touching/clicking lists or examples from accidentally flipping the card
+                            e.stopPropagation();
+                          }}
+                        >
                           
                           {/* Large Myanmar Translation */}
                           <div className="flex flex-col items-center gap-1">
@@ -1410,6 +1416,29 @@ export default function App() {
                               <span className="text-xs text-indigo-100 font-bold">【{currentKanji.example_reading}】</span>
                             </div>
                             <p className="text-xs font-semibold text-amber-200 border-t border-white/5 pt-1.5">{currentKanji.example_meaning}</p>
+                          </div>
+
+                          {/* Compound Words Section */}
+                          <div className="w-full flex flex-col gap-2 text-left mt-1 border-t border-white/10 pt-3">
+                            <span className="text-[9px] font-black tracking-widest uppercase text-indigo-200">
+                              COMPOUND WORDS
+                            </span>
+                            
+                            <div className="flex flex-col gap-2">
+                              {currentKanji.compounds?.map((comp, idx) => (
+                                <div 
+                                  key={idx} 
+                                  className="bg-black/15 hover:bg-black/25 border border-white/5 rounded-xl p-2.5 flex flex-col gap-1 transition-all"
+                                >
+                                  <div className="flex justify-between items-baseline">
+                                    <h6 className="text-lg font-black text-white">{comp.word}</h6>
+                                    <span className="text-xs text-indigo-300 font-bold">{comp.reading}</span>
+                                  </div>
+                                  <p className="text-xs font-semibold text-amber-200">{comp.meaning_mm}</p>
+                                  <p className="text-[11px] text-white/70 italic">{comp.meaning_en}</p>
+                                </div>
+                              ))}
+                            </div>
                           </div>
 
                         </div>

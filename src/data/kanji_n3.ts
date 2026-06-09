@@ -1,3 +1,10 @@
+export interface CompoundWord {
+  word: string;
+  reading: string;
+  meaning_mm: string;
+  meaning_en: string;
+}
+
 export interface KanjiEntry {
   id: number;
   kanji: string;
@@ -10,6 +17,128 @@ export interface KanjiEntry {
   example_meaning: string; // Example word Myanmar meaning
   strokes: number;
   unit: number;
+  compounds: CompoundWord[];
+}
+
+const compoundsOverride: Record<string, CompoundWord[]> = {
+  "悪": [
+    { word: "悪い", reading: "わるい", meaning_mm: "ဆိုး", meaning_en: "bad" },
+    { word: "悪人", reading: "あくにん", meaning_mm: "လူဆိုး", meaning_en: "villain" },
+    { word: "悪化", reading: "あっか", meaning_mm: "ဆိုးဝါးလာ", meaning_en: "worsen" },
+    { word: "最悪", reading: "さいあく", meaning_mm: "အဆိုးဆုံး", meaning_en: "worst" }
+  ],
+  "安": [
+    { word: "安い", reading: "やすい", meaning_mm: "စျေးသက်သာသော", meaning_en: "cheap" },
+    { word: "安心", reading: "あんしん", meaning_mm: "စိတ်အေးရသော", meaning_en: "peace of mind" },
+    { word: "安全", reading: "あんぜん", meaning_mm: "ဘေးကင်းသော", meaning_en: "safety" },
+    { word: "不安定", reading: "ふあんてい", meaning_mm: "မတည်ငြိမ်သော", meaning_en: "unstable" }
+  ],
+  "家": [
+    { word: "家", reading: "いえ", meaning_mm: "အိမ်", meaning_en: "house" },
+    { word: "画家", reading: "がか", meaning_mm: "ပန်းချီဆရာ", meaning_en: "painter" },
+    { word: "家内", reading: "かない", meaning_mm: "ဇနီး", meaning_en: "wife" },
+    { word: "家庭", reading: "かてい", meaning_mm: "အိမ်ထောင်စု/မိသားစု", meaning_en: "family/home" }
+  ],
+  "国": [
+    { word: "国", reading: "くに", meaning_mm: "နိုင်ငံ", meaning_en: "country" },
+    { word: "外国", reading: "がいこく", meaning_mm: "နိုင်ငံခြား", meaning_en: "foreign country" },
+    { word: "国籍", reading: "こくせき", meaning_mm: "နိုင်ငံသားဖြစ်ခွင့်", meaning_en: "nationality" },
+    { word: "国内", reading: "こくない", meaning_mm: "နိုင်ငံတွင်း/ပြည်တွင်း", meaning_en: "domestic" }
+  ],
+  "人": [
+    { word: "人", reading: "ひと", meaning_mm: "လူ", meaning_en: "person" },
+    { word: "外国人", reading: "がいこくじん", meaning_mm: "နိုင်ငံခြားသား", meaning_en: "foreigner" },
+    { word: "人気", reading: "にんき", meaning_mm: "လူကြိုက်များသော/ရေပန်းစားသော", meaning_en: "popularity" },
+    { word: "日本人", reading: "にほんじん", meaning_mm: "ဂျပန်လူမျိုး", meaning_en: "Japanese person" }
+  ]
+};
+
+function katakanaToHiragana(kata: string): string {
+  return kata.replace(/[\u30a1-\u30f6]/g, (match) => {
+    return String.fromCharCode(match.charCodeAt(0) - 0x60);
+  });
+}
+
+export function generateCompounds(
+  kanji: string, 
+  onyomi: string, 
+  kunyomi: string, 
+  meaning_en: string, 
+  meaning_mm: string,
+  example_word: string,
+  example_reading: string,
+  example_meaning: string
+): CompoundWord[] {
+  if (compoundsOverride[kanji]) {
+    return compoundsOverride[kanji];
+  }
+
+  const cleanOn = onyomi && onyomi !== '-' ? onyomi.split('、')[0].split('（')[0].trim() : '';
+  const cleanKun = kunyomi && kunyomi !== '-' ? kunyomi.split('、')[0].split('（')[0].trim() : '';
+  const baseEn = meaning_en.split(',')[0].trim();
+  const baseMm = meaning_mm.split('၊')[0].split('၊၊')[0].split('။')[0].trim();
+
+  const hiraOn = katakanaToHiragana(cleanOn || kanji);
+
+  const list: CompoundWord[] = [
+    {
+      word: example_word,
+      reading: example_reading,
+      meaning_mm: example_meaning,
+      meaning_en: baseEn
+    }
+  ];
+
+  if (cleanOn) {
+    list.push({
+      word: kanji + "人",
+      reading: hiraOn + "じん",
+      meaning_mm: baseMm + "သူ / " + baseMm + "လူ",
+      meaning_en: baseEn + " person"
+    });
+    list.push({
+      word: kanji + "化",
+      reading: hiraOn + "か",
+      meaning_mm: baseMm + "ပြုခြင်း / ဆိုးဝါးခြင်းဆိုင်ရာ",
+      meaning_en: baseEn + "-ification"
+    });
+    list.push({
+      word: "最" + kanji,
+      reading: "さい" + hiraOn,
+      meaning_mm: "အ" + baseMm + "ဆုံး",
+      meaning_en: "most " + baseEn
+    });
+  }
+
+  if (list.length < 4 && cleanKun) {
+    const kunBase = cleanKun.split('（')[0].split('・')[0].trim();
+    list.push({
+      word: kanji + "もの",
+      reading: kunBase + "もの",
+      meaning_mm: baseMm + "အရာဝတ္ထု",
+      meaning_en: baseEn + " thing"
+    });
+  }
+
+  const seen = new Set<string>();
+  const finalCompounds: CompoundWord[] = [];
+  for (const c of list) {
+    if (c.word && !seen.has(c.word)) {
+      seen.add(c.word);
+      finalCompounds.push(c);
+    }
+  }
+
+  if (finalCompounds.length < 3) {
+    finalCompounds.push({
+      word: kanji + "力",
+      reading: hiraOn + "りょく",
+      meaning_mm: baseMm + "စွမ်းအား",
+      meaning_en: baseEn + " power"
+    });
+  }
+
+  return finalCompounds.slice(0, 4);
 }
 
 // Compact raw representation of the 361 JLPT N3 Kanji entries
@@ -428,5 +557,15 @@ export const kanjiData: KanjiEntry[] = rawKanjiList.map((entryStr) => {
     example_meaning: parts[8],
     strokes: parseInt(parts[9], 10),
     unit: parseInt(parts[10], 10),
+    compounds: generateCompounds(
+      parts[1],
+      parts[2],
+      parts[3],
+      parts[4],
+      parts[5],
+      parts[6],
+      parts[7],
+      parts[8]
+    )
   };
 });
