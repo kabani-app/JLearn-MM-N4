@@ -1,3 +1,6 @@
+import part1Content from './n3_part1.txt?raw';
+import part2Content from './n3_part2.txt?raw';
+
 export interface CompoundWord {
   word: string;
   reading: string;
@@ -20,11 +23,65 @@ export interface KanjiEntry {
   compounds: CompoundWord[];
 }
 
+// Map of common N3 vocabulary items to their correct English translations
+const vocabToEnglish: Record<string, string> = {
+  // Unit 1-20
+  "悪い": "bad", "悪人": "villain/bad person", "悪化": "worsen/deterioration", "最悪": "worst",
+  "安い": "cheap/inexpensive", "安心": "peace of mind", "安全": "safety/security", "安定": "stability", "不安定": "unstable",
+  "暗い": "dark", "暗記": "memorization", "暗示": "hint/suggestion", "明暗": "light and dark", "真っ暗": "pitch black",
+  "医者": "doctor", "医学": "medical science", "医院": "clinic", "医師": "physician/doctor",
+  "意見": "opinion", "意識": "consciousness", "意図": "intention", "注意": "caution/attention", "意向": "intent/wish",
+  "育てる": "to raise/grow", "教育": "education", "育つ": "to be raised/grow up", "体育": "physical training",
+  "社員": "company staff", "会員": "member", "全員": "everyone", "店員": "shop assistant", "定員": "capacity status",
+  "引き出し": "drawer", "引く": "to pull", "割引": "discount", "長引く": "to be prolonged",
+  "病院": "hospital", "入院": "hospitalization", "退院": "discharged from hospital", "大学院": "graduate school",
+  "運転": "driving", "運動": "exercise/movement", "運ぶ": "to carry/transport", "幸運": "good luck", "運賃": "passenger fare",
+  "栄養": "nutrition", "栄える": "to prosper", "光栄": "honorable/glory", "繁栄": "prosperity",
+  "駅員": "station staff", "駅前": "in front of station", "東京駅": "Tokyo Station",
+  "円い": "round", "一万円": "ten thousand yen", "円高": "strong yen", "だ円": "ellipse/oval",
+  "公園": "park", "動物園": "zoo", "遊園地": "amusement park", "園芸": "gardening",
+  "遠い": "far/distant", "遠足": "excursion/outing", "遠回り": "detour", "望遠鏡": "telescope",
+  "横断": "crossing", "横": "side/horizontal", "横書き": "horizontal writing", "横切る": "to cross",
+  "屋上": "rooftop", "本屋": "bookstore", "部屋": "room", "八百屋": "greengrocer", "家屋": "house/building",
+  "温度": "temperature", "温泉": "hot spring", "温かい": "warm", "温室": "greenhouse", "体温計": "thermometer",
+  "音楽": "music", "発音": "pronunciation", "本音": "real intention", "雑音": "noise", "消音": "mute/silence",
+  "科学": "science", "教科書": "textbook", "科目": "study subject", "学科": "department",
+  
+  // Unit 21-40
+  "歌手": "singer", "歌詞": "song lyrics", "歌声": "singing voice", "歌う": "to sing", "国歌": "national anthem",
+  "川": "river", "小川": "stream/brook", "川岸": "riverbank", "荒川": "Arakawa River",
+  "映画": "movie", "画数": "stroke count", "画面": "screen/monitor", "計画": "plan/project", "画家": "painter",
+  "今回": "this time", "次回": "next time", "回数": "frequency/times", "回転": "rotation/spin", "まわる": "to turn",
+  "会議": "meeting", "会社": "company", "会話": "conversation", "出会い": "encounter", "出会う": "to meet up",
+  "海外": "overseas", "海水浴": "sea bathing", "海岸": "coast/beach", "日本海": "Sea of Japan",
+  "世界": "world", "業界": "industry", "限界": "limit/boundary", "政界": "political world",
+  "皆さん": "everyone", "皆様": "everyone (polite)",
+  "絵の具": "paints/coloring trial", "絵画": "painting", "絵本": "picture book",
+  "開始": "start/commencement", "開く": "to open", "開発": "development", "開店": "shop opening",
+  "階段": "stairs", "一段": "one step", "二階": "second floor", "段階": "stage/phase",
+  "外国": "foreign country", "出国": "going abroad", "国籍": "nationality", "国内": "domestic", "帰国": "return to home country",
+  "外出": "going out", "意外": "unexpected", "例外": "exception", "郊外": "suburbs",
+  "公害": "pollution", "被害": "damage/harm", "災害": "disaster", "大災害": "catastrophe", "害虫": "harmful insect",
+  "学生": "student", "大学": "university", "学校": "school", "見学": "study field trip", "奨学金": "scholarship",
+  "楽器": "musical instrument", "気楽": "easygoing/comfortable", "楽しむ": "to enjoy", "楽な": "comfortable",
+  "活動": "activity", "生活": "lifestyle", "活発": "active/lively", "活用": "practical use",
+  "急行": "express train", "急ぐ": "to hurry", "急増": "rapid increase", "緊急": "emergency", "急な": "sudden/steep",
+  "漢字": "kanji", "漢方薬": "Chinese herbal medicine", "漢文": "Classical Chinese",
+  "時間": "time", "間": "between", "期間": "period of time", "人間": "human", "間違い": "mistake",
+  "関係": "relationship", "関心": "interest", "機関": "institution/engine", "玄関": "entry foyer", "関する": "regarding",
+  
+  // Custom Fallback helpers / Common N3 words
+  "旅行": "travel/trip", "普通": "normal/local", "専門": "specialty", "卒業": "graduation", "決定": "decision",
+  "試験": "examination", "事実": "fact/truth", "終了": "completion/end", "重要": "important/vital", "説明": "explanation",
+  "危険": "danger", "健康": "health", "感謝": "gratitude/thanks", "想像": "imagination", "増加": "increase"
+};
+
+// Custom definitions for complex kanji or kanji with low vocabulary text file occurrences
 const compoundsOverride: Record<string, CompoundWord[]> = {
   "悪": [
-    { word: "悪い", reading: "わるい", meaning_mm: "ဆိုး", meaning_en: "bad" },
+    { word: "悪い", reading: "わるい", meaning_mm: "ဆိုးသော", meaning_en: "bad" },
     { word: "悪人", reading: "あくにん", meaning_mm: "လူဆိုး", meaning_en: "villain" },
-    { word: "悪化", reading: "あっか", meaning_mm: "ဆိုးဝါးလာ", meaning_en: "worsen" },
+    { word: "悪化", reading: "あっか", meaning_mm: "ဆိုးဝါးလာခြင်း", meaning_en: "worsen/deteriorate" },
     { word: "最悪", reading: "さいあく", meaning_mm: "အဆိုးဆုံး", meaning_en: "worst" }
   ],
   "安": [
@@ -33,25 +90,118 @@ const compoundsOverride: Record<string, CompoundWord[]> = {
     { word: "安全", reading: "あんぜん", meaning_mm: "ဘေးကင်းသော", meaning_en: "safety" },
     { word: "不安定", reading: "ふあんてい", meaning_mm: "မတည်ငြိမ်သော", meaning_en: "unstable" }
   ],
+  "暗": [
+    { word: "暗い", reading: "くらい", meaning_mm: "မှောင်သော", meaning_en: "dark" },
+    { word: "暗記", reading: "あんき", meaning_mm: "အလွတ်ကျက်ခြင်း", meaning_en: "memorization" },
+    { word: "暗示", reading: "あんじ", meaning_mm: "အရိပ်အမြွက်ပြခြင်း", meaning_en: "hint/suggestion" },
+    { word: "明暗", reading: "めいあん", meaning_mm: "အလင်းနှင့်အမှောင်", meaning_en: "light and dark" }
+  ],
   "家": [
-    { word: "家", reading: "いえ", meaning_mm: "အိမ်", meaning_en: "house" },
-    { word: "画家", reading: "がか", meaning_mm: "ပန်းချီဆရာ", meaning_en: "painter" },
-    { word: "家内", reading: "かない", meaning_mm: "ဇနီး", meaning_en: "wife" },
-    { word: "家庭", reading: "かてい", meaning_mm: "အိမ်ထောင်စု/မိသားစု", meaning_en: "family/home" }
+    { word: "家族", reading: "かぞく", meaning_mm: "မိသားစု", meaning_en: "family" },
+    { word: "家庭", reading: "かてい", meaning_mm: "အိမ်ထောင်စု/မိသားစု", meaning_en: "family/home" },
+    { word: "家具", reading: "かぐ", meaning_mm: "အိမ်ထောင်ပရိဘောဂ", meaning_en: "furniture" },
+    { word: "画家", reading: "がか", meaning_mm: "ပန်းချီဆရာ", meaning_en: "painter" }
   ],
-  "国": [
-    { word: "国", reading: "くに", meaning_mm: "နိုင်ငံ", meaning_en: "country" },
-    { word: "外国", reading: "がいこく", meaning_mm: "နိုင်ငံခြား", meaning_en: "foreign country" },
-    { word: "国籍", reading: "こくせき", meaning_mm: "နိုင်ငံသားဖြစ်ခွင့်", meaning_en: "nationality" },
-    { word: "国内", reading: "こくない", meaning_mm: "နိုင်ငံတွင်း/ပြည်တွင်း", meaning_en: "domestic" }
+  "歌": [
+    { word: "歌手", reading: "かしゅ", meaning_mm: "အဆိုတော်", meaning_en: "singer" },
+    { word: "歌詞", reading: "かし", meaning_mm: "သီချင်းစာသား", meaning_en: "lyrics" },
+    { word: "歌声", reading: "うたごえ", meaning_mm: "သီချင်းဆိုသံ", meaning_en: "singing voice" },
+    { word: "国歌", reading: "こっか", meaning_mm: "နိုင်ငံတော်သီချင်း", meaning_en: "national anthem" }
   ],
-  "人": [
-    { word: "人", reading: "ひと", meaning_mm: "လူ", meaning_en: "person" },
-    { word: "外国人", reading: "がいこくじん", meaning_mm: "နိုင်ငံခြားသား", meaning_en: "foreigner" },
-    { word: "人気", reading: "にんき", meaning_mm: "လူကြိုက်များသော/ရေပန်းစားသော", meaning_en: "popularity" },
-    { word: "日本人", reading: "にほんじん", meaning_mm: "ဂျပန်လူမျိုး", meaning_en: "Japanese person" }
+  "坂": [
+    { word: "急坂", reading: "きゅうざか", meaning_mm: "မတ်စောက်သောကုန်း", meaning_en: "steep slope" },
+    { word: "坂道", reading: "さかみち", meaning_mm: "ကုန်းစောင်းလမ်း", meaning_en: "sloping road" },
+    { word: "上り坂", reading: "のぼりざか", meaning_mm: "ကုန်းတက်လမ်း", meaning_en: "uphill slope" },
+    { word: "下り坂", reading: "くだりざか", meaning_mm: "ကုန်းဆင်းလမ်း", meaning_en: "downhill slope" }
+  ],
+  "板": [
+    { word: "看板", reading: "かんばん", meaning_mm: "ဆိုင်းဘုတ်", meaning_en: "board/billboard" },
+    { word: "黒板", reading: "こくばん", meaning_mm: "ကျောက်သင်ပုန်း", meaning_en: "blackboard" },
+    { word: "案内板", reading: "あんないばん", meaning_mm: "လမ်းညွှန်ဆိုင်းဘုတ်", meaning_en: "information board" },
+    { word: "まな板", reading: "まないた", meaning_mm: "စဉ်းတီတုံး", meaning_en: "cutting board" }
+  ],
+  "版": [
+    { word: "限定版", reading: "げんていばん", meaning_mm: "အကန့်အသတ်ထုတ်လုပ်မှုဗားရှင်း", meaning_en: "limited edition" },
+    { word: "出版", reading: "しゅっぱん", meaning_mm: "ပုံနှိပ်ထုတ်ဝေခြင်း", meaning_en: "publishing" },
+    { word: "改訂版", reading: "かいていばん", meaning_mm: "မွမ်းမံပြင်ဆင်ထားသောဗားရှင်း", meaning_en: "revised edition" },
+    { word: "初版", reading: "しょはん", meaning_mm: "ပထမအကြိမ်ထုတ်ဝေမှု", meaning_en: "first edition" }
+  ],
+  "秒": [
+    { word: "一秒", reading: "いちびょう", meaning_mm: "တစ်စက္ကန့်", meaning_en: "one second" },
+    { word: "毎秒", reading: "まいびょう", meaning_mm: "စက္ကန့်တိုင်း", meaning_en: "every second" },
+    { word: "数秒", reading: "すうびょう", meaning_mm: "စက္ကန့်အနည်းငယ်", meaning_en: "few seconds" },
+    { word: "秒針", reading: "びょうしん", meaning_mm: "စက္ကန့်လက်တံ", meaning_en: "second hand" }
+  ],
+  "倍": [
+    { word: "二倍", reading: "にばい", meaning_mm: "နှစ်ဆ", meaning_en: "double" },
+    { word: "三倍", reading: "さんばい", meaning_mm: "သုံးဆ", meaning_en: "triple" },
+    { word: "倍率", reading: "ばいりつ", meaning_mm: "ချဲ့ထွင်မှုနှုန်း/အချိုး", meaning_en: "magnification" },
+    { word: "数倍", reading: "すうばい", meaning_mm: "အဆပေါင်းများစွာ", meaning_en: "several times" }
+  ],
+  "惑": [
+    { word: "迷惑", reading: "めいわく", meaning_mm: "နှောင့်ယှက်မှုဖြစ်စေသော", meaning_en: "troublesome/nuisance" },
+    { word: "疑惑", reading: "ぎわく", meaning_mm: "သံသယဖြစ်မှု", meaning_en: "suspicion" },
+    { word: "戸惑う", reading: "とမどう", meaning_mm: "စိတ်ရှုပ်ထွေးသည်", meaning_en: "be bewildered" },
+    { word: "惑星", reading: "わくせい", meaning_mm: "ဂြိုဟ်", meaning_en: "planet" }
+  ],
+  "零": [
+    { word: "零", reading: "ぜろ", meaning_mm: "သုည", meaning_en: "zero" },
+    { word: "零点", reading: "れいてん", meaning_mm: "သုညမှတ်", meaning_en: "zero points" },
+    { word: "零時", reading: "れいじ", meaning_mm: "သုညနာရီ (ညဉ့်သန်းခေါင်)", meaning_en: "midnight" },
+    { word: "零下", reading: "れいか", meaning_mm: "ရေခဲမှတ်အောက်ဒီဂရီ", meaning_en: "below zero" }
+  ],
+  "肺": [
+    { word: "肺炎", reading: "はいえん", meaning_mm: "အဆုတ်ရောင်ရောဂါ", meaning_en: "pneumonia" },
+    { word: "肺がん", reading: "はいがん", meaning_mm: "အဆုတ်ကင်ဆာ", meaning_en: "lung cancer" },
+    { word: "肺活量", reading: "はいかつりょう", meaning_mm: "အဆုတ်လေဆံ့အား", meaning_en: "lung capacity" },
+    { word: "心肺", reading: "しんぱい", meaning_mm: "နှလုံးနှင့်အဆုတ်ပေါင်းစပ်မှု", meaning_en: "cardiopulmonary" }
+  ],
+  "俳": [
+    { word: "俳優", reading: "はいゆう", meaning_mm: "မင်းသား / သရုပ်ဆောင်", meaning_en: "actor" },
+    { word: "女優", reading: "じょゆう", meaning_mm: "မင်းသမီး", meaning_en: "actress" },
+    { word: "俳句", reading: "はいく", meaning_mm: "ဟိုက္ကူကဗျာ", meaning_en: "haiku" },
+    { word: "俳人", reading: "はいじん", meaning_mm: "ဟိုက္ကူကဗျာဆရာ", meaning_en: "haiku poet" }
   ]
 };
+
+// Dynamic database parsed from N3 raw vocabulary files
+interface ParseWord {
+  hiragana: string;
+  kanji: string;
+  meaning_mm: string;
+}
+
+const parsedVocabWords: ParseWord[] = [];
+
+function initVocab() {
+  const contents = [part1Content, part2Content];
+  for (const content of contents) {
+    if (!content) continue;
+    const lines = content.split(/\r?\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      // Some lines have multiple items separated by semicolons
+      const words = trimmed.split(';');
+      for (const wStr of words) {
+        const parts = wStr.split('|');
+        if (parts.length >= 3) {
+          const hira = parts[0].trim();
+          const kanji = parts[1].trim() || hira;
+          const meaning_mm = parts[2].trim();
+          parsedVocabWords.push({
+            hiragana: hira,
+            kanji,
+            meaning_mm
+          });
+        }
+      }
+    }
+  }
+}
+
+// Prepare background DB upon import
+initVocab();
 
 function katakanaToHiragana(kata: string): string {
   return kata.replace(/[\u30a1-\u30f6]/g, (match) => {
@@ -62,64 +212,85 @@ function katakanaToHiragana(kata: string): string {
 export function generateCompounds(
   kanji: string, 
   onyomi: string, 
-  kunyomi: string, 
+  _kunyomi: string, 
   meaning_en: string, 
   meaning_mm: string,
   example_word: string,
   example_reading: string,
   example_meaning: string
 ): CompoundWord[] {
+  // If we have a curated specific override, use that instantly
   if (compoundsOverride[kanji]) {
     return compoundsOverride[kanji];
   }
 
   const cleanOn = onyomi && onyomi !== '-' ? onyomi.split('、')[0].split('（')[0].trim() : '';
-  const cleanKun = kunyomi && kunyomi !== '-' ? kunyomi.split('、')[0].split('（')[0].trim() : '';
   const baseEn = meaning_en.split(',')[0].trim();
   const baseMm = meaning_mm.split('၊')[0].split('၊၊')[0].split('။')[0].trim();
 
   const hiraOn = katakanaToHiragana(cleanOn || kanji);
 
+  // Initialize with the standard example word from N3 database (which is always 100% accurate!)
   const list: CompoundWord[] = [
     {
       word: example_word,
       reading: example_reading,
       meaning_mm: example_meaning,
-      meaning_en: baseEn
+      meaning_en: vocabToEnglish[example_word] || baseEn
     }
   ];
 
-  if (cleanOn) {
+  // Dynamically scan the real-world parsed N3 vocabulary for words that contain our Kanji
+  const matches = parsedVocabWords.filter(item => 
+    item.kanji.includes(kanji) && item.kanji !== kanji && item.kanji !== example_word
+  );
+
+  for (const match of matches) {
+    if (list.length >= 4) break;
     list.push({
-      word: kanji + "人",
-      reading: hiraOn + "じん",
-      meaning_mm: baseMm + "သူ / " + baseMm + "လူ",
-      meaning_en: baseEn + " person"
-    });
-    list.push({
-      word: kanji + "化",
-      reading: hiraOn + "か",
-      meaning_mm: baseMm + "ပြုခြင်း / ဆိုးဝါးခြင်းဆိုင်ရာ",
-      meaning_en: baseEn + "-ification"
-    });
-    list.push({
-      word: "最" + kanji,
-      reading: "さい" + hiraOn,
-      meaning_mm: "အ" + baseMm + "ဆုံး",
-      meaning_en: "most " + baseEn
+      word: match.kanji,
+      reading: match.hiragana,
+      meaning_mm: match.meaning_mm.split('။')[0].split('၊')[0].trim(),
+      meaning_en: vocabToEnglish[match.kanji] || baseEn
     });
   }
 
-  if (list.length < 4 && cleanKun) {
-    const kunBase = cleanKun.split('（')[0].split('・')[0].trim();
-    list.push({
-      word: kanji + "もの",
-      reading: kunBase + "もの",
-      meaning_mm: baseMm + "အရာဝတ္ထု",
-      meaning_en: baseEn + " thing"
-    });
+  // Fallback generation logic ONLY if we contain less than 3 unique compounds
+  if (list.length < 3 && cleanOn) {
+    const backupWords = [
+      { suffix: "人", readingAdd: "じん", mmSub: "သူ", enSub: "person" },
+      { suffix: "化", readingAdd: "か", mmSub: "ပြုခြင်း/ဖြစ်စဉ်", enSub: "-ification" },
+      { suffix: "学", readingAdd: "がく", mmSub: "ပညာရပ်", enSub: "study of" },
+      { prefix: "最", readingPre: "さい", mmPre: "အ", mmSuf: "ဆုံး", enPre: "most " }
+    ];
+
+    for (const item of backupWords) {
+      if (list.length >= 4) break;
+      if (item.suffix) {
+        const generatedWord = kanji + item.suffix;
+        if (!list.some(x => x.word === generatedWord)) {
+          list.push({
+            word: generatedWord,
+            reading: hiraOn + item.readingAdd,
+            meaning_mm: baseMm + " " + item.mmSub,
+            meaning_en: baseEn + " " + item.enSub
+          });
+        }
+      } else if (item.prefix) {
+        const generatedWord = item.prefix + kanji;
+        if (!list.some(x => x.word === generatedWord)) {
+          list.push({
+            word: generatedWord,
+            reading: item.readingPre + hiraOn,
+            meaning_mm: item.mmPre + baseMm + item.mmSuf,
+            meaning_en: item.enPre + baseEn
+          });
+        }
+      }
+    }
   }
 
+  // Ensure unique by word spelling
   const seen = new Set<string>();
   const finalCompounds: CompoundWord[] = [];
   for (const c of list) {
@@ -129,11 +300,12 @@ export function generateCompounds(
     }
   }
 
+  // Final emergency pad if extremely rare character
   if (finalCompounds.length < 3) {
     finalCompounds.push({
       word: kanji + "力",
       reading: hiraOn + "りょく",
-      meaning_mm: baseMm + "စွမ်းအား",
+      meaning_mm: baseMm + " စွမ်းအား",
       meaning_en: baseEn + " power"
     });
   }
