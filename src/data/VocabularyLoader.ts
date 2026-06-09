@@ -1,6 +1,7 @@
 import { Word } from '../types';
 import part1Content from './n3_part1.txt?raw';
 import part2Content from './n3_part2.txt?raw';
+import { getUniqueSentence } from './sentenceDictionary';
 
 function getPos(kanji: string, unitName: string): string {
   const lowerUnit = unitName.toLowerCase();
@@ -15,45 +16,6 @@ function getPos(kanji: string, unitName: string): string {
     if (cleanKanji.endsWith('な') || cleanKanji.endsWith('い')) return 'Adjective';
   }
   return 'Noun';
-}
-
-interface Sentence {
-  ja: string;
-  mm: string;
-}
-
-function generateDynamicSentence(
-  kanji: string,
-  _meaning: string,
-  unitName: string,
-  wordIndex: number
-): Sentence {
-  const cleanKanji = kanji.replace(/[~〜()（）]/g, '').trim();
-  const lowerUnit = unitName.toLowerCase();
-
-  const randomSelect = (...items: Sentence[]): Sentence => {
-    return items[wordIndex % items.length];
-  };
-
-  if (lowerUnit.includes('time')) {
-    return randomSelect(
-      { ja: `${cleanKanji}、友達に会いました。`, mm: `${cleanKanji} သူငယ်ချင်းနဲ့ တွေ့ခဲ့တယ်။` },
-      { ja: `${cleanKanji}の予定を教えてください。`, mm: `${cleanKanji} ရဲ့ အစီအစဉ်ကို ပြောပြပေးပါ။` }
-    );
-  } else if (lowerUnit.includes('family') || lowerUnit.includes('people')) {
-    return randomSelect(
-      { ja: `私の${cleanKanji}はとても優しいです。`, mm: `ကျွန်တော့်ရဲ့ ${cleanKanji} က အရမ်းသဘောကောင်းတယ်။` }
-    );
-  } else if (lowerUnit.includes('eating')) {
-    return randomSelect(
-      { ja: `美味しい${cleanKanji}を食べたいです。`, mm: `အရသာရှိတဲ့ ${cleanKanji} ကို စားချင်တယ်။` }
-    );
-  } else {
-    return randomSelect(
-      { ja: `新しい${cleanKanji}を見つけました。`, mm: `${cleanKanji} အသစ်ကို တွေ့ရှိခဲ့တယ်။` },
-      { ja: `この${cleanKanji}はとても便利です。`, mm: `ဒီ ${cleanKanji} က အရမ်းအသုံးဝင်တယ်။` }
-    );
-  }
 }
 
 export function loadVocabulary(): Word[] {
@@ -87,7 +49,7 @@ function parseAsset(content: string, partName: string, outList: Word[]): void {
             const meaning = parts[2].trim();
             const wordId = `${kanji}|${meaning}`;
             const pos = getPos(kanji, currentUnit);
-            const sentence = generateDynamicSentence(kanji, meaning, currentUnit, wordsInUnit);
+            const sentence = getUniqueSentence(kanji, meaning, pos, wordsInUnit);
 
             outList.push({
               id: wordId,
@@ -109,3 +71,4 @@ function parseAsset(content: string, partName: string, outList: Word[]): void {
     console.error('Error parsing asset content:', e);
   }
 }
+

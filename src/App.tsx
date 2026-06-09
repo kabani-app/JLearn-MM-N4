@@ -242,7 +242,8 @@ export default function App() {
   const speak = (text: string) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
+      const cleanText = text.replace(/\[[NVAP]:([^\]]+)\]/g, '$1');
+      const utterance = new SpeechSynthesisUtterance(cleanText);
       utterance.lang = 'ja-JP';
       const voices = window.speechSynthesis.getVoices();
       const jaVoice = voices.find(v => v.lang.startsWith('ja') || v.lang === 'ja-JP');
@@ -251,6 +252,44 @@ export default function App() {
       }
       window.speechSynthesis.speak(utterance);
     }
+  };
+
+  // Styled Sentence Parser Helper
+  const renderStyledSentence = (text: string) => {
+    const regex = /\[([NVAP]):([^\]]+)\]|([^\[]+)/g;
+    const spans: React.ReactNode[] = [];
+    let match;
+    let keyIdx = 0;
+
+    while ((match = regex.exec(text)) !== null) {
+      if (match[1]) {
+        const tag = match[1];
+        const content = match[2];
+        let color = '#FFFFFF';
+        if (tag === 'N') color = '#FBBF24'; // Gold/Yellow (Nouns)
+        else if (tag === 'V') color = '#60A5FA'; // Blue (Verbs)
+        else if (tag === 'A') color = '#34D399'; // Green (Adjectives)
+        else if (tag === 'P') color = '#9CA3AF'; // Gray (Particles)
+        
+        spans.push(
+          <span key={keyIdx++} style={{ color }} className="font-extrabold select-all">
+            {content}
+          </span>
+        );
+      } else if (match[3]) {
+        spans.push(
+          <span key={keyIdx++} style={{ color: '#FFFFFF' }} className="select-all">
+            {match[3]}
+          </span>
+        );
+      }
+    }
+
+    if (spans.length === 0) {
+      return <span style={{ color: '#FFFFFF' }}>{text}</span>;
+    }
+
+    return <>{spans}</>;
   };
 
   // Grouped vocabulary data
@@ -882,17 +921,17 @@ export default function App() {
                             </div>
 
                             {word.sentenceJa && (
-                              <div className="bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800/60 p-3 rounded-xl flex flex-col gap-1 text-[12px]">
+                              <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex flex-col gap-1.5 text-[12px] text-white">
                                 <div className="flex items-center justify-between gap-2.5">
-                                  <p className="font-semibold text-slate-800 dark:text-slate-200 leading-relaxed">{word.sentenceJa}</p>
+                                  <p className="font-semibold leading-relaxed">{renderStyledSentence(word.sentenceJa)}</p>
                                   <button 
                                     onClick={() => speak(word.sentenceJa)}
-                                    className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                    className="p-1 text-slate-400 hover:text-slate-300 transition shrink-0"
                                   >
                                     <Volume2 size={13} />
                                   </button>
                                 </div>
-                                <p className="text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{word.sentenceMm}</p>
+                                <p className="text-slate-300 leading-relaxed font-semibold">{word.sentenceMm}</p>
                               </div>
                             )}
                           </div>
@@ -1001,7 +1040,7 @@ export default function App() {
                               
                               {currentWord.sentenceJa ? (
                                 <>
-                                  <p className="text-[21px] font-bold leading-snug">{currentWord.sentenceJa}</p>
+                                  <p className="text-[21px] font-bold leading-snug">{renderStyledSentence(currentWord.sentenceJa)}</p>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
