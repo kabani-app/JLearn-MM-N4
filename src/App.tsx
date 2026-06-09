@@ -1906,7 +1906,10 @@ export default function App() {
             <ListeningTab />
           ) : activeTab === 'Books' ? (
             /* --- BOOKS LIBRARY SCREEN --- */
-            <BooksTab />
+            <BooksTab 
+              isAdminLoggedIn={isAdminLoggedIn}
+              setIsAdminLoggedIn={setIsAdminLoggedIn}
+            />
           ) : activeTab === 'J-Media' ? (
             /* --- J-MEDIA SCREEN --- */
             <JMediaTab
