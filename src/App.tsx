@@ -12,12 +12,12 @@ import {
   X, 
   ChevronRight, 
   ChevronLeft,
-  Settings,
   Sparkles,
   List as ListIcon,
   LayoutGrid,
   Headphones,
-  BookOpen
+  BookOpen,
+  FileText
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Word } from './types';
@@ -68,7 +68,7 @@ export default function App() {
     };
   });
 
-  const [activeTab, setActiveTab] = useState<'Home' | 'Kanji' | 'Search' | 'Listening' | 'Books' | 'J-Media'>('Home');
+  const [activeTab, setActiveTab] = useState<'Home' | 'Kanji' | 'Search' | 'Listening' | 'Books' | 'J-Media' | 'Grammar'>('Home');
   const [activePart, setActivePart] = useState<'Part 1' | 'Part 2'>('Part 1');
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
 
@@ -614,13 +614,16 @@ export default function App() {
                     {settings.darkMode ? '☀️' : '🌙'}
                   </button>
 
-                  {/* API Settings */}
+                  {/* Dictionary Search */}
                   <button 
-                    onClick={() => setShowSettingsModal(true)}
+                    onClick={() => {
+                      setActiveTab('Search');
+                      setSelectedUnit(null);
+                    }}
                     className="w-8.5 h-8.5 rounded-full border border-lightBorder dark:border-darkBorder flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition active-press"
-                    aria-label="API Settings"
+                    aria-label="Dictionary Search"
                   >
-                    <Settings size={16} />
+                    <SearchIcon size={16} />
                   </button>
 
                   {/* J-Media */}
@@ -1570,7 +1573,7 @@ export default function App() {
           ) : activeTab === 'Books' ? (
             /* --- BOOKS LIBRARY SCREEN --- */
             <BooksTab />
-          ) : (
+          ) : activeTab === 'J-Media' ? (
             /* --- J-MEDIA SCREEN --- */
             <div className="flex flex-col items-center justify-center py-20 px-6 min-h-[400px] text-center bg-slate-900 border border-slate-800 rounded-3xl shadow-xl max-w-lg mx-auto gap-4">
               <div className="w-16 h-16 rounded-full bg-indigo-950 flex items-center justify-center text-3xl shadow-lg border border-indigo-500/20 animate-pulse">
@@ -1585,6 +1588,23 @@ export default function App() {
               </p>
               <p className="text-xs text-slate-400 max-w-sm leading-relaxed px-4">
                 We are preparing Japanese video, audio, and news media content here. Check back later!
+              </p>
+            </div>
+          ) : (
+            /* --- GRAMMAR SCREEN --- */
+            <div className="flex flex-col items-center justify-center py-20 px-6 min-h-[400px] text-center bg-slate-900 border border-slate-800 rounded-3xl shadow-xl max-w-lg mx-auto gap-4">
+              <div className="w-16 h-16 rounded-full bg-indigo-950 flex items-center justify-center text-2xl shadow-lg border border-indigo-500/20 animate-pulse">
+                📑
+              </div>
+              <h3 className="text-xl font-black text-slate-100 uppercase tracking-widest">
+                Grammar Study
+              </h3>
+              <div className="h-[2px] w-12 bg-indigo-500/30 rounded-full" />
+              <p className="text-sm font-bold text-amber-400">
+                Coming Soon...
+              </p>
+              <p className="text-xs text-slate-400 max-w-sm leading-relaxed px-4">
+                Structured grammar lessons, particle guides, and JLPT N3 practice patterns are coming soon. Stay tuned!
               </p>
             </div>
           )}
@@ -1613,13 +1633,16 @@ export default function App() {
               <span className="text-[9px] font-extrabold uppercase tracking-wider">Kanji</span>
             </button>
 
-            {/* Search Tab */}
+            {/* Grammar Tab */}
             <button
-              onClick={() => setActiveTab('Search')}
-              className={`flex flex-col items-center gap-0.5 p-1 rounded-lg transition ${activeTab === 'Search' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : 'text-slate-400 hover:text-slate-600'}`}
+              onClick={() => {
+                setActiveTab('Grammar');
+                setSelectedUnit(null);
+              }}
+              className={`flex flex-col items-center gap-0.5 p-1 rounded-lg transition ${activeTab === 'Grammar' ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' : 'text-slate-400 hover:text-slate-600'}`}
             >
-              <SearchIcon size={16} className={activeTab === 'Search' ? 'stroke-[2.5px]' : ''} />
-              <span className="text-[9px] font-extrabold uppercase tracking-wider">Search</span>
+              <FileText size={16} className={activeTab === 'Grammar' ? 'stroke-[2.5px]' : ''} />
+              <span className="text-[9px] font-extrabold uppercase tracking-wider">Grammar</span>
             </button>
 
             {/* Listening Tab */}
