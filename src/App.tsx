@@ -23,7 +23,7 @@ import {
 import confetti from 'canvas-confetti';
 import { Word } from './types';
 import { loadVocabulary } from './data/VocabularyLoader';
-import { getSynonymsOrAntonyms } from './data/GeminiNetwork';
+// Offline modes of synonyms and antonyms are loaded directly from offline database
 import { kanjiData } from './data/kanji_n3';
 import { grammarData } from './data/grammar_n3';
 import { KanjiStrokeAnimator } from './components/KanjiStrokeAnimator';
@@ -31,26 +31,7 @@ import { ListeningTab } from './components/ListeningTab';
 import { BooksTab } from './components/BooksTab';
 import { JMediaTab } from './components/JMediaTab';
 
-// Caching helper functions for Gemini Vocabulary results
-const getCacheKey = (wordId: string, mode: 'same' | 'diff') => {
-  return `gemini_vocab_cache_${mode}_${wordId}`;
-};
-
-const getCachedResult = (wordId: string, mode: 'same' | 'diff'): string | null => {
-  try {
-    return localStorage.getItem(getCacheKey(wordId, mode));
-  } catch (e) {
-    return null;
-  }
-};
-
-const setCachedResult = (wordId: string, mode: 'same' | 'diff', value: string) => {
-  try {
-    localStorage.setItem(getCacheKey(wordId, mode), value);
-  } catch (e) {
-    console.error('Error writing to localStorage cache:', e);
-  }
-};
+// Caching helper functions replaced with instant offline data structures
 
 export default function App() {
   // --- Core Vocabulary Storage & States ---
@@ -186,10 +167,8 @@ export default function App() {
   // Search screen query state
   const [searchQuery, setSearchQuery] = useState('');
 
-  // AI Helping States
+  // AI Helping States (Fully Offline Synonyms & Antonyms)
   const [aiMode, setAiMode] = useState<'same' | 'diff' | null>(null);
-  const [aiResult, setAiResult] = useState('');
-  const [aiLoading, setAiLoading] = useState(false);
 
   // Key configurations
   const [apiKeyInput, setApiKeyInput] = useState(() => localStorage.getItem('GEMINI_API_KEY') || '');
@@ -372,7 +351,6 @@ export default function App() {
     if (currentIndex < activeList.length - 1) {
       setIsFlipped(false);
       setAiMode(null);
-      setAiResult('');
       setCurrentIndex(prev => prev + 1);
     } else {
       // Done with unit! Blasting celebratory confetti!
@@ -391,7 +369,6 @@ export default function App() {
     if (currentIndex > 0) {
       setIsFlipped(false);
       setAiMode(null);
-      setAiResult('');
       setCurrentIndex(prev => prev - 1);
     }
   };
@@ -422,62 +399,7 @@ export default function App() {
     };
   }, [isAutoPlaying, isFlipped, currentIndex, activeList]);
 
-  // Background pre-fetching of next card's AI results (de-bounced)
-  useEffect(() => {
-    if (!selectedUnit || isAutoPlaying || isListView) return;
-    
-    const nextIndex = currentIndex + 1;
-    if (nextIndex >= activeList.length) return;
-    
-    const nextWord = activeList[nextIndex];
-    if (!nextWord) return;
-    
-    // Check if both are already cached
-    const hasSameCache = !!getCachedResult(nextWord.id, 'same');
-    const hasDiffCache = !!getCachedResult(nextWord.id, 'diff');
-    if (hasSameCache && hasDiffCache) return;
-    
-    const apiKey = (import.meta.env.VITE_GEMINI_API_KEY as string) || localStorage.getItem('GEMINI_API_KEY') || '';
-    if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') return;
-    
-    const timer = setTimeout(async () => {
-      // Background pre-fetch 'same' meanings
-      if (!hasSameCache) {
-        try {
-          const result = await getSynonymsOrAntonyms(
-            nextWord.hiragana,
-            nextWord.kanji,
-            nextWord.meaning,
-            'same'
-          );
-          if (result && !result.startsWith('Error') && !result.includes('အမှားဖြစ်') && !result.includes('API Key Error') && !result.includes('API Key is missing')) {
-            setCachedResult(nextWord.id, 'same', result);
-          }
-        } catch (e) {
-          console.debug('Background pre-fetch same failed:', e);
-        }
-      }
-      
-      // Background pre-fetch 'diff' opposites
-      if (!hasDiffCache) {
-        try {
-          const result = await getSynonymsOrAntonyms(
-            nextWord.hiragana,
-            nextWord.kanji,
-            nextWord.meaning,
-            'diff'
-          );
-          if (result && !result.startsWith('Error') && !result.includes('အမှားဖြစ်') && !result.includes('API Key Error') && !result.includes('API Key is missing')) {
-            setCachedResult(nextWord.id, 'diff', result);
-          }
-        } catch (e) {
-          console.debug('Background pre-fetch diff failed:', e);
-        }
-      }
-    }, 1200); // 1.2s idle delay to avoid spamming searches while clicking fast through card collections
-    
-    return () => clearTimeout(timer);
-  }, [currentIndex, activeList, selectedUnit, isAutoPlaying, isListView]);
+  // Background pre-fetching of next card's AI results removed (now fully offline)
 
   // Load Unit
   const openUnit = (unitName: string, initialIndex: number = 0) => {
@@ -488,7 +410,6 @@ export default function App() {
     setIsAutoPlaying(false);
     setIsListView(false);
     setAiMode(null);
-    setAiResult('');
 
     localStorage.setItem('last_studied_unit', unitName);
     setSettings(prev => ({ ...prev, lastStudiedUnit: unitName }));
@@ -537,41 +458,7 @@ export default function App() {
     handleNext();
   };
 
-  // Run AI helper query with caching & skeleton
-  const loadAI = async (mode: 'same' | 'diff') => {
-    if (!currentWord) return;
-    setAiMode(mode);
-    
-    // Check local storage cache first
-    const cached = getCachedResult(currentWord.id, mode);
-    if (cached) {
-      setAiResult(cached);
-      setAiLoading(false);
-      return;
-    }
-    
-    setAiResult('');
-    setAiLoading(true);
-
-    try {
-      const result = await getSynonymsOrAntonyms(
-        currentWord.hiragana,
-        currentWord.kanji,
-        currentWord.meaning,
-        mode
-      );
-      
-      // Save valid responses in cache
-      if (result && !result.startsWith('Error') && !result.includes('အမှားဖြစ်') && !result.includes('API Key Error') && !result.includes('API Key is missing')) {
-        setCachedResult(currentWord.id, mode, result);
-      }
-      setAiResult(result);
-    } catch (err) {
-      setAiResult(`Error: ${(err as Error).message}`);
-    } finally {
-      setAiLoading(false);
-    }
-  };
+  // Offline mode is handled instantly without any API load helper function
 
   // Touch Swipe Handling for Swiper
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -1072,73 +959,39 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* AI Synonymous assistance panels (Only when autoplay is disabled) */}
-                      {!isAutoPlaying && (
+                      {/* Offline Synonyms & Antonyms Panel (Only when autoplay is disabled) */}
+                      {!isAutoPlaying && currentWord && (
                         <div className="flex flex-col gap-2">
                           <div className="flex gap-2">
                             <button
-                              onClick={() => loadAI('same')}
+                              onClick={() => setAiMode(aiMode === 'same' ? null : 'same')}
                               className={`flex-1 h-11 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition ${aiMode === 'same' ? 'border-2 border-slate-600 dark:border-indigo-400 bg-slate-100/50 dark:bg-slate-800 text-slate-800 dark:text-indigo-400 shadow-sm' : 'border border-lightBorder dark:border-darkBorder bg-lightSurface dark:bg-darkSurface text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-850'}`}
                             >
                               <span>💬 ≈ Same meanings</span>
                             </button>
 
                             <button
-                              onClick={() => loadAI('diff')}
+                              onClick={() => setAiMode(aiMode === 'diff' ? null : 'diff')}
                               className={`flex-1 h-11 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition ${aiMode === 'diff' ? 'border-2 border-indigo-600 dark:border-amber-400 bg-slate-100/50 dark:bg-slate-800 text-slate-800 dark:text-amber-400 shadow-sm' : 'border border-lightBorder dark:border-darkBorder bg-lightSurface dark:bg-darkSurface text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-850'}`}
                             >
                               <span>💬 ≠ Opposites</span>
                             </button>
                           </div>
 
-                          {/* AI API output window */}
-                          {(aiLoading || aiResult) && (
-                            <div className="bg-slate-50 dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-4 rounded-2xl flex flex-col gap-1.5 shadow-inner transition max-h-[145px] overflow-y-auto">
-                              {aiLoading ? (
-                                <div className="space-y-2.5 py-1 w-full animate-pulse select-none">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-yellow-500 animate-bounce text-xs">•</span>
-                                    <div className="h-3 w-1/4 bg-slate-200 dark:bg-slate-800 rounded" />
-                                    <div className="h-3 w-1/2 bg-slate-100 dark:bg-slate-900 rounded opacity-60" />
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-green-500 animate-bounce text-xs delay-75">•</span>
-                                    <div className="h-3 w-1/5 bg-slate-200 dark:bg-slate-800 rounded" />
-                                    <div className="h-3 w-2/5 bg-slate-100 dark:bg-slate-900 rounded opacity-60" />
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-blue-500 animate-bounce text-xs delay-100">•</span>
-                                    <div className="h-3 w-1/3 bg-slate-200 dark:bg-slate-800 rounded" />
-                                    <div className="h-3 w-1/3 bg-slate-100 dark:bg-slate-900 rounded opacity-60" />
-                                  </div>
-                                  <div className="flex items-center justify-center gap-1.5 pt-1">
-                                    <span className="flex h-1.5 w-1.5 relative">
-                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-indigo-500"></span>
-                                    </span>
-                                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-extrabold uppercase tracking-widest leading-none">
-                                      Retrieving AI Insights...
-                                    </span>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="text-xs leading-relaxed flex flex-col gap-1">
-                                  {aiResult.split('\n').filter(l => l.trim()).map((line, i) => {
-                                    if (line.trim().startsWith('•')) {
-                                      const parts = line.split('—');
-                                      const boldPart = parts[0];
-                                      const meaningPart = parts.slice(1).join('—');
-                                      return (
-                                        <div key={i} className="flex items-start gap-1 font-medium">
-                                          <span className="font-extrabold text-[#d97706] dark:text-[#f59e0b] shrink-0">{boldPart}</span>
-                                          <span className="text-[#059669] dark:text-[#10b981] font-semibold">{meaningPart ? ' — ' + meaningPart : ''}</span>
-                                        </div>
-                                      );
-                                    }
-                                    return <p key={i} className="text-slate-600 dark:text-slate-300 font-medium">{line}</p>;
-                                  })}
-                                </div>
-                              )}
+                          {/* Instant Offline Output Window */}
+                          {aiMode && (
+                            <div className="bg-slate-50 dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-4 rounded-2xl flex flex-col gap-1.5 shadow-inner transition max-h-[145px] overflow-y-auto animate-fadeIn">
+                              <div className="text-xs leading-relaxed flex flex-col gap-1.5">
+                                {(aiMode === 'same' ? currentWord.same_meanings : currentWord.opposite_meanings)?.map((entry, i) => {
+                                  const displayJapanese = entry.word === entry.reading ? entry.word : `${entry.word} (${entry.reading})`;
+                                  return (
+                                    <div key={i} className="flex items-start gap-1 font-medium select-all">
+                                      <span className="font-extrabold text-[#d97706] dark:text-[#f59e0b] shrink-0">• {displayJapanese}</span>
+                                      <span className="text-[#059669] dark:text-[#10b981] font-semibold"> — {entry.meaning_mm}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
                           )}
                         </div>

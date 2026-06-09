@@ -1,3 +1,9 @@
+export interface MeaningEntry {
+  word: string;
+  reading: string;
+  meaning_mm: string;
+}
+
 export interface Word {
   id: string; // "kanji|meaning"
   part: string; // "Part 1" or "Part 2"
@@ -8,6 +14,8 @@ export interface Word {
   pos: string; // e.g., "Verb", "Noun", "Adjective", etc.
   sentenceJa: string;
   sentenceMm: string;
+  same_meanings: MeaningEntry[];
+  opposite_meanings: MeaningEntry[];
 }
 
 export type ThemeMode = 'light' | 'dark';

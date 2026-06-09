@@ -2,6 +2,7 @@ import { Word } from '../types';
 import part1Content from './n3_part1.txt?raw';
 import part2Content from './n3_part2.txt?raw';
 import { getUniqueSentence } from './sentenceDictionary';
+import { getOfflineMeanings } from './offlineMeanings';
 
 function getPos(kanji: string, unitName: string): string {
   const lowerUnit = unitName.toLowerCase();
@@ -50,6 +51,7 @@ function parseAsset(content: string, partName: string, outList: Word[]): void {
             const wordId = `${kanji}|${meaning}`;
             const pos = getPos(kanji, currentUnit);
             const sentence = getUniqueSentence(kanji, meaning, pos, wordsInUnit);
+            const offlineMeanings = getOfflineMeanings(kanji, meaning, pos, outList.length + wordsInUnit);
 
             outList.push({
               id: wordId,
@@ -61,6 +63,8 @@ function parseAsset(content: string, partName: string, outList: Word[]): void {
               pos,
               sentenceJa: sentence.ja,
               sentenceMm: sentence.mm,
+              same_meanings: offlineMeanings.same_meanings,
+              opposite_meanings: offlineMeanings.opposite_meanings,
             });
             wordsInUnit++;
           }
