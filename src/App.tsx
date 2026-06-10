@@ -114,7 +114,7 @@ export default function App() {
   const [currentKanjiIndex, setCurrentKanjiIndex] = useState(0);
   const [isKanjiFlipped, setIsKanjiFlipped] = useState(false);
   const [selectedKanjiUnit, setSelectedKanjiUnit] = useState<number | 'All' | null>(null);
-  const [kanjiGridFilter, setKanjiGridFilter] = useState<'All' | 'Units 1-9' | 'Units 10-18'>('All');
+  const [kanjiGridFilter, setKanjiGridFilter] = useState<'Units 1-9' | 'Units 10-18'>('Units 1-9');
 
   // Grammar Section States
   const [grammarSearchQuery, setGrammarSearchQuery] = useState('');
@@ -1124,16 +1124,6 @@ export default function App() {
               /* --- KANJI FLASHCARDS PANEL --- */
               <div className="flex flex-col gap-6 flex-1 py-4 select-none max-w-2xl mx-auto w-full animate-fade-in">
               
-              {/* Header Info */}
-              <div className="text-center">
-                <h2 className="font-extrabold text-2xl lg:text-3xl text-indigo-600 dark:text-indigo-400 tracking-wide flex items-center justify-center gap-2">
-                   N3 Kanji 361
-                </h2>
-                <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-1 uppercase tracking-wider">
-                  Master the writing & readings of JLPT N3 Characters
-                </p>
-              </div>
-
               {/* Unit Selector Toolbar */}
               <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 justify-start self-center overflow-x-auto max-w-full px-2 py-1.5 scrollbar-thin">
                 {(['All' as const, ...Array.from({ length: 18 }, (_, i) => (i + 1) as number)]).map((unit) => {
@@ -1377,23 +1367,13 @@ export default function App() {
             </div>
           ) : (
               /* --- KANJI DASHBOARD HOME SCREEN --- */
-              <div className="flex flex-col gap-6 select-none max-w-4xl mx-auto w-full animate-fade-in">
-                {/* Header Info */}
-                <div className="text-center">
-                  <h2 className="font-extrabold text-2xl lg:text-3xl text-indigo-600 dark:text-indigo-400 tracking-wide flex items-center justify-center gap-2">
-                     N3 Kanji 361
-                  </h2>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-1 uppercase tracking-wider">
-                    Master the writing & readings of JLPT N3 Characters
-                  </p>
-                </div>
+              <div className="flex flex-col gap-6 select-none w-full animate-fade-in">
 
                 {/* SECTION TABS FOR KANJI GROUPS & LAST STUDY BUTTON */}
                 {/* Desktop Version */}
                 <div className="hidden sm:flex flex-wrap items-center gap-3">
-                  <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 min-w-[300px]">
+                  <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 min-w-[280px]">
                     {([
-                      { label: 'All Units', value: 'All' },
                       { label: 'Units 1–9', value: 'Units 1-9' },
                       { label: 'Units 10–18', value: 'Units 10-18' }
                     ] as const).map((tab) => {
@@ -1402,7 +1382,7 @@ export default function App() {
                         <button
                           key={tab.value}
                           onClick={() => setKanjiGridFilter(tab.value)}
-                          className={`flex-1 py-2 font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-3 ${selected ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-850 dark:hover:text-slate-300'}`}
+                          className={`flex-1 py-3 font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-3 ${selected ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-850 dark:hover:text-slate-300'}`}
                         >
                           {tab.label}
                         </button>
@@ -1439,14 +1419,14 @@ export default function App() {
                   <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 w-full">
                     <button
                       onClick={() => setKanjiGridFilter('Units 1-9')}
-                      className={`flex-1 py-2 font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-1.5 ${kanjiGridFilter === 'Units 1-9' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500'}`}
+                      className={`flex-1 py-1.5 font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-1.5 ${kanjiGridFilter === 'Units 1-9' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500'}`}
                     >
                       U1-9
                     </button>
 
                     <button
                       onClick={() => setKanjiGridFilter('Units 10-18')}
-                      className={`flex-1 py-2 font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-1.5 ${kanjiGridFilter === 'Units 10-18' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500'}`}
+                      className={`flex-1 py-1.5 font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-1.5 ${kanjiGridFilter === 'Units 10-18' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500'}`}
                     >
                       U10-18
                     </button>
@@ -1460,7 +1440,7 @@ export default function App() {
                           setSelectedKanjiUnit(lastUnit as number | 'All');
                           setCurrentKanjiIndex(index);
                         }}
-                        className="flex-1 py-2 bg-indigo-650 dark:bg-indigo-600 text-white font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-1.5 flex items-center justify-center gap-1 shadow-sm"
+                        className="flex-1 py-1.5 bg-indigo-650 dark:bg-indigo-600 text-white font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-1.5 flex items-center justify-center gap-1 shadow-sm"
                       >
                         <span>⚡</span>
                         <span>Last Study</span>
@@ -1468,7 +1448,7 @@ export default function App() {
                     ) : (
                       <button
                         disabled
-                        className="flex-1 py-2 bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-650 font-bold text-xs rounded-lg transition whitespace-nowrap px-1.5 flex items-center justify-center gap-1 opacity-50 cursor-not-allowed"
+                        className="flex-1 py-1.5 bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-650 font-bold text-xs rounded-lg transition whitespace-nowrap px-1.5 flex items-center justify-center gap-1 opacity-50 cursor-not-allowed"
                       >
                         <span>Last Study</span>
                       </button>
@@ -1477,42 +1457,13 @@ export default function App() {
                 </div>
 
                 {/* KANJI UNIT GRID */}
-                <div className="flex flex-col gap-3">
-                  <h3 className="font-extrabold text-xs text-slate-400 tracking-wider uppercase">Study Units</h3>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-12">
-                    {/* Include an "All Kanji Combined" Card as the very first card if they are on 'All' group! */}
-                    {kanjiGridFilter === 'All' && (
-                      <div
-                        onClick={() => {
-                          setSelectedKanjiUnit('All');
-                          setCurrentKanjiIndex(0);
-                        }}
-                        className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white p-4.5 rounded-2xl hidden sm:flex flex-col justify-between gap-4 cursor-pointer shadow-lg hover:shadow-xl transition active-press group min-h-[110px]"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-extrabold text-sm text-white group-hover:text-purple-100 transition whitespace-nowrap">
-                            All 361 Kanji
-                          </h4>
-                          <span className="text-[10px] text-indigo-100 font-bold uppercase tracking-wider block mt-0.5">
-                            Full Deck
-                          </span>
-                          <p className="text-[11px] text-white/80 font-medium leading-relaxed mt-2 font-sans">
-                            Study all Japanese N3 characters combined in one master deck.
-                          </p>
-                        </div>
-                        <div className="w-10 h-10 rounded-full bg-white/15 text-white flex items-center justify-center text-sm shrink-0">
-                          🏆
-                        </div>
-                      </div>
-                    )}
-
-                    {Array.from({ length: 18 }, (_, idx) => idx + 1)
-                      .filter((unitNum) => {
-                        if (kanjiGridFilter === 'Units 1-9') return unitNum >= 1 && unitNum <= 9;
-                        if (kanjiGridFilter === 'Units 10-18') return unitNum >= 10 && unitNum <= 18;
-                        return true;
-                      })
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-12">
+                  {Array.from({ length: 18 }, (_, idx) => idx + 1)
+                    .filter((unitNum) => {
+                      if (kanjiGridFilter === 'Units 1-9') return unitNum >= 1 && unitNum <= 9;
+                      if (kanjiGridFilter === 'Units 10-18') return unitNum >= 10 && unitNum <= 18;
+                      return true;
+                    })
                       .map((unitNum) => {
                         const unitKanji = kanjiData.filter(k => k.unit === unitNum);
                         const unitKanjiCount = unitKanji.length;
@@ -1556,7 +1507,6 @@ export default function App() {
                         );
                       })}
                   </div>
-                </div>
               </div>
             )
           ) : activeTab === 'Search' ? (
