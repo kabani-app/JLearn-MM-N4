@@ -31,6 +31,27 @@ import { ListeningTab } from './components/ListeningTab';
 import { BooksTab } from './components/BooksTab';
 import { JMediaTab } from './components/JMediaTab';
 
+const KANJI_UNIT_THEMES: Record<number, string> = {
+  1: "Time & Nature",
+  2: "People & Family",
+  3: "Society & Occupation",
+  4: "Directions & Places",
+  5: "Daily Activities",
+  6: "Education & Learning",
+  7: "Science & Technology",
+  8: "Emotions & Feelings",
+  9: "Body & Health",
+  10: "Travel & Leisure",
+  11: "Communication & Language",
+  12: "Work & Industry",
+  13: "Seasons & Weather",
+  14: "Food & Household",
+  15: "Animals & Plants",
+  16: "Shapes & Colors",
+  17: "Sports & Hobbies",
+  18: "General Concepts"
+};
+
 // Caching helper functions replaced with instant offline data structures
 
 export default function App() {
@@ -115,6 +136,7 @@ export default function App() {
   const [isKanjiFlipped, setIsKanjiFlipped] = useState(false);
   const [selectedKanjiUnit, setSelectedKanjiUnit] = useState<number | 'All' | null>(null);
   const [kanjiGridFilter, setKanjiGridFilter] = useState<'Units 1-9' | 'Units 10-18'>('Units 1-9');
+  const [isKanjiStudyActive, setIsKanjiStudyActive] = useState(false);
 
   // Grammar Section States
   const [grammarSearchQuery, setGrammarSearchQuery] = useState('');
@@ -1121,252 +1143,350 @@ export default function App() {
             </div>
           ) : activeTab === 'Kanji' ? (
             selectedKanjiUnit !== null ? (
-              /* --- KANJI FLASHCARDS PANEL --- */
-              <div className="flex flex-col gap-6 flex-1 py-4 select-none max-w-2xl mx-auto w-full animate-fade-in">
-              
-              {/* Unit Selector Toolbar */}
-              <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 justify-start self-center overflow-x-auto max-w-full px-2 py-1.5 scrollbar-thin">
-                {(['All' as const, ...Array.from({ length: 18 }, (_, i) => (i + 1) as number)]).map((unit) => {
-                  const isCur = selectedKanjiUnit === unit;
-                  let count = kanjiData.length;
-                  if (unit !== 'All') {
-                    count = kanjiData.filter(k => k.unit === unit).length;
-                  }
-                  return (
-                    <button
-                      key={unit}
-                      onClick={() => setSelectedKanjiUnit(unit)}
-                      className={`px-3.5 py-1.5 font-bold text-xs rounded-lg transition-all duration-200 shrink-0 ${
-                        isCur
-                          ? 'bg-indigo-600 text-white shadow-sm'
-                          : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
-                      }`}
-                    >
-                      {unit === 'All' ? 'All' : `U${unit}`} <span className={`text-[10px] ml-0.5 opacity-70 ${isCur ? 'text-indigo-200' : 'text-slate-400'}`}>({count})</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {currentKanji ? (
-                <div className="flex-1 flex flex-col gap-4">
+              isKanjiStudyActive ? (
+                /* --- KANJI FLASHCARDS PANEL --- */
+                <div className="flex flex-col gap-6 flex-1 py-4 select-none max-w-2xl mx-auto w-full animate-fade-in animate-duration-300">
                   
-                  {/* Progress info and navigation tools */}
-                  <div className="flex items-center justify-between text-xs px-2">
-                    <span className="font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                      Progress
-                    </span>
-                    <span className="font-black text-indigo-600 dark:text-indigo-400">
-                      {currentKanjiIndex + 1} / {filteredKanji.length}
-                    </span>
-                  </div>
-
-                  {/* Horizontal visual indicator bar */}
-                  <div className="w-full h-1 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-indigo-600 dark:bg-indigo-400 transition-all duration-350"
-                      style={{ width: `${((currentKanjiIndex + 1) / filteredKanji.length) * 100}%` }}
-                    />
-                  </div>
-
-                  {/* FLASHCARD BODY CONTAINER */}
-                  <div 
-                    onClick={() => setIsKanjiFlipped(!isKanjiFlipped)}
-                    className="h-[440px] cursor-pointer perspective-1000 select-none touch-pan-y"
-                  >
-                    <div className={`w-full h-full duration-500 transform-style-3d relative ${isKanjiFlipped ? 'rotate-y-180' : ''}`}>
-                      
-                      {/* FRONT PANEL */}
-                      <div className="absolute inset-0 w-full h-full rounded-3xl bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-6 shadow-md shadow-slate-100 dark:shadow-none backface-hidden flex flex-col justify-between items-center text-center">
-                        
-                        {/* Top corner data */}
-                        <div className="w-full flex items-center justify-between">
-                          <span className="px-2.5 py-1 text-[10px] uppercase tracking-wider font-extrabold bg-slate-100 dark:bg-slate-800/80 text-indigo-600 dark:text-indigo-400 rounded-md">
-                            Unit {currentKanji.unit}
-                          </span>
-                          
-                          <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider font-extrabold bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400 rounded-md border border-amber-500/20">
-                              {currentKanji.strokes} Strokes
-                            </span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                speak(currentKanji.kanji);
-                              }}
-                              className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition shrink-0 active-press"
-                              title="Listen Pronunciation"
-                            >
-                              <Volume2 size={14} />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Large Kanji Display */}
-                        <div className="flex-1 flex flex-col justify-center items-center gap-2 py-2">
-                          <h3 
-                            className="text-8xl font-normal text-slate-900 dark:text-slate-50 leading-none tracking-normal select-none"
-                            style={{ fontFamily: '"KanjiStrokeOrder", "Kanji Stroke Order", "Kanji-Stroke-Order", sans-serif' }}
-                          >
-                            {currentKanji.kanji}
-                          </h3>
-                          
-                          {/* Animated stroke order widget */}
-                          <KanjiStrokeAnimator kanji={currentKanji.kanji} />
-                        </div>
-
-                        {/* Prompt hint */}
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-auto">
-                          Tap card to reveal readings & translations
-                        </p>
-                      </div>
-
-                      {/* BACK PANEL */}
-                      <div className="absolute inset-0 w-full h-full rounded-3xl bg-indigo-650 dark:bg-indigo-950 text-white p-6 shadow-xl backface-hidden rotate-y-180 flex flex-col justify-between items-center text-center border border-indigo-500/10">
-                        
-                        {/* Back Panel Header */}
-                        <div className="w-full flex items-center justify-between">
-                          <span className="px-2.5 py-1 text-[10px] uppercase tracking-wider font-extrabold bg-white/15 text-white/90 rounded-md font-sans">
-                            Unit {currentKanji.unit}
-                          </span>
-                          
-                          <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider font-black bg-white/15 text-white/90 rounded-md">
-                              {currentKanji.strokes} Strokes
-                            </span>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                speak(currentKanji.kanji);
-                              }}
-                              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition shrink-0 active-press"
-                              title="Listen"
-                            >
-                              <Volume2 size={14} />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Back Content Area (Scrollable to support compound words) */}
-                        <div 
-                          className="flex-1 overflow-y-auto w-full flex flex-col items-center py-2 max-w-sm gap-4 pr-1 scrollbar-thin scrollbar-thumb-white/20"
-                          onClick={(e) => {
-                            // Prevent touching/clicking lists or examples from accidentally flipping the card
-                            e.stopPropagation();
-                          }}
-                        >
-                          
-                          {/* Large Myanmar Translation */}
-                          <div className="flex flex-col items-center gap-1">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">Myanmar Meaning</span>
-                            <h4 className="text-2xl font-black text-amber-300 leading-snug drop-shadow-sm font-sans">
-                              {currentKanji.meaning_mm}
-                            </h4>
-                            <p className="text-xs text-white/70 font-bold">({currentKanji.meaning_en})</p>
-                          </div>
-                          
-                          {/* Onyomi / Kunyomi Labels */}
-                          <div className="grid grid-cols-2 gap-3 w-full mt-1 bg-black/15 p-3 rounded-2xl border border-white/5">
-                            <div className="flex flex-col gap-1 items-center border-r border-white/10 pr-2">
-                              <span className="text-[9px] font-extrabold uppercase tracking-widest text-red-300">Onyomi (音読み)</span>
-                              <span className="text-sm font-bold text-white tracking-wide">{currentKanji.onyomi}</span>
-                            </div>
-                            <div className="flex flex-col gap-1 items-center pl-2">
-                              <span className="text-[9px] font-extrabold uppercase tracking-widest text-blue-300">Kunyomi (訓読み)</span>
-                              <span className="text-sm font-bold text-white tracking-wide">{currentKanji.kunyomi}</span>
-                            </div>
-                          </div>
-
-                          {/* Example Showcase */}
-                          <div className="w-full bg-white/10 border border-white/10 p-3 rounded-2xl text-left flex flex-col gap-1.5 hover:bg-white/15 transition-all">
-                            <div className="flex justify-between items-center">
-                              <span className="text-[9px] font-black tracking-widest uppercase text-indigo-200">Example Compound</span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  speak(currentKanji.example_word);
-                                }}
-                                className="h-5 px-2 bg-white/15 hover:bg-white/25 text-[9px] font-bold rounded-lg flex items-center gap-1 transition shrink-0 active-press"
-                              >
-                                <Volume2 size={10} />
-                                <span>Pronounce</span>
-                              </button>
-                            </div>
-                            <div className="flex items-baseline gap-2">
-                              <h5 className="text-2xl font-black text-white">{currentKanji.example_word}</h5>
-                              <span className="text-xs text-indigo-100 font-bold">【{currentKanji.example_reading}】</span>
-                            </div>
-                            <p className="text-xs font-semibold text-amber-200 border-t border-white/5 pt-1.5">{currentKanji.example_meaning}</p>
-                          </div>
-
-                          {/* Compound Words Section */}
-                          <div className="w-full flex flex-col gap-2 text-left mt-1 border-t border-white/10 pt-3">
-                            <span className="text-[9px] font-black tracking-widest uppercase text-indigo-200">
-                              COMPOUND WORDS
-                            </span>
-                            
-                            <div className="flex flex-col gap-2">
-                              {currentKanji.compounds?.map((comp, idx) => (
-                                <div 
-                                  key={idx} 
-                                  className="bg-black/15 hover:bg-black/25 border border-white/5 rounded-xl p-2.5 flex flex-col gap-1 transition-all"
-                                >
-                                  <div className="flex justify-between items-baseline">
-                                    <h6 className="text-2xl font-black text-white">{comp.word}</h6>
-                                    <span className="text-xs text-indigo-300 font-bold">{comp.reading}</span>
-                                  </div>
-                                  <p className="text-xs font-semibold text-amber-200">{comp.meaning_mm}</p>
-                                  <p className="text-[11px] text-white/70 italic">{comp.meaning_en}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                        </div>
-
-                        {/* Prompt hint back */}
-                        <p className="text-[10px] text-white/50 font-bold tracking-wider uppercase">
-                          Tap card to flip back
-                        </p>
-                      </div>
-
+                  {/* Header back navigation */}
+                  <div className="flex items-center gap-3 w-full pb-1">
+                    <button
+                      onClick={() => setIsKanjiStudyActive(false)}
+                      className="w-9 h-9 rounded-xl bg-slate-150 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 transition active-press shadow-sm"
+                      title="Back to Unit Grid"
+                    >
+                      <ArrowLeft size={18} />
+                    </button>
+                    <div>
+                      <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-100 leading-tight">
+                        {selectedKanjiUnit === 'All' ? 'All Units' : `Unit ${selectedKanjiUnit}`} Flashcards
+                      </h3>
+                      <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider mt-0.5">
+                        Study Deck
+                      </p>
                     </div>
                   </div>
 
-                  {/* NAVIGATION CONTROLS */}
-                  <div className="flex gap-4 items-center mt-2">
-                    <button
-                      onClick={() => {
-                        setIsKanjiFlipped(false);
-                        setCurrentKanjiIndex(prev => (prev === 0 ? filteredKanji.length - 1 : prev - 1));
-                      }}
-                      className="flex-1 h-12 rounded-2xl border border-lightBorder dark:border-darkBorder bg-lightSurface dark:bg-darkSurface text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850 font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-sm transition active-press"
-                    >
-                      <ChevronLeft size={18} />
-                      <span>Prev</span>
-                    </button>
+                  {/* Unit Selector Toolbar */}
+                  <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 justify-start self-center overflow-x-auto max-w-full px-2 py-1.5 scrollbar-thin">
+                    {(['All' as const, ...Array.from({ length: 18 }, (_, i) => (i + 1) as number)]).map((unit) => {
+                      const isCur = selectedKanjiUnit === unit;
+                      let count = kanjiData.length;
+                      if (unit !== 'All') {
+                        count = kanjiData.filter(k => k.unit === unit).length;
+                      }
+                      return (
+                        <button
+                          key={unit}
+                          onClick={() => {
+                            setSelectedKanjiUnit(unit);
+                            setIsKanjiStudyActive(false);
+                          }}
+                          className={`px-3.5 py-1.5 font-bold text-xs rounded-lg transition-all duration-200 shrink-0 ${
+                            isCur
+                              ? 'bg-indigo-600 text-white shadow-sm'
+                              : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                          }`}
+                        >
+                          {unit === 'All' ? 'All' : `U${unit}`} <span className={`text-[10px] ml-0.5 opacity-70 ${isCur ? 'text-indigo-200' : 'text-slate-400'}`}>({count})</span>
+                        </button>
+                      );
+                    })}
+                  </div>
 
+                  {currentKanji ? (
+                    <div className="flex-1 flex flex-col gap-4">
+                      
+                      {/* Progress info and navigation tools */}
+                      <div className="flex items-center justify-between text-xs px-2">
+                        <span className="font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                          Progress
+                        </span>
+                        <span className="font-black text-indigo-600 dark:text-indigo-400">
+                          {currentKanjiIndex + 1} / {filteredKanji.length}
+                        </span>
+                      </div>
+
+                      {/* Horizontal visual indicator bar */}
+                      <div className="w-full h-1 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-indigo-600 dark:bg-indigo-400 transition-all duration-350"
+                          style={{ width: `${((currentKanjiIndex + 1) / filteredKanji.length) * 100}%` }}
+                        />
+                      </div>
+
+                      {/* FLASHCARD BODY CONTAINER */}
+                      <div 
+                        onClick={() => setIsKanjiFlipped(!isKanjiFlipped)}
+                        className="h-[440px] cursor-pointer perspective-1000 select-none touch-pan-y"
+                      >
+                        <div className={`w-full h-full duration-500 transform-style-3d relative ${isKanjiFlipped ? 'rotate-y-180' : ''}`}>
+                          
+                          {/* FRONT PANEL */}
+                          <div className="absolute inset-0 w-full h-full rounded-3xl bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-6 shadow-md shadow-slate-100 dark:shadow-none backface-hidden flex flex-col justify-between items-center text-center">
+                            
+                            {/* Top corner data */}
+                            <div className="w-full flex items-center justify-between">
+                              <span className="px-2.5 py-1 text-[10px] uppercase tracking-wider font-extrabold bg-slate-100 dark:bg-slate-800/80 text-indigo-600 dark:text-indigo-400 rounded-md">
+                                Unit {currentKanji.unit}
+                              </span>
+                              
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider font-extrabold bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400 rounded-md border border-amber-500/20">
+                                  {currentKanji.strokes} Strokes
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    speak(currentKanji.kanji);
+                                  }}
+                                  className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition shrink-0 active-press"
+                                  title="Listen Pronunciation"
+                                >
+                                  <Volume2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Large Kanji Display */}
+                            <div className="flex-1 flex flex-col justify-center items-center gap-2 py-2">
+                              <h3 
+                                className="text-8xl font-normal text-slate-900 dark:text-slate-50 leading-none tracking-normal select-none"
+                                style={{ fontFamily: '"KanjiStrokeOrder", "Kanji Stroke Order", "Kanji-Stroke-Order", sans-serif' }}
+                              >
+                                {currentKanji.kanji}
+                              </h3>
+                              
+                              {/* Animated stroke order widget */}
+                              <KanjiStrokeAnimator kanji={currentKanji.kanji} />
+                            </div>
+
+                            {/* Prompt hint */}
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-auto">
+                              Tap card to reveal readings & translations
+                            </p>
+                          </div>
+
+                          {/* BACK PANEL */}
+                          <div className="absolute inset-0 w-full h-full rounded-3xl bg-indigo-650 dark:bg-indigo-950 text-white p-6 shadow-xl backface-hidden rotate-y-180 flex flex-col justify-between items-center text-center border border-indigo-500/10">
+                            
+                            {/* Back Panel Header */}
+                            <div className="w-full flex items-center justify-between">
+                              <span className="px-2.5 py-1 text-[10px] uppercase tracking-wider font-extrabold bg-white/15 text-white/90 rounded-md font-sans">
+                                Unit {currentKanji.unit}
+                              </span>
+                              
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider font-black bg-white/15 text-white/90 rounded-md">
+                                  {currentKanji.strokes} Strokes
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    speak(currentKanji.kanji);
+                                  }}
+                                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition shrink-0 active-press"
+                                  title="Listen"
+                                >
+                                  <Volume2 size={14} />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Back Content Area (Scrollable to support compound words) */}
+                            <div 
+                              className="flex-1 overflow-y-auto w-full flex flex-col items-center py-2 max-w-sm gap-4 pr-1 scrollbar-thin scrollbar-thumb-white/20"
+                              onClick={(e) => {
+                                // Prevent touching/clicking lists or examples from accidentally flipping the card
+                                e.stopPropagation();
+                              }}
+                            >
+                              
+                              {/* Large Myanmar Translation */}
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">Myanmar Meaning</span>
+                                <h4 className="text-2xl font-black text-amber-300 leading-snug drop-shadow-sm font-sans">
+                                  {currentKanji.meaning_mm}
+                                </h4>
+                                <p className="text-xs text-white/70 font-bold">({currentKanji.meaning_en})</p>
+                              </div>
+                              
+                              {/* Onyomi / Kunyomi Labels */}
+                              <div className="grid grid-cols-2 gap-3 w-full mt-1 bg-black/15 p-3 rounded-2xl border border-white/5">
+                                <div className="flex flex-col gap-1 items-center border-r border-white/10 pr-2">
+                                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-red-300">Onyomi (音読み)</span>
+                                  <span className="text-sm font-bold text-white tracking-wide">{currentKanji.onyomi}</span>
+                                </div>
+                                <div className="flex flex-col gap-1 items-center pl-2">
+                                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-blue-300">Kunyomi (訓読み)</span>
+                                  <span className="text-sm font-bold text-white tracking-wide">{currentKanji.kunyomi}</span>
+                                </div>
+                              </div>
+
+                              {/* Example Showcase */}
+                              <div className="w-full bg-white/10 border border-white/10 p-3 rounded-2xl text-left flex flex-col gap-1.5 hover:bg-white/15 transition-all">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-[9px] font-black tracking-widest uppercase text-indigo-200">Example Compound</span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      speak(currentKanji.example_word);
+                                    }}
+                                    className="h-5 px-2 bg-white/15 hover:bg-white/25 text-[9px] font-bold rounded-lg flex items-center gap-1 transition shrink-0 active-press"
+                                  >
+                                    <Volume2 size={10} />
+                                    <span>Pronounce</span>
+                                  </button>
+                                </div>
+                                <div className="flex items-baseline gap-2">
+                                  <h5 className="text-2xl font-black text-white">{currentKanji.example_word}</h5>
+                                  <span className="text-xs text-indigo-100 font-bold">【{currentKanji.example_reading}】</span>
+                                </div>
+                                <p className="text-xs font-semibold text-amber-200 border-t border-white/5 pt-1.5">{currentKanji.example_meaning}</p>
+                              </div>
+
+                              {/* Compound Words Section */}
+                              <div className="w-full flex flex-col gap-2 text-left mt-1 border-t border-white/10 pt-3">
+                                <span className="text-[9px] font-black tracking-widest uppercase text-indigo-200">
+                                  COMPOUND WORDS
+                                </span>
+                                
+                                <div className="flex flex-col gap-2">
+                                  {currentKanji.compounds?.map((comp, idx) => (
+                                    <div 
+                                      key={idx} 
+                                      className="bg-black/15 hover:bg-black/25 border border-white/5 rounded-xl p-2.5 flex flex-col gap-1 transition-all"
+                                    >
+                                      <div className="flex justify-between items-baseline">
+                                        <h6 className="text-2xl font-black text-white">{comp.word}</h6>
+                                        <span className="text-xs text-indigo-300 font-bold">{comp.reading}</span>
+                                      </div>
+                                      <p className="text-xs font-semibold text-amber-200">{comp.meaning_mm}</p>
+                                      <p className="text-[11px] text-white/70 italic">{comp.meaning_en}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                            </div>
+
+                            {/* Prompt hint back */}
+                            <p className="text-[10px] text-white/50 font-bold tracking-wider uppercase">
+                              Tap card to flip back
+                            </p>
+                          </div>
+
+                        </div>
+                      </div>
+
+                      {/* NAVIGATION CONTROLS */}
+                      <div className="flex gap-4 items-center mt-2">
+                        <button
+                          onClick={() => {
+                            setIsKanjiFlipped(false);
+                            setCurrentKanjiIndex(prev => (prev === 0 ? filteredKanji.length - 1 : prev - 1));
+                          }}
+                          className="flex-1 h-12 rounded-2xl border border-lightBorder dark:border-darkBorder bg-lightSurface dark:bg-darkSurface text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850 font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-sm transition active-press"
+                        >
+                          <ChevronLeft size={18} />
+                          <span>Prev</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setIsKanjiFlipped(false);
+                            setCurrentKanjiIndex(prev => (prev === filteredKanji.length - 1 ? 0 : prev + 1));
+                          }}
+                          className="flex-1 h-12 rounded-2xl bg-indigo-650 dark:bg-indigo-550 hover:bg-indigo-750 dark:hover:bg-indigo-600 text-white font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition active-press"
+                        >
+                          <span>Next</span>
+                          <ChevronRight size={18} />
+                        </button>
+                      </div>
+
+                    </div>
+                  ) : (
+                    <div className="py-12 text-center text-slate-500 dark:text-slate-400 font-bold text-sm">
+                      No Kanji entries found for this category.
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* --- KANJI GRID PAGE (PREVIEW MODE) --- */
+                <div className="flex flex-col gap-6 flex-1 py-2 select-none w-full animate-fade-in animate-duration-300">
+                  
+                  {/* Top Header Grid with click-back control */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setSelectedKanjiUnit(null)}
+                        className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 transition active-press border border-slate-250/10 shadow-sm"
+                        title="Back to study units list"
+                      >
+                        <ArrowLeft size={20} />
+                      </button>
+                      <div>
+                        <h2 className="text-xl font-extrabold text-slate-850 dark:text-slate-100 tracking-tight leading-tight">
+                          {selectedKanjiUnit === 'All' 
+                            ? `Master Deck - All Units (${kanjiData.length} kanji)`
+                            : `Unit ${selectedKanjiUnit} - ${KANJI_UNIT_THEMES[selectedKanjiUnit as number] || "Japanese Characters"} (${kanjiData.filter(k => k.unit === selectedKanjiUnit).length} kanji)`
+                          }
+                        </h2>
+                        <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider mt-0.5">
+                          Unit Character Grid
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3 Columns Kanji Cards Grid */}
+                  <div className="grid grid-cols-3 gap-3 md:gap-4 pb-20 max-w-4xl mx-auto w-full">
+                    {kanjiData
+                      .filter(k => selectedKanjiUnit === 'All' ? true : k.unit === selectedKanjiUnit)
+                      .map((k, idx) => {
+                        return (
+                          <div
+                            key={k.id || idx}
+                            onClick={() => {
+                              setCurrentKanjiIndex(idx);
+                              setIsKanjiStudyActive(true);
+                              setIsKanjiFlipped(false);
+                            }}
+                            className="bg-slate-900 border border-slate-800 rounded-2xl p-3 sm:p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-[#15151F] hover:border-indigo-500/40 transition duration-150 active-press aspect-square shadow-md transform hover:scale-[1.01] group"
+                          >
+                            <span 
+                              className="text-4xl xs:text-5xl font-normal text-white mb-2 leading-none group-hover:text-amber-300 transition duration-150"
+                              style={{ fontFamily: '"KanjiStrokeOrder", "Kanji Stroke Order", "Kanji-Stroke-Order", sans-serif' }}
+                            >
+                              {k.kanji}
+                            </span>
+                            <span className="text-[10px] sm:text-xs font-semibold text-amber-400 line-clamp-1 w-full px-1">
+                              {k.meaning_mm}
+                            </span>
+                          </div>
+                        );
+                      })
+                    }
+                  </div>
+
+                  {/* Centered Study Action at Bottom */}
+                  <div className="sticky bottom-0 left-0 right-0 py-4 flex justify-center bg-gradient-to-t from-slate-50 via-slate-50/95 to-transparent dark:from-[#0F0F13] dark:via-[#0F0F13]/95 dark:to-transparent z-10 w-full">
                     <button
                       onClick={() => {
+                        setCurrentKanjiIndex(0);
+                        setIsKanjiStudyActive(true);
                         setIsKanjiFlipped(false);
-                        setCurrentKanjiIndex(prev => (prev === filteredKanji.length - 1 ? 0 : prev + 1));
                       }}
-                      className="flex-1 h-12 rounded-2xl bg-indigo-650 dark:bg-indigo-550 hover:bg-indigo-750 dark:hover:bg-indigo-600 text-white font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition active-press"
+                      className="w-full max-w-md h-12 bg-indigo-650 hover:bg-indigo-750 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-extrabold text-xs sm:text-sm rounded-xl tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 active-press"
                     >
-                      <span>Next</span>
-                      <ChevronRight size={18} />
+                      <span>✨</span>
+                      <span>Start Study (from card 1)</span>
                     </button>
                   </div>
 
                 </div>
-              ) : (
-                <div className="py-12 text-center text-slate-500 dark:text-slate-400 font-bold text-sm">
-                  No Kanji entries found for this category.
-                </div>
-              )}
-            </div>
-          ) : (
-              /* --- KANJI DASHBOARD HOME SCREEN --- */
+              )
+            ) : (
+                /* --- KANJI DASHBOARD HOME SCREEN --- */
               <div className="flex flex-col gap-6 select-none w-full animate-fade-in">
 
                 {/* SECTION TABS FOR KANJI GROUPS & LAST STUDY BUTTON */}
@@ -1398,6 +1518,7 @@ export default function App() {
                         const index = parseInt(localStorage.getItem('lastStudy_kanji_index') || '0', 10);
                         setSelectedKanjiUnit(lastUnit as number | 'All');
                         setCurrentKanjiIndex(index);
+                        setIsKanjiStudyActive(true);
                       }}
                       className="h-10 px-4 bg-indigo-650 hover:bg-indigo-750 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition shadow-md active-press"
                     >
@@ -1439,6 +1560,7 @@ export default function App() {
                           const index = parseInt(localStorage.getItem('lastStudy_kanji_index') || '0', 10);
                           setSelectedKanjiUnit(lastUnit as number | 'All');
                           setCurrentKanjiIndex(index);
+                          setIsKanjiStudyActive(true);
                         }}
                         className="flex-1 py-1.5 bg-indigo-650 dark:bg-indigo-600 text-white font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-1.5 flex items-center justify-center gap-1 shadow-sm"
                       >
@@ -1476,6 +1598,7 @@ export default function App() {
                             onClick={() => {
                               setSelectedKanjiUnit(unitNum);
                               setCurrentKanjiIndex(0);
+                              setIsKanjiStudyActive(false);
                             }}
                             className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-4 rounded-2xl flex items-center justify-between gap-4 cursor-pointer hover:shadow-md transition active-press group"
                           >
