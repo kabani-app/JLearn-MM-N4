@@ -527,7 +527,7 @@ export default function App() {
                       <span className="text-lg">📚</span>
                     </div>
                     <div>
-                      <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">JLearn-MM</h1>
+                      <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">JLearn-MM-N3</h1>
                       <p className="hidden sm:block text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
                     </div>
                   </div>
@@ -632,7 +632,7 @@ export default function App() {
                       <span className="text-lg">📚</span>
                     </div>
                     <div className="leading-tight">
-                      <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">JLearn-MM</h1>
+                      <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">JLearn-MM-N3</h1>
                       <p className="hidden sm:block text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
                     </div>
                   </div>
@@ -679,10 +679,10 @@ export default function App() {
         <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 py-2.5 overflow-hidden flex items-center border-b border-indigo-500/20 select-none shadow-sm relative z-30 transition-all">
           <div className="w-full flex overflow-hidden">
             <div className="animate-marquee inline-flex shrink-0 items-center gap-16 text-xs text-white font-bold tracking-wide">
-              <span>✨ This App is created by PHYO WAI SOE ✨ 日本語能力試験 N3 Standard 2400 ✨ This App is created by PHYO WAI SOE ✨</span>
-              <span>✨ This App is created by PHYO WAI SOE ✨ 日本語能力試験 N3 Standard 2400 ✨ This App is created by PHYO WAI SOE ✨</span>
-              <span>✨ This App is created by PHYO WAI SOE ✨ 日本語能力試験 N3 Standard 2400 ✨ This App is created by PHYO WAI SOE ✨</span>
-              <span>✨ This App is created by PHYO WAI SOE ✨ 日本語能力試験 N3 Standard 2400 ✨ This App is created by PHYO WAI SOE ✨</span>
+              <span>{"✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨"}</span>
+              <span>{"✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨"}</span>
+              <span>{"✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨"}</span>
+              <span>{"✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨"}</span>
             </div>
           </div>
         </div>

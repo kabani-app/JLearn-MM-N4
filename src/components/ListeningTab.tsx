@@ -278,8 +278,8 @@ export const ListeningTab: React.FC = () => {
               Supabase Live
             </span>
           </h2>
-          <p className="text-xs text-slate-400 dark:text-slate-500">
-            Play dynamic N3 Shinkanzen listening files synced directly from the cloud repository storage bucket files.
+          <p className="text-xs text-[#FBBF24] font-medium">
+            N3 SHINKANZEN စာအုပ်ဖြင့် တွဲဖက်နားထောင်ပါ
           </p>
         </div>
 
