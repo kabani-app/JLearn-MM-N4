@@ -13,6 +13,7 @@ interface BookItem {
   category: string;
   file_size: string;
   created_at?: string;
+  app_level?: string;
 }
 
 interface BooksTabProps {
@@ -63,6 +64,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
   const [bookTitle, setBookTitle] = useState('');
   const [bookDesc, setBookDesc] = useState('');
   const [bookCategory, setBookCategory] = useState('N3 Books');
+  const [bookLevel, setBookLevel] = useState('n3');
   const [bookFileSize, setBookFileSize] = useState('');
   const [bookDriveFileId, setBookDriveFileId] = useState('');
 
@@ -126,9 +128,11 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
     setIframeLoading(true);
   };
 
-  const filteredBooks = books.filter(book => 
-    selectedCategory === 'All' ? true : book.category === selectedCategory
-  );
+  const filteredBooks = books.filter(book => {
+    const isCategoryMatch = selectedCategory === 'All' ? true : book.category === selectedCategory;
+    const isLevelMatch = !book.app_level || book.app_level === 'n3' || book.app_level === 'all';
+    return isCategoryMatch && isLevelMatch;
+  });
 
   const getBookColor = (category: string) => {
     return category === 'N3 Books' ? '#6C63FF' : '#EF4444';
@@ -141,6 +145,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
     setBookTitle('');
     setBookDesc('');
     setBookCategory('N3 Books');
+    setBookLevel('n3');
     setBookFileSize('');
     setBookDriveFileId('');
     setIsFormModalOpen(true);
@@ -152,6 +157,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
     setBookTitle(book.title || '');
     setBookDesc(book.description_mm || '');
     setBookCategory(book.category || 'N3 Books');
+    setBookLevel(book.app_level || 'n3');
     setBookFileSize(book.file_size || '');
     setBookDriveFileId(book.drive_file_id || '');
     setIsFormModalOpen(true);
@@ -175,6 +181,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
       category: bookCategory.trim(),
       file_size: bookFileSize.trim(),
       drive_file_id: bookDriveFileId.trim(),
+      app_level: bookLevel,
     };
 
     try {
@@ -451,6 +458,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
                     <tr className="bg-slate-50 dark:bg-slate-900 border-b border-lightBorder dark:border-darkBorder text-[10px] font-black uppercase text-slate-400 tracking-wider">
                       <th className="py-3 px-4">Book Title</th>
                       <th className="py-3 px-4">Category</th>
+                      <th className="py-3 px-4">Level</th>
                       <th className="py-3 px-4">File Size</th>
                       <th className="py-3 px-4">Drive File ID</th>
                       <th className="py-3 px-4 hidden md:table-cell">Description MM</th>
@@ -470,6 +478,11 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
                             'bg-red-500/10 text-red-100 dark:text-red-400 border-red-500/20'
                           }`}>
                             {book.category}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 border border-indigo-500/10 uppercase font-mono">
+                            {book.app_level || 'n3'}
                           </span>
                         </td>
                         <td className="py-3.5 px-4 font-mono font-bold text-[11px]">
@@ -623,6 +636,23 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
                   >
                     <option value="N3 Books">N3 Books</option>
                     <option value="မေးခွန်းဟောင်း">မေးခွန်းဟောင်း</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Level</label>
+                  <select
+                    value={bookLevel}
+                    onChange={(e) => setBookLevel(e.target.value)}
+                    className="w-full text-xs font-black p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-955 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+                    required
+                  >
+                    <option value="all">all</option>
+                    <option value="n1">n1</option>
+                    <option value="n2">n2</option>
+                    <option value="n3">n3</option>
+                    <option value="n4">n4</option>
+                    <option value="n5">n5</option>
                   </select>
                 </div>
 
