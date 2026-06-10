@@ -1389,7 +1389,8 @@ export default function App() {
                 </div>
 
                 {/* SECTION TABS FOR KANJI GROUPS & LAST STUDY BUTTON */}
-                <div className="flex flex-wrap items-center gap-3">
+                {/* Desktop Version */}
+                <div className="hidden sm:flex flex-wrap items-center gap-3">
                   <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 min-w-[300px]">
                     {([
                       { label: 'All Units', value: 'All' },
@@ -1433,6 +1434,48 @@ export default function App() {
                   )}
                 </div>
 
+                {/* Mobile Version: U1-9 | U10-18 | Last Study */}
+                <div className="flex sm:hidden w-full">
+                  <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 w-full">
+                    <button
+                      onClick={() => setKanjiGridFilter('Units 1-9')}
+                      className={`flex-1 py-2 font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-1.5 ${kanjiGridFilter === 'Units 1-9' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500'}`}
+                    >
+                      U1-9
+                    </button>
+
+                    <button
+                      onClick={() => setKanjiGridFilter('Units 10-18')}
+                      className={`flex-1 py-2 font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-1.5 ${kanjiGridFilter === 'Units 10-18' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500'}`}
+                    >
+                      U10-18
+                    </button>
+
+                    {localStorage.getItem('lastStudy_kanji_unit') ? (
+                      <button
+                        onClick={() => {
+                          const lastUnitRaw = localStorage.getItem('lastStudy_kanji_unit')!;
+                          const lastUnit = lastUnitRaw === 'All' ? 'All' : parseInt(lastUnitRaw, 10);
+                          const index = parseInt(localStorage.getItem('lastStudy_kanji_index') || '0', 10);
+                          setSelectedKanjiUnit(lastUnit as number | 'All');
+                          setCurrentKanjiIndex(index);
+                        }}
+                        className="flex-1 py-2 bg-indigo-650 dark:bg-indigo-600 text-white font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-1.5 flex items-center justify-center gap-1 shadow-sm"
+                      >
+                        <span>⚡</span>
+                        <span>Last Study</span>
+                      </button>
+                    ) : (
+                      <button
+                        disabled
+                        className="flex-1 py-2 bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-650 font-bold text-xs rounded-lg transition whitespace-nowrap px-1.5 flex items-center justify-center gap-1 opacity-50 cursor-not-allowed"
+                      >
+                        <span>Last Study</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 {/* KANJI UNIT GRID */}
                 <div className="flex flex-col gap-3">
                   <h3 className="font-extrabold text-xs text-slate-400 tracking-wider uppercase">Study Units</h3>
@@ -1445,7 +1488,7 @@ export default function App() {
                           setSelectedKanjiUnit('All');
                           setCurrentKanjiIndex(0);
                         }}
-                        className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white p-4.5 rounded-2xl flex flex-col justify-between gap-4 cursor-pointer shadow-lg hover:shadow-xl transition active-press group min-h-[110px]"
+                        className="bg-gradient-to-br from-purple-600 to-indigo-700 text-white p-4.5 rounded-2xl hidden sm:flex flex-col justify-between gap-4 cursor-pointer shadow-lg hover:shadow-xl transition active-press group min-h-[110px]"
                       >
                         <div className="flex-1 min-w-0">
                           <h4 className="font-extrabold text-sm text-white group-hover:text-purple-100 transition whitespace-nowrap">
