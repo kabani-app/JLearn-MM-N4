@@ -1358,7 +1358,7 @@ export default function App() {
                                     >
                                       <div className="flex justify-between items-baseline">
                                         <h6 className="text-2xl font-black text-white">{comp.word}</h6>
-                                        <span className="text-xs text-indigo-300 font-bold">{comp.reading}</span>
+                                        <span className="text-base text-indigo-200 font-extrabold">{comp.reading}</span>
                                       </div>
                                       <p className="text-xs font-semibold text-amber-200">{comp.meaning_mm}</p>
                                       <p className="text-[11px] text-white/70 italic">{comp.meaning_en}</p>
