@@ -648,22 +648,9 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   return (
     <div className="w-full flex flex-col gap-6 select-none max-w-5xl mx-auto w-full animate-fade-in pb-16">
       
-      {/* Top Welcome Title Grid */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
-        <div>
-          <span className="text-[10px] font-black tracking-widest text-[#EF4444] uppercase bg-red-500/10 dark:bg-red-500/10 px-2.5 py-1 rounded-md border border-red-500/20">
-            J-Media Station
-          </span>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight mt-1 px-0.5">
-            Japanese Media Companion
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Browse videos, lesson channels, and external podcasts matching your JLPT N3 level
-          </p>
-        </div>
-
-        {/* Toggle Mode button for admins */}
-        {isAdminLoggedIn && (
+      {/* Toggle Mode button for admins */}
+      {isAdminLoggedIn && (
+        <div className="flex justify-end border-b border-slate-100 dark:border-slate-800/60 pb-4">
           <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800 rounded-xl">
             <button
               onClick={() => setViewMode('public')}
@@ -680,8 +667,8 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
               Admin Dashboard
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Database notification warnings if anon keys are not defined */}
       {!supabaseAnonKey && (
@@ -716,6 +703,9 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
       {/* ========================================================================= */}
       {viewMode === 'public' ? (
         <div className="flex flex-col gap-6">
+          <p className="text-xs text-slate-500 dark:text-slate-400 italic text-center max-w-2xl mx-auto leading-relaxed px-4">
+            {"youtube မှ video များသည် Embed လုပ်ထားခြင်းသာ ဖြစ်တဲ့ အတွက်ကြောင့် view များသည် မူရင်းပိုင်ရှင်ဆီကိုသာ ရောက်ရှိပါသည်"}
+          </p>
           <div className="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 w-full max-w-md mx-auto">
             <button
               onClick={() => setCurrentSection('Songs')}
