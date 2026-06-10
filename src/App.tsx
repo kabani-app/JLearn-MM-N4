@@ -982,7 +982,11 @@ export default function App() {
                           {aiMode && (
                             <div className="bg-slate-50 dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-4 rounded-2xl flex flex-col gap-1.5 shadow-inner transition max-h-[145px] overflow-y-auto animate-fadeIn">
                               <div className="text-xs leading-relaxed flex flex-col gap-1.5">
-                                {(aiMode === 'same' ? currentWord.same_meanings : currentWord.opposite_meanings)?.map((entry, i) => {
+                                {((aiMode === 'same' ? currentWord.same_meanings : currentWord.opposite_meanings) || []).length === 0 ? (
+                                  <div className="text-slate-400 dark:text-slate-500 italic text-center w-full py-1 text-[11px]">
+                                    {aiMode === 'same' ? 'No direct synonym available' : 'No direct opposite available'}
+                                  </div>
+                                ) : (aiMode === 'same' ? currentWord.same_meanings : currentWord.opposite_meanings)?.map((entry, i) => {
                                   const displayJapanese = entry.word === entry.reading ? entry.word : `${entry.word} (${entry.reading})`;
                                   return (
                                     <div key={i} className="flex items-start gap-1 font-medium select-all">
