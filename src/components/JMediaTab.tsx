@@ -119,6 +119,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
 
   // Data states
   const [posts, setPosts] = useState<JPost[]>([]);
+  const [expandedPostIds, setExpandedPostIds] = useState<Record<string | number, boolean>>({});
   const [songs, setSongs] = useState<Song[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [lessons, setLessons] = useState<YouTubeChannel[]>([]);
@@ -372,9 +373,9 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
     setLoadingPosts(true);
     try {
       const { data, error } = await supabase
-        .from('posts')
-        .select('*')
-        .order('created_at', { ascending: false });
+         .from('posts')
+         .select('*')
+         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setPosts(data || []);
@@ -384,6 +385,13 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
     } finally {
       setLoadingPosts(false);
     }
+  };
+
+  const togglePostExpand = (id: string | number) => {
+    setExpandedPostIds(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
   };
 
   const handleGeneratePostWithAI = async () => {
@@ -933,44 +941,60 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                 </div>
               ) : (
                 <div className="flex flex-col gap-5">
-                  {posts.map((post) => (
-                    <div 
-                      key={post.id}
-                      className="p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-sm transition flex flex-col gap-4 animate-fade-in text-left hover:shadow-md"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/50 pb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-black uppercase text-indigo-500 bg-indigo-500/10 px-2.5 py-0.5 rounded-full border border-indigo-500/20 tracking-wider">
-                            {post.category || "General"}
-                          </span>
-                          {post.generated_by === 'ai' ? (
-                            <span className="text-[10px] font-black uppercase bg-purple-500/10 text-purple-600 dark:text-purple-400 px-2.5 py-0.5 rounded-full border border-purple-500/20 tracking-wider flex items-center gap-1">
-                              <span>✨</span> AI Generated
+                  {posts.map((post) => {
+                    const isExpanded = !!expandedPostIds[post.id];
+                    return (
+                      <div 
+                        key={post.id}
+                        className="p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-sm transition flex flex-col gap-4 animate-fade-in text-left hover:shadow-md"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/50 pb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase text-indigo-500 bg-indigo-500/10 px-2.5 py-0.5 rounded-full border border-indigo-500/20 tracking-wider">
+                              {post.category || "General"}
                             </span>
-                          ) : (
-                            <span className="text-[10px] font-black uppercase bg-amber-500/10 text-amber-600 dark:text-amber-450 px-2.5 py-0.5 rounded-full border border-amber-500/20 tracking-wider flex items-center gap-1">
-                              <span>👤</span> Admin
+                            {post.generated_by === 'ai' ? (
+                              <span className="text-[10px] font-black uppercase bg-purple-500/10 text-purple-600 dark:text-purple-400 px-2.5 py-0.5 rounded-full border border-purple-500/20 tracking-wider flex items-center gap-1">
+                                <span>✨</span> AI Generated
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-black uppercase bg-amber-500/10 text-amber-600 dark:text-amber-450 px-2.5 py-0.5 rounded-full border border-amber-500/20 tracking-wider flex items-center gap-1">
+                                <span>👤</span> Admin
+                              </span>
+                            )}
+                          </div>
+                          {post.created_at && (
+                            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                              {new Date(post.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                             </span>
                           )}
                         </div>
-                        {post.created_at && (
-                          <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                            {new Date(post.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                          </span>
-                        )}
-                      </div>
 
-                      <div className="flex flex-col gap-2">
-                        <h4 className="font-extrabold text-[#FF6B6B] dark:text-[#FF6B6B] text-lg leading-snug">
-                          {post.title}
-                        </h4>
-                        
-                        <div className="text-[14px] font-medium text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap bg-slate-50 dark:bg-slate-950/20 p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800/70">
-                          {post.content}
+                        <div className="flex flex-col gap-2">
+                          <h4 className="font-extrabold text-[#FF6B6B] dark:text-[#FF6B6B] text-lg leading-snug">
+                            {post.title}
+                          </h4>
+                          
+                          <div 
+                            className={`text-[14px] font-medium text-slate-700 dark:text-slate-200 leading-relaxed bg-slate-50 dark:bg-slate-950/20 p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800/70 transition-all ${
+                              isExpanded ? "whitespace-pre-wrap" : "line-clamp-2 overflow-hidden"
+                            }`}
+                          >
+                            {post.content}
+                          </div>
+                        </div>
+
+                        <div className="flex justify-start border-t border-slate-100 dark:border-slate-800/40 pt-2.5">
+                          <button
+                            onClick={() => togglePostExpand(post.id)}
+                            className="text-xs font-black text-indigo-500 hover:text-indigo-650 dark:hover:text-indigo-400 flex items-center gap-1 transition focus:outline-none"
+                          >
+                            {isExpanded ? "Read less ‹" : "Read more ›"}
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
