@@ -794,6 +794,18 @@ export default function App() {
               </>
             )}
           </div>
+
+          {/* Subtle wave design at the bottom of the top navbar */}
+          <div className="absolute left-0 -bottom-[12px] w-full h-[12px] overflow-hidden pointer-events-none z-50">
+            <svg 
+              className="w-full h-full fill-lightSurface dark:fill-darkSurface" 
+              viewBox="0 0 1440 20" 
+              preserveAspectRatio="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M0,0 C360,20 1080,20 1440,0 L1440,0 L0,0 Z" />
+            </svg>
+          </div>
         </header>
 
         {/* TICKER/MARQUEE BANNER */}
