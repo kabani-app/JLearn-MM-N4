@@ -11,7 +11,6 @@ import {
   X, 
   ChevronRight,
   Sparkles,
-  List as ListIcon,
   LayoutGrid,
   Headphones,
   BookOpen,
@@ -62,8 +61,7 @@ export default function App() {
   });
 
   const [settings, setSettings] = useState(() => {
-    const darkSaved = localStorage.getItem('dark_mode');
-    const isDark = darkSaved !== null ? darkSaved === 'true' : true;
+    const isDark = true;
     const lastUnit = localStorage.getItem('last_studied_unit') || '';
     return {
       darkMode: isDark,
@@ -472,7 +470,7 @@ export default function App() {
     setIsFlipped(false);
     setIsShuffle(false);
     setIsAutoPlaying(false);
-    setIsListView(false);
+    setIsListView(true);
     setAiMode(null);
 
     localStorage.setItem('last_studied_unit', unitName);
@@ -568,8 +566,8 @@ export default function App() {
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
             {selectedUnit === null && selectedKanjiUnit === null ? (
               <>
-                <div className="flex items-center gap-3 lg:gap-8">
-                  {/* Branding */}
+                <div className="flex items-center justify-between w-full gap-3 sm:gap-4 md:gap-8">
+                  {/* Branding / Logo */}
                   <div 
                     onClick={() => {
                       handleLogoClick();
@@ -577,19 +575,33 @@ export default function App() {
                       setSelectedUnit(null);
                       setSelectedKanjiUnit(null);
                     }}
-                    className="flex items-center gap-3 cursor-pointer select-none active:opacity-80 shrink-0"
+                    className="flex items-center gap-2 sm:gap-3 cursor-pointer select-none active:opacity-80 shrink-0"
                   >
                     <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none">
                       <span className="text-lg">📚</span>
                     </div>
-                    <div>
+                    {/* Shown on sm and above, hidden on mobile phone screens to maximize space for search pill */}
+                    <div className="hidden sm:block">
                       <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">JLearn-MM-N3</h1>
-                      <p className="hidden sm:block text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
+                      <p className="hidden md:block text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
                     </div>
                   </div>
 
-                  {/* Desktop Navigation Tabs */}
-                  <div className="hidden lg:flex items-center gap-2 bg-slate-100 dark:bg-slate-900/60 px-1 py-1 rounded-xl border border-slate-200/40">
+                  {/* Mobile Search Bar - Wide/Elongated pill layout. Shown only below 'lg' */}
+                  <div 
+                    onClick={() => {
+                      setActiveTab('Search');
+                      setSelectedUnit(null);
+                      setSelectedKanjiUnit(null);
+                    }}
+                    className="flex lg:hidden flex-grow items-center gap-2 bg-slate-900 border border-slate-800 rounded-full h-9 px-3.5 text-slate-400 hover:text-slate-350 cursor-pointer shadow-inner transition select-none active-press"
+                  >
+                    <SearchIcon size={14} className="text-slate-400 shrink-0" />
+                    <span className="text-xs font-semibold text-slate-400">Search...</span>
+                  </div>
+
+                  {/* Desktop Navigation Tabs (Hidden on mobile) */}
+                  <div className="hidden lg:flex items-center gap-2 bg-slate-100 dark:bg-slate-900/60 px-1 py-1 rounded-xl border border-slate-200/40 shrink-0">
                     <button
                       onClick={handleMeaningTabClick}
                       className={`px-4 py-1.5 font-bold text-xs rounded-lg transition active-press ${activeTab === 'Home' ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'}`}
@@ -625,107 +637,93 @@ export default function App() {
                       Books
                     </button>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  {/* Desktop Header Stats */}
-                  <div className="hidden lg:flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950/25 border border-emerald-100 dark:border-emerald-900/40 px-3.5 py-1.5 rounded-xl mr-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 animate-fade-in">
-                    <span>✨ Mastered {masteredCount}/{allWords.length}</span>
-                    <span className="opacity-40">|</span>
-                    <span>{totalProgressPercent}% Complete</span>
+                  {/* Desktop Actions & Stats, plus J-Media (Shrink-0) */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {/* Desktop Header Stats */}
+                    <div className="hidden lg:flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950/25 border border-emerald-100 dark:border-emerald-900/40 px-3.5 py-1.5 rounded-xl mr-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 animate-fade-in">
+                      <span>✨ Mastered {masteredCount}/{allWords.length}</span>
+                      <span className="opacity-40">|</span>
+                      <span>{totalProgressPercent}% Complete</span>
+                    </div>
+
+                    {/* Desktop-only Dictionary Search Icon (Hidden below lg because mobile has the big Search Bar in center) */}
+                    <button 
+                      onClick={() => {
+                        setActiveTab('Search');
+                        setSelectedUnit(null);
+                        setSelectedKanjiUnit(null);
+                      }}
+                      className="hidden lg:flex w-8.5 h-8.5 rounded-full border border-lightBorder dark:border-darkBorder items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition active-press"
+                      aria-label="Dictionary Search"
+                    >
+                      <SearchIcon size={16} />
+                    </button>
+
+                    {/* J-Media Button */}
+                    <button
+                      onClick={() => {
+                        setActiveTab('J-Media');
+                        setSelectedUnit(null);
+                        setSelectedKanjiUnit(null);
+                      }}
+                      className={`h-9 px-3 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm active-press shrink-0 ${activeTab === 'J-Media' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/25'}`}
+                    >
+                      <Tv size={14} style={{ color: '#EF4444' }} />
+                      <span>J-Media</span>
+                    </button>
                   </div>
-
-                  {/* Light/Dark mode */}
-                  <button 
-                    onClick={() => setSettings(p => ({ ...p, darkMode: !p.darkMode }))}
-                    className="w-8.5 h-8.5 rounded-full border border-lightBorder dark:border-darkBorder flex items-center justify-center text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition active-press"
-                    aria-label="Toggle dark mode"
-                  >
-                    {settings.darkMode ? '☀️' : '🌙'}
-                  </button>
-
-                  {/* Dictionary Search */}
-                  <button 
-                    onClick={() => {
-                      setActiveTab('Search');
-                      setSelectedUnit(null);
-                      setSelectedKanjiUnit(null);
-                    }}
-                    className="w-8.5 h-8.5 rounded-full border border-lightBorder dark:border-darkBorder flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition active-press"
-                    aria-label="Dictionary Search"
-                  >
-                    <SearchIcon size={16} />
-                  </button>
-
-                  {/* J-Media */}
-                  <button
-                    onClick={() => {
-                      setActiveTab('J-Media');
-                      setSelectedUnit(null);
-                      setSelectedKanjiUnit(null);
-                    }}
-                    className={`h-9 px-3 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm active-press ${activeTab === 'J-Media' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/25'}`}
-                  >
-                    <Tv size={14} style={{ color: '#EF4444' }} />
-                    <span>J-Media</span>
-                  </button>
                 </div>
               </>
             ) : (
               <>
-                <div className="flex items-center gap-3 lg:gap-8">
-                  {/* Branding (Always visible, always clickable) */}
-                  <div 
-                    onClick={() => {
-                      handleLogoClick();
-                      setActiveTab('Home');
-                      setSelectedUnit(null);
-                      setSelectedKanjiUnit(null);
-                    }}
-                    className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none active:opacity-80 shrink-0"
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none">
-                      <span className="text-lg">📚</span>
-                    </div>
-                    <div className="leading-tight">
-                      <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">JLearn-MM-N3</h1>
-                      <p className="hidden sm:block text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
-                    </div>
-                  </div>
-
-                  {/* Study Mode details */}
-                  <div className="flex items-center gap-2 border-l border-slate-200 dark:border-slate-800 pl-2.5 sm:pl-3">
-                    <button 
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-3 lg:gap-8">
+                    {/* Branding (Always visible, always clickable) */}
+                    <div 
                       onClick={() => {
-                        if (selectedUnit !== null) {
-                          closeUnit();
-                        } else {
-                          setSelectedKanjiUnit(null);
-                        }
+                        handleLogoClick();
+                        setActiveTab('Home');
+                        setSelectedUnit(null);
+                        setSelectedKanjiUnit(null);
                       }}
-                      className="w-8 h-8 rounded-lg border border-lightBorder dark:border-darkBorder flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 transition shrink-0"
-                      aria-label="Back"
+                      className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none active:opacity-80 shrink-0"
                     >
-                      <ArrowLeft size={14} />
-                    </button>
-                    <div className="leading-none max-w-[80px] xs:max-w-[120px] sm:max-w-[200px] truncate">
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider">
-                        {selectedUnit !== null ? 'Vocabulary' : 'Kanji'}
-                      </span>
-                      <p className="font-extrabold text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 truncate mt-0.5" title={selectedUnit || (selectedKanjiUnit === 'All' ? 'All Kanji' : `Unit ${selectedKanjiUnit}`)}>
-                        {selectedUnit !== null ? selectedUnit : (selectedKanjiUnit === 'All' ? 'All Kanji' : `Unit ${selectedKanjiUnit}`)}
-                      </p>
+                      <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none">
+                        <span className="text-lg">📚</span>
+                      </div>
+                      <div className="leading-tight hidden sm:block">
+                        <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">JLearn-MM-N3</h1>
+                        <p className="hidden md:block text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
+                      </div>
+                    </div>
+
+                    {/* Study Mode details */}
+                    <div className="flex items-center gap-2 border-l border-slate-200 dark:border-slate-800 pl-2.5 sm:pl-3">
+                      <button 
+                        onClick={() => {
+                          if (selectedUnit !== null) {
+                            closeUnit();
+                          } else {
+                            setSelectedKanjiUnit(null);
+                          }
+                        }}
+                        className="w-8 h-8 rounded-lg border border-lightBorder dark:border-darkBorder flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 transition shrink-0"
+                        aria-label="Back"
+                      >
+                        <ArrowLeft size={14} />
+                      </button>
+                      <div className="leading-none max-w-[80px] xs:max-w-[125px] sm:max-w-[200px] truncate">
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-wider">
+                          {selectedUnit !== null ? 'Vocabulary' : 'Kanji'}
+                        </span>
+                        <p className="font-extrabold text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 truncate mt-0.5" title={selectedUnit || (selectedKanjiUnit === 'All' ? 'All Kanji' : `Unit ${selectedKanjiUnit}`)}>
+                          {selectedUnit !== null ? selectedUnit : (selectedKanjiUnit === 'All' ? 'All Kanji' : `Unit ${selectedKanjiUnit}`)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                {/* Header Right toggler */}
-                <button 
-                  onClick={() => setSettings(p => ({ ...p, darkMode: !p.darkMode }))}
-                  className="w-8.5 h-8.5 rounded-full border border-lightBorder dark:border-darkBorder flex items-center justify-center text-sm hover:bg-slate-50 dark:hover:bg-slate-800"
-                >
-                  {settings.darkMode ? '☀️' : '🌙'}
-                </button>
               </>
             )}
           </div>
@@ -768,30 +766,49 @@ export default function App() {
                 </div>
               ) : (
                 <>
-                  {/* Progress Indicator */}
-                  <div className="flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-xs text-slate-400 font-semibold tracking-wide uppercase">Word Progress</p>
-                      <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                        {currentIndex + 1} <span className="text-xs text-slate-400">of</span> {activeList.length}
-                      </p>
+                  {/* Navigation and View toggles at top */}
+                  <div className="flex items-center justify-between gap-4 border-b border-lightBorder dark:border-darkBorder pb-3 mt-1">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => {
+                          if (isListView) {
+                            closeUnit();
+                          } else {
+                            setIsListView(true);
+                          }
+                        }}
+                        className="p-2 -ml-2 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition active-press"
+                        aria-label="Back"
+                      >
+                        <ArrowLeft size={20} />
+                      </button>
+                      <div className="leading-tight">
+                        <h2 className="text-base sm:text-lg font-extrabold text-slate-850 dark:text-slate-100 tracking-tight leading-none">
+                          {selectedUnit}
+                        </h2>
+                        <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider mt-1.5">
+                          {isListView ? "Vocabulary List" : `Word ${currentIndex + 1} of ${activeList.length}`}
+                        </p>
+                      </div>
                     </div>
 
-                    {/* Unit Controls Toolbar */}
-                    <div className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-1 rounded-xl flex items-center gap-1 shadow-sm">
-                      {/* List/Grid toggler */}
+                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl">
+                      {/* Grid/Flashcards View toggler */}
                       <button
-                        onClick={toggleListView}
-                        className={`p-2 rounded-lg transition ${isListView ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
-                        title={isListView ? 'Standard View' : 'List View'}
+                        onClick={() => {
+                          toggleListView();
+                          setIsAutoPlaying(false);
+                        }}
+                        className={`p-2 rounded-lg transition ${!isListView ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-400 hover:text-slate-650 dark:hover:text-slate-200'}`}
+                        title="Flashcards View"
                       >
-                        {isListView ? <LayoutGrid size={15} /> : <ListIcon size={15} />}
+                        <LayoutGrid size={15} />
                       </button>
 
                       {/* Shuffle */}
                       <button
                         onClick={toggleShuffle}
-                        className={`p-2 rounded-lg transition ${isShuffle ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+                        className={`p-2 rounded-lg transition ${isShuffle ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-400 hover:text-slate-650 dark:hover:text-slate-200'}`}
                         title="Shuffle Words"
                       >
                         <RefreshCw size={14} className={isShuffle ? 'animate-spin-once' : ''} />
@@ -800,7 +817,7 @@ export default function App() {
                       {/* Autoplay */}
                       <button
                         onClick={toggleAutoPlay}
-                        className={`p-2 rounded-lg transition ${isAutoPlaying ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+                        className={`p-2 rounded-lg transition ${isAutoPlaying ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-400 hover:text-slate-650 dark:hover:text-slate-200'}`}
                         title="Auto Play Cards"
                       >
                         {isAutoPlaying ? <Pause size={14} /> : <Play size={14} />}
@@ -810,47 +827,71 @@ export default function App() {
 
                   {/* LIST SUBVIEW */}
                   {isListView ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-8">
-                      {activeList.map((word) => {
+                    <div className="flex flex-col gap-4 pb-8 w-full">
+                      {activeList.map((word, idx) => {
                         const learned = learnedWords.has(word.id);
                         return (
                           <div 
                             key={word.id}
-                            className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-4 rounded-2xl flex flex-col gap-3 shadow-sm transition hover:shadow-md"
+                            onClick={() => {
+                              setCurrentIndex(idx);
+                              setIsListView(false);
+                              setIsFlipped(false);
+                            }}
+                            className="bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-4 rounded-2xl flex flex-col gap-3 shadow-sm transition hover:shadow-md cursor-pointer hover:border-indigo-500/40 select-none"
                           >
                             <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2.5">
+                              <div className="flex items-center gap-3">
+                                {/* Speaker icon (🔊) */}
                                 <button
-                                  onClick={() => speak(word.kanji)}
-                                  className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    speak(word.kanji);
+                                  }}
+                                  className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition"
                                 >
-                                  <Volume2 size={16} className="text-slate-600 dark:text-slate-300" />
+                                  <Volume2 size={18} className="text-slate-600 dark:text-slate-300" />
                                 </button>
                                 <div>
                                   <div className="flex items-center gap-2">
-                                    <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">{word.kanji}</h3>
+                                    <h3 className="font-bold text-base sm:text-lg text-slate-800 dark:text-slate-100 leading-tight">{word.kanji}</h3>
                                     {word.kanji !== word.hiragana && (
-                                      <span className="text-xs text-slate-400 font-medium">[{word.hiragana}]</span>
+                                      <span className="text-xs sm:text-sm text-slate-400 font-medium">[{word.hiragana}]</span>
                                     )}
                                   </div>
-                                  <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 leading-tight">{word.meaning}</p>
+                                  <p className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400 dark:text-slate-500 mt-1">{word.pos}</p>
                                 </div>
                               </div>
                               
+                              {/* Star/bookmark icon (right) */}
                               <button
-                                onClick={() => toggleLearned(word.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleLearned(word.id);
+                                }}
                                 className={`p-2 rounded-full transition ${learned ? 'text-amber-500' : 'text-slate-300 dark:text-slate-600 hover:text-slate-400'}`}
                               >
                                 <Star size={20} fill={learned ? 'currentColor' : 'none'} />
                               </button>
                             </div>
 
+                            {/* Myanmar meaning (below word, smaller) */}
+                            <div className="border-t border-slate-100 dark:border-slate-800/50 pt-2">
+                              <p className="text-xs sm:text-sm font-bold text-indigo-650 dark:text-indigo-400 leading-normal">
+                                {word.meaning}
+                              </p>
+                            </div>
+
+                            {/* Example sentence below word & example sentence translation */}
                             {word.sentenceJa && (
-                              <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex flex-col gap-1.5 text-[12px] text-white">
+                              <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex flex-col gap-1.5 text-xs sm:text-sm text-white">
                                 <div className="flex items-center justify-between gap-2.5">
                                   <p className="font-semibold leading-relaxed">{renderStyledSentence(word.sentenceJa)}</p>
                                   <button 
-                                    onClick={() => speak(word.sentenceJa)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      speak(word.sentenceJa);
+                                    }}
                                     className="p-1 text-slate-400 hover:text-slate-300 transition shrink-0"
                                   >
                                     <Volume2 size={13} />
