@@ -224,7 +224,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
     <div className="flex flex-col flex-1 pb-24 md:pb-28">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5 text-left">
-        <div className="flex flex-col gap-1 max-w-xl">
+        <div className="hidden lg:flex flex-col gap-1 max-w-xl">
           <h2 className="font-extrabold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2 flex-wrap">
             <span>📚 PDF Study Books</span>
             <span className="text-[10px] uppercase font-extrabold px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-500/10 rounded-md">
@@ -284,7 +284,8 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
       {/* ========================================================================= */}
       {viewMode === 'public' ? (
         <>
-          <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
+          {/* DESKTOP FILTER ROW (lg:flex, hidden on mobile) */}
+          <div className="hidden lg:flex justify-between items-center mb-6 flex-wrap gap-3">
             {/* Category filter tabs */}
             <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-250/20 dark:border-slate-800/40 w-full sm:w-auto sm:min-w-[400px]">
               {(['All', 'N3 Books', 'မေးခွန်းဟောင်း'] as const).map((cat) => (
@@ -310,6 +311,52 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
               <RefreshCw size={10} className={loading ? "animate-spin" : ""} />
               Refresh list
             </button>
+          </div>
+
+          {/* MOBILE FILTER ROW (flex below lg, hidden on lg) */}
+          <div className="flex lg:hidden justify-between items-center mb-6 w-full">
+            <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-250/20 dark:border-slate-800/40 w-full">
+              {/* Refresh Tab Button */}
+              <button
+                onClick={() => {
+                  setSelectedCategory('All');
+                  fetchBooks();
+                }}
+                disabled={loading}
+                className={`flex-1 py-1.5 text-center text-xs font-bold rounded-lg transition-all active-press flex items-center justify-center gap-1 ${
+                  selectedCategory === 'All'
+                    ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-xs border border-slate-200/20'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                <RefreshCw size={11} className={loading ? "animate-spin" : ""} />
+                <span>🔄 Refresh</span>
+              </button>
+
+              {/* N3 Books Tab Button */}
+              <button
+                onClick={() => setSelectedCategory('N3 Books')}
+                className={`flex-1 py-1.5 text-center text-xs font-bold rounded-lg transition-all active-press ${
+                  selectedCategory === 'N3 Books'
+                    ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-xs border border-slate-200/20'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                N3 Books
+              </button>
+
+              {/* မေးခွန်းဟောင်း Tab Button */}
+              <button
+                onClick={() => setSelectedCategory('မေးခွန်းဟောင်း')}
+                className={`flex-1 py-1.5 text-center text-xs font-bold rounded-lg transition-all active-press ${
+                  selectedCategory === 'မေးခွန်းဟောင်း'
+                    ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-xs border border-slate-200/20'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                မေးခွန်းဟောင်း
+              </button>
+            </div>
           </div>
 
           {loading ? (
