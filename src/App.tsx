@@ -2117,93 +2117,127 @@ export default function App() {
         </main>
 
         {/* BOTTOM NAVIGATION TAB BAR */}
-        {selectedUnit === null && selectedKanjiUnit === null && (
-          <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full sm:max-w-md lg:hidden z-40 h-[76px] pointer-events-none">
-            {/* The SVG background backdrop with a smooth central notch/cutout */}
-            <div className="absolute inset-0 top-0 left-0 w-full h-[76px] pointer-events-auto">
-              <svg className="w-full h-full fill-[#1a1a2e] filter drop-shadow-[0_-5px_15px_rgba(0,0,0,0.4)]" viewBox="0 0 400 74" preserveAspectRatio="none">
-                <path d="M 0,74 L 0,30 Q 0,10 20,10 L 150,10 C 165,10 170,44 200,44 C 230,44 235,10 250,10 L 380,10 Q 400,10 400,30 L 400,74 Z" />
-              </svg>
-            </div>
+        {selectedUnit === null && selectedKanjiUnit === null && (() => {
+          const getActiveIndex = () => {
+            switch (activeTab) {
+              case 'Home':
+              case 'Search':
+                return 0;
+              case 'Kanji':
+                return 1;
+              case 'Grammar':
+                return 2;
+              case 'Listening':
+                return 3;
+              case 'Books':
+                return 4;
+              default:
+                return 0;
+            }
+          };
 
-            {/* Interactive Tab items overlay */}
-            <div className="relative z-10 w-full h-[64px] mt-[10px] grid grid-cols-5 items-center pointer-events-auto px-1">
-              {/* Home Tab */}
-              <button
-                onClick={handleMeaningTabClick}
-                className={`flex flex-col items-center justify-center gap-1 h-full transition-all duration-200 ${
-                  activeTab === 'Home' 
-                    ? 'text-[#6C63FF] font-extrabold' 
-                    : 'text-slate-400 hover:text-slate-300'
-                }`}
-              >
-                <Book size={18} className={activeTab === 'Home' ? 'stroke-[2.5px] scale-110' : 'scale-95'} />
-                <span className="text-[9px] font-extrabold uppercase tracking-wider">Meaning</span>
-              </button>
+          const activeIndex = getActiveIndex();
+          const C = activeIndex * 100 + 50;
+          const pLeftFlat = Math.max(C - 50, 20);
+          const pRightFlat = Math.min(C + 50, 480);
+          const pathD = `M 0,74 L 0,30 Q 0,10 20,10 L ${pLeftFlat},10 C ${C - 35},10 ${C - 30},44 ${C},44 C ${C + 30},44 ${C + 35},10 ${pRightFlat},10 L 480,10 Q 500,10 500,30 L 500,74 Z`;
 
-              {/* Kanji Tab */}
-              <button
-                onClick={handleKanjiTabClick}
-                className={`flex flex-col items-center justify-center gap-1 h-full transition-all duration-200 ${
-                  activeTab === 'Kanji' 
-                    ? 'text-[#6C63FF] font-extrabold' 
-                    : 'text-slate-400 hover:text-slate-300'
-                }`}
-              >
-                <Sparkles size={18} className={activeTab === 'Kanji' ? 'stroke-[2.5px] scale-110' : 'scale-95'} />
-                <span className="text-[9px] font-extrabold uppercase tracking-wider">Kanji</span>
-              </button>
+          const tabsConfig = [
+            {
+              id: 'Home',
+              label: 'Meaning',
+              icon: Book,
+              onClick: handleMeaningTabClick,
+            },
+            {
+              id: 'Kanji',
+              label: 'Kanji',
+              icon: Sparkles,
+              onClick: handleKanjiTabClick,
+            },
+            {
+              id: 'Grammar',
+              label: 'Grammar',
+              icon: FileText,
+              onClick: () => {
+                setActiveTab('Grammar');
+                setSelectedUnit(null);
+              }
+            },
+            {
+              id: 'Listening',
+              label: 'Listening',
+              icon: Headphones,
+              onClick: () => setActiveTab('Listening'),
+            },
+            {
+              id: 'Books',
+              label: 'Books',
+              icon: BookOpen,
+              onClick: () => setActiveTab('Books'),
+            }
+          ];
 
-              {/* Floating Grammar Tab (Center Button) */}
-              <div className="relative flex flex-col items-center justify-center h-full select-none">
-                <div className="absolute -top-[28px] flex flex-col items-center">
-                  <button
-                    onClick={() => {
-                      setActiveTab('Grammar');
-                      setSelectedUnit(null);
-                    }}
-                    className={`w-14 h-14 rounded-full bg-gradient-to-tr from-[#6C63FF] to-[#8881FF] text-white flex items-center justify-center shadow-[0_5px_15px_rgba(108,99,255,0.4)] hover:shadow-[0_8px_25px_rgba(108,99,255,0.6)] active:scale-95 transition-all duration-200 border-4 border-[#1a1a2e]`}
-                  >
-                    <FileText size={22} className="stroke-[2.5px]" />
-                  </button>
-                  <span className={`text-[9.5px] font-extrabold uppercase tracking-widest mt-1.5 transition-all duration-200 ${
-                    activeTab === 'Grammar' 
-                      ? 'text-[#6C63FF]' 
-                      : 'text-slate-400'
-                  }`}>
-                    Grammar
-                  </span>
-                </div>
+          return (
+            <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full sm:max-w-md lg:hidden z-40 h-[76px] pointer-events-none">
+              {/* The SVG background backdrop with a smooth sliding notch/cutout */}
+              <div className="absolute inset-0 top-0 left-0 w-full h-[76px] pointer-events-auto">
+                <svg className="w-full h-full fill-[#1a1a2e] filter drop-shadow-[0_-5px_15px_rgba(0,0,0,0.4)]" viewBox="0 0 500 74" preserveAspectRatio="none">
+                  <path 
+                    d={pathD} 
+                    className="transition-all duration-300 ease-out"
+                    style={{ transitionProperty: 'd' }}
+                  />
+                </svg>
               </div>
 
-              {/* Listening Tab */}
-              <button
-                onClick={() => setActiveTab('Listening')}
-                className={`flex flex-col items-center justify-center gap-1 h-full transition-all duration-200 ${
-                  activeTab === 'Listening' 
-                    ? 'text-[#6C63FF] font-extrabold' 
-                    : 'text-slate-400 hover:text-slate-350'
-                }`}
-              >
-                <Headphones size={18} className={activeTab === 'Listening' ? 'stroke-[2.5px] scale-110' : 'scale-95'} />
-                <span className="text-[9px] font-extrabold uppercase tracking-wider">Listening</span>
-              </button>
+              {/* Interactive Tab items overlay */}
+              <div className="relative z-10 w-full h-[64px] mt-[10px] grid grid-cols-5 items-center pointer-events-auto px-1">
+                {tabsConfig.map((tab) => {
+                  const isActive = activeTab === tab.id || (tab.id === 'Home' && activeTab === 'Search');
+                  const IconComponent = tab.icon;
 
-              {/* Books Tab */}
-              <button
-                onClick={() => setActiveTab('Books')}
-                className={`flex flex-col items-center justify-center gap-1 h-full transition-all duration-200 ${
-                  activeTab === 'Books' 
-                    ? 'text-[#6C63FF] font-extrabold' 
-                    : 'text-slate-400 hover:text-slate-350'
-                }`}
-              >
-                <BookOpen size={18} className={activeTab === 'Books' ? 'stroke-[2.5px] scale-110' : 'scale-95'} />
-                <span className="text-[9px] font-extrabold uppercase tracking-wider">Books</span>
-              </button>
-            </div>
-          </nav>
-        )}
+                  return (
+                    <div key={tab.id} className="relative flex flex-col items-center justify-center h-full select-none w-full">
+                      <div 
+                        className={`absolute flex flex-col items-center transition-all duration-300 ease-out ${
+                          isActive 
+                            ? '-top-[24px] z-20' 
+                            : 'top-[4px] z-10'
+                        }`}
+                      >
+                        <button
+                          onClick={tab.onClick}
+                          className={`transition-all duration-300 ease-out ${
+                            isActive
+                              ? 'w-14 h-14 rounded-full bg-gradient-to-tr from-[#6C63FF] to-[#8881FF] text-white flex items-center justify-center shadow-[0_5px_15px_rgba(108,99,255,0.4)] border-4 border-[#1a1a2e]'
+                              : 'w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-300 active:scale-95'
+                          }`}
+                        >
+                          <IconComponent 
+                            size={isActive ? 22 : 18} 
+                            className={`transition-all duration-300 ${
+                              isActive ? 'stroke-[2.5px]' : 'stroke-[2px]'
+                            }`} 
+                          />
+                        </button>
+                        <span 
+                          className={`text-[9px] font-extrabold uppercase tracking-wider mt-1 transition-all duration-300 whitespace-nowrap ${
+                            isActive 
+                              ? 'text-[#6C63FF] opacity-100' 
+                              : 'text-slate-400 opacity-80'
+                          }`}
+                        >
+                          {tab.label}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </nav>
+          );
+        })()}
 
         {/* SETTINGS DIALOG MODAL (For API Keys) */}
         {showSettingsModal && (
