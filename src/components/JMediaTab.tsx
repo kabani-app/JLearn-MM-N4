@@ -878,11 +878,6 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
       {/* ========================================================================= */}
       {viewMode === 'public' ? (
         <div className="flex flex-col gap-6">
-          {(currentSection === 'Songs' || currentSection === 'Lessons') && (
-            <p className="text-xs text-slate-500 dark:text-slate-400 italic text-center max-w-2xl mx-auto leading-relaxed px-4">
-              {"youtube မှ video များသည် Embed လုပ်ထားခြင်းသာ ဖြစ်တဲ့ အတွက်ကြောင့် view များသည် မူရင်းပိုင်ရှင်ဆီကိုသာ ရောက်ရှိပါသည်"}
-            </p>
-          )}
           <div className="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 w-full max-w-xl mx-auto flex-nowrap overflow-x-auto gap-1 scrollbar-none">
             <button
               onClick={() => setCurrentSection('Posts')}
