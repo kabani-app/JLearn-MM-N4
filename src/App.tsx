@@ -1108,39 +1108,49 @@ export default function App() {
             <div className="flex flex-col gap-6">
 
               {/* SECTION TABS FOR PART 1 / PART 2 & LAST STUDY BUTTON */}
-              <div className="flex flex-row items-center gap-3 w-full">
-                <button
-                  onClick={() => setActivePart('Part 1')}
-                  className={`flex-1 h-11 px-4 font-bold text-xs rounded-xl border transition active-press flex items-center justify-center gap-1.5 ${activePart === 'Part 1' ? 'bg-indigo-650 border-[#4f46e5]/40 text-white shadow-md dark:bg-indigo-600' : 'bg-slate-100 dark:bg-slate-900 text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 border-slate-200/50 dark:border-slate-800/55'}`}
-                >
-                  Part 1 ({Object.keys(vocabData['Part 1']).length} Units)
-                </button>
-                <button
-                  onClick={() => setActivePart('Part 2')}
-                  className={`flex-1 h-11 px-4 font-bold text-xs rounded-xl border transition active-press flex items-center justify-center gap-1.5 ${activePart === 'Part 2' ? 'bg-indigo-650 border-[#4f46e5]/40 text-white shadow-md dark:bg-indigo-600' : 'bg-slate-100 dark:bg-slate-900 text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 border-slate-200/50 dark:border-slate-800/55'}`}
-                >
-                  Part 2 ({Object.keys(vocabData['Part 2']).length} Units)
-                </button>
-                {localStorage.getItem('lastStudy_meaning_unit') ? (
+              <div className="flex w-full">
+                <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 w-full flex-row items-center">
                   <button
-                    onClick={() => {
-                      const lastUnit = localStorage.getItem('lastStudy_meaning_unit')!;
-                      const index = parseInt(localStorage.getItem('lastStudy_meaning_index') || '0', 10);
-                      openUnit(lastUnit, index);
-                    }}
-                    className="flex-1 h-11 px-4 bg-amber-500 hover:bg-amber-600 dark:bg-amber-650 dark:hover:bg-amber-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition shadow-md active-press"
+                    onClick={() => setActivePart('Part 1')}
+                    className={`flex-1 py-1.5 font-bold text-xs rounded-lg transition-all duration-200 active-press flex items-center justify-center gap-1 ${
+                      activePart === 'Part 1'
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                    }`}
                   >
-                    <span className="text-xs">⚡</span>
-                    <span className="line-clamp-1 text-center">Last Study: {localStorage.getItem('lastStudy_meaning_unit')?.split(': ')?.[0] || localStorage.getItem('lastStudy_meaning_unit')}</span>
+                    Part 1
                   </button>
-                ) : (
                   <button
-                    disabled
-                    className="flex-1 h-11 px-4 bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-650 font-bold text-xs rounded-xl flex items-center justify-center gap-1 border border-slate-200/20 cursor-not-allowed opacity-60"
+                    onClick={() => setActivePart('Part 2')}
+                    className={`flex-1 py-1.5 font-bold text-xs rounded-lg transition-all duration-200 active-press flex items-center justify-center gap-1 ${
+                      activePart === 'Part 2'
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
+                    }`}
                   >
-                    <span className="line-clamp-1 text-center">No history yet</span>
+                    Part 2
                   </button>
-                )}
+                  {localStorage.getItem('lastStudy_meaning_unit') ? (
+                    <button
+                      onClick={() => {
+                        const lastUnit = localStorage.getItem('lastStudy_meaning_unit')!;
+                        const index = parseInt(localStorage.getItem('lastStudy_meaning_index') || '0', 10);
+                        openUnit(lastUnit, index);
+                      }}
+                      className="flex-1 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-lg transition active-press whitespace-nowrap px-1.5 flex items-center justify-center gap-1 shadow-sm"
+                    >
+                      <span>⚡</span>
+                      <span>Last Study</span>
+                    </button>
+                  ) : (
+                    <button
+                      disabled
+                      className="flex-1 py-1.5 text-slate-400 dark:text-slate-600 font-bold text-xs rounded-lg transition whitespace-nowrap px-1.5 flex items-center justify-center gap-1 opacity-50 cursor-not-allowed"
+                    >
+                      <span>Last Study</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* LIST OF STUDY UNITS FOR SELECTED PART */}
