@@ -9,8 +9,7 @@ import {
   Star, 
   Volume2, 
   X, 
-  ChevronRight, 
-  ChevronLeft,
+  ChevronRight,
   Sparkles,
   List as ListIcon,
   LayoutGrid,
@@ -1222,25 +1221,6 @@ export default function App() {
                 /* --- KANJI FLASHCARDS PANEL --- */
                 <div className="flex flex-col gap-6 flex-1 py-4 select-none max-w-2xl mx-auto w-full animate-fade-in animate-duration-300">
                   
-                  {/* Header back navigation */}
-                  <div className="flex items-center gap-3 w-full pb-1">
-                    <button
-                      onClick={() => setIsKanjiStudyActive(false)}
-                      className="w-9 h-9 rounded-xl bg-slate-150 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 transition active-press shadow-sm"
-                      title="Back to Unit Grid"
-                    >
-                      <ArrowLeft size={18} />
-                    </button>
-                    <div>
-                      <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-100 leading-tight">
-                        {selectedKanjiUnit === 'All' ? 'All Units' : `Unit ${selectedKanjiUnit}`} Flashcards
-                      </h3>
-                      <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider mt-0.5">
-                        Study Deck
-                      </p>
-                    </div>
-                  </div>
-
                   {/* Unit Selector Toolbar */}
                   <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 justify-start self-center overflow-x-auto max-w-full px-2 py-1.5 scrollbar-thin">
                     {(['All' as const, ...Array.from({ length: 18 }, (_, i) => (i + 1) as number)]).map((unit) => {
@@ -1454,16 +1434,24 @@ export default function App() {
                       </div>
 
                       {/* NAVIGATION CONTROLS */}
-                      <div className="flex gap-4 items-center mt-2">
+                      <div className="flex items-center justify-between gap-3 mt-2">
                         <button
                           onClick={() => {
                             setIsKanjiFlipped(false);
                             setCurrentKanjiIndex(prev => (prev === 0 ? filteredKanji.length - 1 : prev - 1));
                           }}
-                          className="flex-1 h-12 rounded-2xl border border-lightBorder dark:border-darkBorder bg-lightSurface dark:bg-darkSurface text-slate-700 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850 font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-sm transition active-press"
+                          className="flex-1 h-12 rounded-2xl border border-lightBorder dark:border-darkBorder bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-705 dark:text-slate-300 disabled:opacity-35 transition flex items-center justify-center gap-1.5 font-bold text-xs active-press"
                         >
-                          <ChevronLeft size={18} />
+                          <span className="text-sm font-black">‹‹</span>
                           <span>Prev</span>
+                        </button>
+
+                        <button
+                          onClick={() => setIsKanjiStudyActive(false)}
+                          className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-750 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-1.5 shadow-md transition active-press"
+                        >
+                          <span className="text-sm">⬡</span>
+                          <span>Back</span>
                         </button>
 
                         <button
@@ -1471,10 +1459,10 @@ export default function App() {
                             setIsKanjiFlipped(false);
                             setCurrentKanjiIndex(prev => (prev === filteredKanji.length - 1 ? 0 : prev + 1));
                           }}
-                          className="flex-1 h-12 rounded-2xl bg-indigo-650 dark:bg-indigo-550 hover:bg-indigo-750 dark:hover:bg-indigo-600 text-white font-bold text-sm tracking-wide flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition active-press"
+                          className="flex-1 h-12 rounded-2xl border border-lightBorder dark:border-darkBorder bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-705 dark:text-slate-300 disabled:opacity-35 transition flex items-center justify-center gap-1.5 font-bold text-xs active-press"
                         >
                           <span>Next</span>
-                          <ChevronRight size={18} />
+                          <span className="text-sm font-black">››</span>
                         </button>
                       </div>
 
