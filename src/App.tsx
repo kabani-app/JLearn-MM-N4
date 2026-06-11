@@ -701,10 +701,21 @@ export default function App() {
         <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 py-2.5 overflow-hidden flex items-center border-b border-indigo-500/20 select-none shadow-sm relative z-30 transition-all">
           <div className="w-full flex overflow-hidden">
             <div className="animate-marquee inline-flex shrink-0 items-center gap-16 text-xs text-white font-bold tracking-wide">
-              <span>{"✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨"}</span>
-              <span>{"✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨"}</span>
-              <span>{"✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨"}</span>
-              <span>{"✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨"}</span>
+              {activeTab === 'J-Media' ? (
+                <>
+                  <span>{"✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨"}</span>
+                  <span>{"✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨"}</span>
+                  <span>{"✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨"}</span>
+                  <span>{"✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨"}</span>
+                </>
+              ) : (
+                <>
+                  <span>{"✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨"}</span>
+                  <span>{"✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨"}</span>
+                  <span>{"✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨"}</span>
+                  <span>{"✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨ App is developed by Phyo W S & Aung K Z ✨ Contact us >>> Telegram >>> @yangoncity ✨"}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
