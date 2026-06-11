@@ -12,6 +12,7 @@ import {
 interface JMediaTabProps {
   isAdminLoggedIn: boolean;
   setIsAdminLoggedIn: (val: boolean) => void;
+  onRateUpdated?: () => void;
 }
 
 interface Song {
@@ -74,6 +75,7 @@ interface JPost {
 export const JMediaTab: React.FC<JMediaTabProps> = ({
   isAdminLoggedIn,
   setIsAdminLoggedIn,
+  onRateUpdated,
 }) => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://rtfumxdmgldvseuxarjo.supabase.co';
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -102,8 +104,15 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   // Tab State: Public View
   const [currentSection, setCurrentSection] = useState<'Posts' | 'Songs' | 'Lessons' | 'News'>('Posts');
   
-  // Tab State: Admin Panel (allows Posts, Songs, Playlists, Lessons, News, Books)
-  const [adminSection, setAdminSection] = useState<'Posts' | 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books'>('Posts');
+  // Tab State: Admin Panel (allows Posts, Songs, Playlists, Lessons, News, Books, ExchangeRate)
+  const [adminSection, setAdminSection] = useState<'Posts' | 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books' | 'ExchangeRate'>('Posts');
+
+  // Exchange rate states
+  const [dbRate, setDbRate] = useState<number | null>(null);
+  const [dbUpdatedAt, setDbUpdatedAt] = useState<string | null>(null);
+  const [rateInput, setRateInput] = useState<string>('');
+  const [isLoadingRate, setIsLoadingRate] = useState<boolean>(false);
+  const [isSavingRate, setIsSavingRate] = useState<boolean>(false);
   
   // Whether we are currently in Admin Dashboard view vs Public view (for authorized admin)
   const [viewMode, setViewMode] = useState<'public' | 'admin'>(isAdminLoggedIn ? 'admin' : 'public');
@@ -500,6 +509,89 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
     }
   };
 
+  const fetchAdminExchangeRate = async () => {
+    if (!supabase) return;
+    setIsLoadingRate(true);
+    try {
+      const { data, error } = await supabase
+        .from('exchange_rates')
+        .select('*')
+        .eq('currency_pair', 'JPY-MMK')
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setDbRate(data.rate);
+        setDbUpdatedAt(data.updated_at);
+        setRateInput(data.rate.toString());
+      }
+    } catch (err: any) {
+      console.error('Error fetching exchange rate:', err);
+    } finally {
+      setIsLoadingRate(false);
+    }
+  };
+
+  const handleUpdateExchangeRate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase) return;
+    const rateVal = parseFloat(rateInput);
+    if (isNaN(rateVal) || rateVal <= 0) {
+      setErrorBanner("ကျေးဇူးပြု၍ မှန်ကန်သော rate (ကိန်းဂဏန်း) ကို ရိုက်ထည့်ပေးပါ။");
+      return;
+    }
+
+    setIsSavingRate(true);
+    try {
+      // Check if existing row exists
+      const { data: existingRate } = await supabase
+        .from('exchange_rates')
+        .select('*')
+        .eq('currency_pair', 'JPY-MMK')
+        .maybeSingle();
+
+      let error;
+      if (existingRate) {
+        // Update
+        const { error: err } = await supabase
+          .from('exchange_rates')
+          .update({
+            rate: rateVal,
+            updated_at: new Date().toISOString()
+          })
+          .eq('currency_pair', 'JPY-MMK');
+        error = err;
+      } else {
+        // Insert
+        const { error: err } = await supabase
+          .from('exchange_rates')
+          .insert([
+            {
+              currency_pair: 'JPY-MMK',
+              rate: rateVal,
+              updated_at: new Date().toISOString()
+            }
+          ]);
+        error = err;
+      }
+
+      if (error) throw error;
+
+      setSuccessBanner("JPY-MMK Exchange Rate updated successfully!");
+      setDbRate(rateVal);
+      setDbUpdatedAt(new Date().toISOString());
+      
+      if (onRateUpdated) {
+        onRateUpdated();
+      }
+    } catch (err: any) {
+      console.error('Error updating exchange rate:', err);
+      setErrorBanner(err.message || 'Error occurred updating exchange rate to Supabase.');
+    } finally {
+      setIsSavingRate(false);
+    }
+  };
+
   // Fetch all on mount or when supabase becomes available
   useEffect(() => {
     if (supabase) {
@@ -509,6 +601,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
       fetchLessons();
       fetchNews();
       fetchBooks();
+      fetchAdminExchangeRate();
     }
   }, [supabase]);
 
@@ -1514,6 +1607,13 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
               <Book size={13} />
               Books
             </button>
+            <button
+              onClick={() => setAdminSection('ExchangeRate')}
+              className={`flex-1 min-w-[100px] py-1.5 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${adminSection === 'ExchangeRate' ? 'bg-[#EF4444] text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}
+            >
+              <Settings size={13} />
+              Exchange Rate
+            </button>
           </div>
 
           {/* ==================== POSTS MANAGER PANEL ==================== */}
@@ -2051,6 +2151,75 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                       </tbody>
                     </table>
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ==================== EXCHANGE RATE MANAGER PANEL ==================== */}
+          {adminSection === 'ExchangeRate' && (
+            <div className="flex flex-col gap-4 animate-fade-in text-left max-w-xl">
+              <div className="border-b border-lightBorder dark:border-darkBorder pb-2">
+                <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <span>💴</span> JPY-MMK SBI Exchange Rate
+                </h4>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                  စနစ်အတွင်းရှိ ဂျပန်ယန်းမှ မြန်မာကျပ်ငွေသို့ ပုံသေလဲလှယ်နှုန်းကို ဤနေရာတွင် ပြင်ဆင်နိုင်ပါသည်။
+                </p>
+              </div>
+
+              {isLoadingRate ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="animate-spin text-indigo-400" size={20} />
+                </div>
+              ) : (
+                <div className="p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-sm flex flex-col gap-5">
+                  <div className="flex flex-col gap-1 bg-slate-50 dark:bg-slate-950/20 p-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800/80">
+                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Current Rate in Database</span>
+                    <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                      {dbRate !== null ? `1 JPY = ${dbRate} MMK` : "No rate set yet"}
+                    </span>
+                    {dbUpdatedAt && (
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                        Last Updated: {new Date(dbUpdatedAt).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+
+                  <form onSubmit={handleUpdateExchangeRate} className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                        New JPY (Yen) - MMK (Kyat) Rate
+                      </label>
+                      <input
+                        type="number"
+                        step="any"
+                        placeholder="e.g. 24.57"
+                        value={rateInput}
+                        onChange={(e) => setRateInput(e.target.value)}
+                        className="w-full px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-950 text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200/50 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                        required
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isSavingRate}
+                      className="w-full py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-md transition transform hover:scale-[1.01] active-press"
+                    >
+                      {isSavingRate ? (
+                        <>
+                          <Loader2 className="animate-spin" size={13} />
+                          Updating...
+                        </>
+                      ) : (
+                        <>
+                          <Check size={13} />
+                          Update Rate
+                        </>
+                      )}
+                    </button>
+                  </form>
                 </div>
               )}
             </div>

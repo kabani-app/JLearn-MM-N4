@@ -73,7 +73,51 @@ export default function App() {
     };
   });
 
-  const [activeTab, setActiveTab] = useState<'Home' | 'Kanji' | 'Search' | 'Listening' | 'Books' | 'J-Media' | 'Grammar'>('Home');
+  const [activeTab, setActiveTab ] = useState<'Home' | 'Kanji' | 'Search' | 'Listening' | 'Books' | 'J-Media' | 'Grammar'>('Home');
+
+  // Exchange rate states for J-Media marquee
+  const [sbiRate, setSbiRate] = useState<number | null>(null);
+  const [sbiUpdatedAt, setSbiUpdatedAt] = useState<string | null>(null);
+
+  const getFormattedDate = (dateString?: string | null) => {
+    if (!dateString) {
+      return "Jun 11";
+    }
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } catch (e) {
+      return "Jun 11";
+    }
+  };
+
+  const fetchSbiRate = async () => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://rtfumxdmgldvseuxarjo.supabase.co';
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+    if (supabaseUrl) {
+      try {
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabase = createClient(supabaseUrl, supabaseAnonKey || 'placeholder-anon-key');
+        const { data, error } = await supabase
+          .from('exchange_rates')
+          .select('*')
+          .eq('currency_pair', 'JPY-MMK')
+          .maybeSingle();
+        if (data && !error) {
+          setSbiRate(data.rate);
+          setSbiUpdatedAt(data.updated_at);
+        }
+      } catch (e) {
+        console.error('Error fetching exchange rate:', e);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'J-Media') {
+      fetchSbiRate();
+    }
+  }, [activeTab]);
 
   // J-Media Admin States
   const [logoClicks, setLogoClicks] = useState(0);
@@ -703,10 +747,10 @@ export default function App() {
             <div className="animate-marquee inline-flex shrink-0 items-center gap-16 text-xs text-white font-bold tracking-wide">
               {activeTab === 'J-Media' ? (
                 <>
-                  <span>{"✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨"}</span>
-                  <span>{"✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨"}</span>
-                  <span>{"✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨"}</span>
-                  <span>{"✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨"}</span>
+                  <span>{`✨ 💴 SBI Rate: 1 JPY = ${sbiRate !== null ? sbiRate : "24.57"} MMK (${getFormattedDate(sbiUpdatedAt)}) ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨`}</span>
+                  <span>{`✨ 💴 SBI Rate: 1 JPY = ${sbiRate !== null ? sbiRate : "24.57"} MMK (${getFormattedDate(sbiUpdatedAt)}) ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨`}</span>
+                  <span>{`✨ 💴 SBI Rate: 1 JPY = ${sbiRate !== null ? sbiRate : "24.57"} MMK (${getFormattedDate(sbiUpdatedAt)}) ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨`}</span>
+                  <span>{`✨ 💴 SBI Rate: 1 JPY = ${sbiRate !== null ? sbiRate : "24.57"} MMK (${getFormattedDate(sbiUpdatedAt)}) ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨`}</span>
                 </>
               ) : (
                 <>
@@ -1736,6 +1780,7 @@ export default function App() {
             <JMediaTab
               isAdminLoggedIn={isAdminLoggedIn}
               setIsAdminLoggedIn={setIsAdminLoggedIn}
+              onRateUpdated={fetchSbiRate}
             />
           ) : (
             /* --- GRAMMAR SCREEN --- */
