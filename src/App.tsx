@@ -889,13 +889,13 @@ export default function App() {
                         onTouchStart={handleTouchStart}
                         onTouchMove={handleTouchMove}
                         onTouchEnd={handleTouchEnd}
-                        className="h-72 w-full perspective-1000 cursor-pointer active-press"
+                        className="min-h-[18rem] h-auto w-full perspective-1000 cursor-pointer active-press"
                         onClick={toggleFlipped}
                       >
-                        <div className={`w-full h-full duration-500 transform-style-3d relative ${isFlipped ? 'rotate-y-180' : ''}`}>
+                        <div className={`w-full min-h-[18rem] h-auto duration-500 transform-style-3d relative ${isFlipped ? 'rotate-y-180' : ''}`}>
                           
                           {/* FRONT PANEL */}
-                          <div className="absolute inset-0 w-full h-full rounded-3xl bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-6 shadow-md shadow-slate-100 dark:shadow-none backface-hidden flex flex-col justify-between items-center text-center">
+                          <div className={`${isFlipped ? 'absolute inset-0 w-full h-full select-none pointer-events-none' : 'relative w-full min-h-[18rem] h-auto'} overflow-hidden rounded-3xl bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder p-6 shadow-md shadow-slate-100 dark:shadow-none backface-hidden flex flex-col justify-between items-center text-center`}>
                             
                             {/* Card Header */}
                             <div className="w-full flex items-center justify-between">
@@ -913,33 +913,64 @@ export default function App() {
                                 <Volume2 size={16} />
                               </button>
                             </div>
-
+ 
                             {/* Center Kanji/Hiragana */}
-                            <div className="flex-1 flex flex-col justify-center items-center gap-1.5 py-4">
+                            <div className="flex-1 flex flex-col justify-center items-center gap-1.5 py-4 w-full">
                               {currentWord.kanji !== currentWord.hiragana && (
-                                <p className="text-base text-slate-500 dark:text-slate-400 font-semibold tracking-wide">
+                                <p 
+                                  className="text-center font-semibold tracking-wide text-slate-500 dark:text-slate-400 line-clamp-2 max-w-full px-2"
+                                  style={{
+                                    fontSize: currentWord.hiragana.length > 16 
+                                      ? "clamp(1.0rem, 3.5vw, 1.5rem)" 
+                                      : currentWord.hiragana.length > 8 
+                                        ? "clamp(1.2rem, 4.5vw, 2.0rem)" 
+                                        : "clamp(1.5rem, 5vw, 3rem)",
+                                    wordBreak: "break-word",
+                                    overflowWrap: "anywhere"
+                                  }}
+                                >
                                   {currentWord.hiragana}
                                 </p>
                               )}
-                              <h3 className="text-4xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight">
+                              <h3 
+                                className="font-extrabold text-slate-900 dark:text-slate-100 leading-tight text-center max-w-full px-2"
+                                style={{
+                                  fontSize: currentWord.kanji.length > 12 
+                                    ? "clamp(0.8rem, 2.2vw, 1.2rem)" 
+                                    : currentWord.kanji.length > 6 
+                                      ? "clamp(0.9rem, 2.6vw, 1.5rem)" 
+                                      : "clamp(1rem, 3vw, 1.8rem)",
+                                  wordBreak: "break-word",
+                                  overflowWrap: "anywhere"
+                                }}
+                              >
                                 {currentWord.kanji}
                               </h3>
                               
                               <div className="w-14 h-[2px] bg-slate-100 dark:bg-slate-800 my-3" />
                               
-                              <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                              <p 
+                                className="font-black text-indigo-600 dark:text-indigo-400 text-center max-w-full px-2"
+                                style={{
+                                  fontSize: currentWord.meaning.length > 20
+                                    ? "clamp(0.8rem, 2.2vw, 1.1rem)"
+                                    : "clamp(0.9rem, 2.5vw, 1.3rem)",
+                                  wordBreak: "break-word",
+                                  overflowWrap: "anywhere"
+                                }}
+                              >
                                 {currentWord.meaning}
                               </p>
                             </div>
-
+ 
                             {/* Hints footer */}
                             <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold tracking-wide">
                               Tap to flip · Swipe to navigate
                             </p>
                           </div>
-
+ 
                           {/* BACK PANEL */}
-                          <div className="absolute inset-0 w-full h-full rounded-3xl bg-indigo-600 dark:bg-indigo-900 text-white p-6 shadow-xl backface-hidden rotate-y-180 flex flex-col justify-between items-center text-center">
+                          <div className={`${isFlipped ? 'relative w-full min-h-[18rem] h-auto' : 'absolute inset-0 w-full h-full select-none pointer-events-none'} overflow-hidden rounded-3xl bg-indigo-600 dark:bg-indigo-900 text-white p-6 shadow-xl backface-hidden rotate-y-180 flex flex-col justify-between items-center text-center`}>
                             
                             {/* Header back */}
                             <div className="w-full flex items-center justify-between">
