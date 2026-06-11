@@ -881,34 +881,34 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
           <p className="text-xs text-slate-500 dark:text-slate-400 italic text-center max-w-2xl mx-auto leading-relaxed px-4">
             {"youtube မှ video များသည် Embed လုပ်ထားခြင်းသာ ဖြစ်တဲ့ အတွက်ကြောင့် view များသည် မူရင်းပိုင်ရှင်ဆီကိုသာ ရောက်ရှိပါသည်"}
           </p>
-          <div className="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 w-full max-w-xl mx-auto flex-wrap sm:flex-nowrap gap-1">
+          <div className="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 w-full max-w-xl mx-auto flex-nowrap overflow-x-auto gap-1 scrollbar-none">
             <button
               onClick={() => setCurrentSection('Posts')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${currentSection === 'Posts' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'}`}
+              className={`flex-1 min-w-[70px] sm:min-w-[100px] py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-black tracking-wide transition flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${currentSection === 'Posts' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'}`}
             >
-              <FileText size={13} />
+              <FileText size={12} className="sm:w-[13px] sm:h-[13px]" />
               Posts
             </button>
             <button
               onClick={() => setCurrentSection('Songs')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${currentSection === 'Songs' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'}`}
+              className={`flex-1 min-w-[70px] sm:min-w-[100px] py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-black tracking-wide transition flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${currentSection === 'Songs' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'}`}
             >
-              <Music size={13} />
+              <Music size={12} className="sm:w-[13px] sm:h-[13px]" />
               Songs
             </button>
             <button
               onClick={() => setCurrentSection('Lessons')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${currentSection === 'Lessons' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-205'}`}
+              className={`flex-1 min-w-[70px] sm:min-w-[100px] py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-black tracking-wide transition flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${currentSection === 'Lessons' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-205'}`}
             >
-              <Youtube size={13} />
+              <Youtube size={12} className="sm:w-[13px] sm:h-[13px]" />
               Lessons
             </button>
             <button
               onClick={() => setCurrentSection('News')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${currentSection === 'News' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-205'}`}
+              className={`flex-1 min-w-[70px] sm:min-w-[100px] py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-black tracking-wide transition flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${currentSection === 'News' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-205'}`}
             >
-              <Layers size={13} />
-              News & Podcast
+              <Layers size={12} className="sm:w-[13px] sm:h-[13px]" />
+              <span>News<span className="hidden sm:inline"> & Podcast</span></span>
             </button>
           </div>
 
