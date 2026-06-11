@@ -632,7 +632,7 @@ export default function App() {
       <div className="w-full sm:max-w-md lg:max-w-full lg:w-full bg-lightBg dark:bg-darkBg min-h-screen sm:min-h-[85vh] lg:min-h-screen sm:rounded-2xl lg:rounded-none sm:shadow-2xl lg:shadow-none sm:border lg:border-none border-slate-200 dark:border-darkBorder flex flex-col relative overflow-hidden transition-all duration-200 shrink-0">
         
         {/* TOP HEADER / NAVBAR */}
-        <header className="sticky top-0 z-40 bg-lightSurface dark:bg-darkSurface border-b border-lightBorder dark:border-darkBorder py-3.5 px-4 lg:px-8 shadow-sm transition-colors duration-200">
+        <header className={`sticky top-0 z-40 bg-lightSurface dark:bg-darkSurface border-b border-lightBorder dark:border-darkBorder py-3.5 px-4 lg:px-8 shadow-sm transition-colors duration-200 ${activeTab === 'J-Media' ? 'hidden lg:block' : ''}`}>
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
             {selectedUnit === null && selectedKanjiUnit === null ? (
               <>
@@ -797,7 +797,7 @@ export default function App() {
         </header>
 
         {/* TICKER/MARQUEE BANNER */}
-        <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 py-2.5 overflow-hidden flex items-center border-b border-indigo-500/20 select-none shadow-sm relative z-30 transition-all">
+        <div className={`bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 py-2.5 overflow-hidden flex items-center border-b border-indigo-500/20 select-none shadow-sm relative z-30 transition-all ${activeTab === 'J-Media' ? 'hidden lg:flex' : 'flex'}`}>
           <div className="w-full flex overflow-hidden">
             <div className="animate-marquee inline-flex shrink-0 items-center gap-16 text-xs text-white font-bold tracking-wide">
               {activeTab === 'J-Media' ? (
@@ -820,7 +820,7 @@ export default function App() {
         </div>
 
         {/* MAIN BODY AREA */}
-        <main className={`flex-1 overflow-y-auto px-4 pt-4 lg:px-8 lg:pt-8 flex flex-col gap-4 ${(selectedUnit === null && selectedKanjiUnit === null) ? 'pb-16 lg:pb-8' : 'pb-4 lg:pb-8'}`}>
+        <main className={`flex-1 overflow-y-auto px-4 pt-4 lg:px-8 lg:pt-8 flex flex-col gap-4 ${(selectedUnit === null && selectedKanjiUnit === null) ? (activeTab === 'J-Media' ? 'pb-28 lg:pb-8' : 'pb-16 lg:pb-8') : 'pb-4 lg:pb-8'}`}>
           <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col gap-6">
           
           {/* SCREEN DISPATCHER */}
@@ -2118,29 +2118,7 @@ export default function App() {
 
         {/* BOTTOM NAVIGATION TAB BAR */}
         {selectedUnit === null && selectedKanjiUnit === null && (() => {
-          const getActiveIndex = () => {
-            switch (activeTab) {
-              case 'Home':
-              case 'Search':
-                return 0;
-              case 'Kanji':
-                return 1;
-              case 'Grammar':
-                return 2;
-              case 'Listening':
-                return 3;
-              case 'Books':
-                return 4;
-              default:
-                return 0;
-            }
-          };
-
-          const activeIndex = getActiveIndex();
-          const C = activeIndex * 100 + 50;
-          const pLeftFlat = Math.max(C - 50, 20);
-          const pRightFlat = Math.min(C + 50, 480);
-          const pathD = `M 0,74 L 0,30 Q 0,10 20,10 L ${pLeftFlat},10 C ${C - 35},10 ${C - 30},44 ${C},44 C ${C + 30},44 ${C + 35},10 ${pRightFlat},10 L 480,10 Q 500,10 500,30 L 500,74 Z`;
+          const isJMedia = activeTab === 'J-Media';
 
           const tabsConfig = [
             {
@@ -2177,6 +2155,65 @@ export default function App() {
               onClick: () => setActiveTab('Books'),
             }
           ];
+
+          if (isJMedia) {
+            return (
+              <>
+                {/* 2. MARQUEE position when in J-Media: Move marquee to just ABOVE the bottom bar */}
+                <div className="fixed bottom-[64px] left-0 right-0 mx-auto w-full sm:max-w-md lg:hidden z-40 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 py-1.5 overflow-hidden flex items-center border-t border-b border-indigo-500/20 select-none shadow-md">
+                  <div className="w-full flex overflow-hidden">
+                    <div className="animate-marquee inline-flex shrink-0 items-center gap-16 text-[10px] text-white font-bold tracking-wide">
+                      <span>{`✨ 💴 SBI Rate: 1 JPY = ${sbiRate !== null ? sbiRate : "24.57"} MMK (${getFormattedDate(sbiUpdatedAt)}) ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨`}</span>
+                      <span>{`✨ 💴 SBI Rate: 1 JPY = ${sbiRate !== null ? sbiRate : "24.57"} MMK (${getFormattedDate(sbiUpdatedAt)}) ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨`}</span>
+                      <span>{`✨ 💴 SBI Rate: 1 JPY = ${sbiRate !== null ? sbiRate : "24.57"} MMK (${getFormattedDate(sbiUpdatedAt)}) ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨`}</span>
+                      <span>{`✨ 💴 SBI Rate: 1 JPY = ${sbiRate !== null ? sbiRate : "24.57"} MMK (${getFormattedDate(sbiUpdatedAt)}) ✨ ပျော်ရွှင်စွာဖြင့် ဂျပန်စာလေ့လာနိုင်ကျပါစေ ✨`}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. FLAT/EVEN bottom bar for J-Media */}
+                <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full sm:max-w-md lg:hidden z-40 h-[64px] bg-[#1a1a2e] border-t border-slate-850 flex items-center justify-around shadow-[0_-4px_12px_rgba(0,0,0,0.3)] px-2">
+                  {tabsConfig.map((tab) => {
+                    const IconComponent = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={tab.onClick}
+                        className="flex flex-col items-center justify-center gap-1 w-14 h-full text-slate-400 hover:text-slate-300 transition-colors active:scale-95 duration-150"
+                      >
+                        <IconComponent size={18} className="stroke-[2px]" />
+                        <span className="text-[9px] font-bold uppercase tracking-wider">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </>
+            );
+          }
+
+          const getActiveIndex = () => {
+            switch (activeTab) {
+              case 'Home':
+              case 'Search':
+                return 0;
+              case 'Kanji':
+                return 1;
+              case 'Grammar':
+                return 2;
+              case 'Listening':
+                return 3;
+              case 'Books':
+                return 4;
+              default:
+                return 0;
+            }
+          };
+
+          const activeIndex = getActiveIndex();
+          const C = activeIndex * 100 + 50;
+          const pLeftFlat = Math.max(C - 50, 20);
+          const pRightFlat = Math.min(C + 50, 480);
+          const pathD = `M 0,74 L 0,30 Q 0,10 20,10 L ${pLeftFlat},10 C ${C - 35},10 ${C - 30},44 ${C},44 C ${C + 30},44 ${C + 35},10 ${pRightFlat},10 L 480,10 Q 500,10 500,30 L 500,74 Z`;
 
           return (
             <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full sm:max-w-md lg:hidden z-40 h-[76px] pointer-events-none">
