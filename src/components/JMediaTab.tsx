@@ -6,7 +6,7 @@ import {
   Eye, CheckCircle, AlertCircle, ChevronRight, 
   PlusCircle, Check, Info, Settings, ShieldAlert,
   ArrowLeft, Folder, Layers, Film, Book,
-  ArrowUp, ArrowDown, ListOrdered, Move
+  ArrowUp, ArrowDown, ListOrdered, Move, Sparkles
 } from 'lucide-react';
 
 interface JMediaTabProps {
@@ -62,6 +62,15 @@ interface BookDbItem {
   created_at?: string;
 }
 
+interface JPost {
+  id: string | number;
+  title: string;
+  content: string;
+  category: string;
+  generated_by: 'admin' | 'ai';
+  created_at?: string;
+}
+
 export const JMediaTab: React.FC<JMediaTabProps> = ({
   isAdminLoggedIn,
   setIsAdminLoggedIn,
@@ -91,10 +100,10 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   }, [supabaseUrl, supabaseAnonKey]);
 
   // Tab State: Public View
-  const [currentSection, setCurrentSection] = useState<'Songs' | 'Lessons' | 'News'>('Songs');
+  const [currentSection, setCurrentSection] = useState<'Posts' | 'Songs' | 'Lessons' | 'News'>('Posts');
   
-  // Tab State: Admin Panel (allows Songs, Playlists, Lessons, News, Books)
-  const [adminSection, setAdminSection] = useState<'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books'>('Songs');
+  // Tab State: Admin Panel (allows Posts, Songs, Playlists, Lessons, News, Books)
+  const [adminSection, setAdminSection] = useState<'Posts' | 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books'>('Posts');
   
   // Whether we are currently in Admin Dashboard view vs Public view (for authorized admin)
   const [viewMode, setViewMode] = useState<'public' | 'admin'>(isAdminLoggedIn ? 'admin' : 'public');
@@ -109,6 +118,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   }, [isAdminLoggedIn]);
 
   // Data states
+  const [posts, setPosts] = useState<JPost[]>([]);
   const [songs, setSongs] = useState<Song[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [lessons, setLessons] = useState<YouTubeChannel[]>([]);
@@ -116,6 +126,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   const [books, setBooks] = useState<BookDbItem[]>([]);
 
   // Loading states
+  const [loadingPosts, setLoadingPosts] = useState<boolean>(false);
   const [loadingSongs, setLoadingSongs] = useState<boolean>(false);
   const [loadingPlaylists, setLoadingPlaylists] = useState<boolean>(false);
   const [loadingLessons, setLoadingLessons] = useState<boolean>(false);
@@ -229,10 +240,21 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
     }
   };
   const [formType, setFormType] = useState<'add' | 'edit'>('add');
-  const [formActiveManager, setFormActiveManager] = useState<'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books'>('Songs');
+  const [formActiveManager, setFormActiveManager] = useState<'Posts' | 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books'>('Posts');
 
   // Form Fields State
   const [selectedItemId, setSelectedItemId] = useState<string | number | null>(null);
+  
+  // Posts Form Fields
+  const [postTitle, setPostTitle] = useState('');
+  const [postContent, setPostContent] = useState('');
+  const [postCategory, setPostCategory] = useState('Japanese Culture');
+  const [postGeneratedBy, setPostGeneratedBy] = useState<'admin' | 'ai'>('admin');
+
+  // AI generator fields
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiWordCount, setAiWordCount] = useState<number>(300);
+  const [generatingAi, setGeneratingAi] = useState(false);
   
   // Songs Form Fields
   const [songTitle, setSongTitle] = useState('');
@@ -345,6 +367,112 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
     }
   };
 
+  const fetchPosts = async () => {
+    if (!supabase) return;
+    setLoadingPosts(true);
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setPosts(data || []);
+    } catch (err: any) {
+      console.error('Error fetching posts:', err);
+      setErrorBanner(err.message || 'Error occurred fetching posts from Supabase.');
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
+
+  const handleGeneratePostWithAI = async () => {
+    if (!aiPrompt.trim()) {
+      setErrorBanner("ကျေးဇူးပြု၍ generate လုပ်မည့် အကြောင်းအရာကို ထည့်သွင်းပေးပါ။");
+      return;
+    }
+    setGeneratingAi(true);
+    setErrorBanner(null);
+    try {
+      let apiKey = (import.meta.env.VITE_GEMINI_API_KEY as string) || '';
+      if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') {
+        apiKey = localStorage.getItem('GEMINI_API_KEY') || '';
+      }
+
+      if (!apiKey) {
+        throw new Error('API Key is missing. Please configure VITE_GEMINI_API_KEY in the Secrets panel or setting gear!');
+      }
+
+      const contentPrompt = `မြန်မာဘာသာဖြင့် ${aiPrompt} အကြောင်း ${aiWordCount} စာလုံးခန့် ရေးပေးပါ။ ဂျပန်ဘာသာသင်သူများအတွက် အသုံးဝင်သောအကြောင်းအရာ ဖြစ်ပါစေ။ No markdown headings, just paragraphs of useful text.`;
+      
+      const requestBody = {
+        contents: [
+          {
+            parts: [{ text: contentPrompt }]
+          }
+        ]
+      };
+
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate with AI: HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (!rawText) {
+        throw new Error('No content returned from Gemini.');
+      }
+
+      const titlePrompt = `Suggest a short, catchy Title (maximum 6-8 words) in Myanmar or English (as appropriate) for a post with the following content: "${rawText.substring(0, 300)}". Do not use quotation marks or styling, just output the plain title text.`;
+      
+      const titleRequestBody = {
+        contents: [
+          {
+            parts: [{ text: titlePrompt }]
+          }
+        ]
+      };
+
+      const titleResponse = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(titleRequestBody)
+      });
+
+      let finalTitle = `AI Post: ${aiPrompt.substring(0, 30)}`;
+      if (titleResponse.ok) {
+        const titleData = await titleResponse.json();
+        const suggestedTitle = titleData.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+        if (suggestedTitle) {
+          finalTitle = suggestedTitle.replace(/^["']|["']$/g, '');
+        }
+      }
+
+      setPostTitle(finalTitle);
+      setPostContent(rawText);
+      setPostCategory("AI Generated");
+      setPostGeneratedBy("ai");
+      
+      setSuccessBanner("AI generate layout loaded successfully! Review below.");
+    } catch (err: any) {
+      console.error(err);
+      setErrorBanner(err.message || "Failed to generate post with AI.");
+    } finally {
+      setGeneratingAi(false);
+    }
+  };
+
   const fetchBooks = async () => {
     if (!supabase) return;
     setLoadingBooks(true);
@@ -367,6 +495,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   // Fetch all on mount or when supabase becomes available
   useEffect(() => {
     if (supabase) {
+      fetchPosts();
       fetchSongs();
       fetchPlaylists();
       fetchLessons();
@@ -391,13 +520,20 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   }, [successBanner]);
 
   // Helper to open Add Model Form
-  const openAddForm = (manager: 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books') => {
+  const openAddForm = (manager: 'Posts' | 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books') => {
     setFormActiveManager(manager);
     setFormType('add');
     setSelectedItemId(null);
     setErrorBanner(null);
 
     // Reset fields
+    setPostTitle('');
+    setPostContent('');
+    setPostCategory('Japanese Culture');
+    setPostGeneratedBy('admin');
+    setAiPrompt('');
+    setAiWordCount(300);
+
     setSongTitle('');
     setSongArtist('');
     setSongYoutubeId('');
@@ -429,13 +565,18 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   };
 
   // Helper to open Edit Model Form
-  const openEditForm = (manager: 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books', item: any) => {
+  const openEditForm = (manager: 'Posts' | 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books', item: any) => {
     setFormActiveManager(manager);
     setFormType('edit');
     setSelectedItemId(item.id);
     setErrorBanner(null);
 
-    if (manager === 'Songs') {
+    if (manager === 'Posts') {
+      setPostTitle(item.title || '');
+      setPostContent(item.content || '');
+      setPostCategory(item.category || 'Japanese Culture');
+      setPostGeneratedBy(item.generated_by || 'admin');
+    } else if (manager === 'Songs') {
       setSongTitle(item.title || '');
       setSongArtist(item.artist || '');
       setSongYoutubeId(item.youtube_id || '');
@@ -476,7 +617,31 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
     }
 
     try {
-      if (formActiveManager === 'Songs') {
+      if (formActiveManager === 'Posts') {
+        if (!postTitle.trim() || !postContent.trim() || !postCategory.trim()) {
+          setErrorBanner("Title, Category and Content are required!");
+          return;
+        }
+
+        const postData = {
+          title: postTitle.trim(),
+          content: postContent.trim(),
+          category: postCategory.trim(),
+          generated_by: postGeneratedBy,
+        };
+
+        if (formType === 'add') {
+          const { error } = await supabase.from('posts').insert([postData]);
+          if (error) throw error;
+          setSuccessBanner("Post added successfully!");
+        } else {
+          const { error } = await supabase.from('posts').update(postData).eq('id', selectedItemId);
+          if (error) throw error;
+          setSuccessBanner("Post updated successfully!");
+        }
+        fetchPosts();
+
+      } else if (formActiveManager === 'Songs') {
         if (!songTitle.trim() || !songArtist.trim() || !songYoutubeId.trim()) {
           setErrorBanner("All fields except description are required!");
           return;
@@ -606,13 +771,14 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   };
 
   // Delete option
-  const handleDelete = async (manager: 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books', id: string | number) => {
+  const handleDelete = async (manager: 'Posts' | 'Songs' | 'Playlists' | 'Lessons' | 'News' | 'Books', id: string | number) => {
     if (!supabase) return;
     if (!window.confirm("Are you sure you want to delete this item?")) return;
 
     try {
       let table = '';
-      if (manager === 'Songs') table = 'songs';
+      if (manager === 'Posts') table = 'posts';
+      else if (manager === 'Songs') table = 'songs';
       else if (manager === 'Playlists') table = 'playlists';
       else if (manager === 'Lessons') table = 'youtube_channels';
       else if (manager === 'News') table = 'news_podcasts';
@@ -622,7 +788,8 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
       if (error) throw error;
 
       setSuccessBanner("Item deleted successfully!");
-      if (manager === 'Songs') fetchSongs();
+      if (manager === 'Posts') fetchPosts();
+      else if (manager === 'Songs') fetchSongs();
       else if (manager === 'Playlists') {
         fetchPlaylists();
         if (selectedPlaylist && String(selectedPlaylist.id) === String(id)) {
@@ -706,29 +873,108 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
           <p className="text-xs text-slate-500 dark:text-slate-400 italic text-center max-w-2xl mx-auto leading-relaxed px-4">
             {"youtube မှ video များသည် Embed လုပ်ထားခြင်းသာ ဖြစ်တဲ့ အတွက်ကြောင့် view များသည် မူရင်းပိုင်ရှင်ဆီကိုသာ ရောက်ရှိပါသည်"}
           </p>
-          <div className="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 w-full max-w-md mx-auto">
+          <div className="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 w-full max-w-xl mx-auto flex-wrap sm:flex-nowrap gap-1">
+            <button
+              onClick={() => setCurrentSection('Posts')}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${currentSection === 'Posts' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'}`}
+            >
+              <FileText size={13} />
+              Posts
+            </button>
             <button
               onClick={() => setCurrentSection('Songs')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${currentSection === 'Songs' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${currentSection === 'Songs' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'}`}
             >
               <Music size={13} />
               Songs
             </button>
             <button
               onClick={() => setCurrentSection('Lessons')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${currentSection === 'Lessons' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${currentSection === 'Lessons' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-205'}`}
             >
               <Youtube size={13} />
               Lessons
             </button>
             <button
               onClick={() => setCurrentSection('News')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${currentSection === 'News' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}
+              className={`flex-1 py-2 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${currentSection === 'News' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-205'}`}
             >
-              <FileText size={13} />
+              <Layers size={13} />
               News & Podcast
             </button>
           </div>
+
+          {/* POSTS SECTION */}
+          {currentSection === 'Posts' && (
+            <div className="flex flex-col gap-4 text-left">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-black text-indigo-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                  Articles & Posts ({posts.length})
+                </h3>
+                <button 
+                  onClick={fetchPosts} 
+                  disabled={loadingPosts}
+                  className="p-1 px-2.5 rounded-lg border border-slate-200/30 dark:border-slate-850 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 transition text-[10px] font-black text-slate-500 hover:text-slate-800 dark:hover:text-slate-202 flex items-center gap-1"
+                >
+                  <RefreshCw size={10} className={loadingPosts ? "animate-spin" : ""} />
+                  Refresh
+                </button>
+              </div>
+
+              {loadingPosts ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-3">
+                  <Loader2 className="animate-spin text-indigo-400" size={24} />
+                  <span className="text-xs text-slate-400 font-bold">Discovering interesting Japanese media posts...</span>
+                </div>
+              ) : posts.length === 0 ? (
+                <div className="p-12 text-center bg-[#1E293B]/20 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+                  <p className="text-xs font-bold text-slate-500 dark:text-slate-400">No posts available yet. Check back later!</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-5">
+                  {posts.map((post) => (
+                    <div 
+                      key={post.id}
+                      className="p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-sm transition flex flex-col gap-4 animate-fade-in text-left hover:shadow-md"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/50 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black uppercase text-indigo-500 bg-indigo-500/10 px-2.5 py-0.5 rounded-full border border-indigo-500/20 tracking-wider">
+                            {post.category || "General"}
+                          </span>
+                          {post.generated_by === 'ai' ? (
+                            <span className="text-[10px] font-black uppercase bg-purple-500/10 text-purple-600 dark:text-purple-400 px-2.5 py-0.5 rounded-full border border-purple-500/20 tracking-wider flex items-center gap-1">
+                              <span>✨</span> AI Generated
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-black uppercase bg-amber-500/10 text-amber-600 dark:text-amber-450 px-2.5 py-0.5 rounded-full border border-amber-500/20 tracking-wider flex items-center gap-1">
+                              <span>👤</span> Admin
+                            </span>
+                          )}
+                        </div>
+                        {post.created_at && (
+                          <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                            {new Date(post.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <h4 className="font-extrabold text-[#FF6B6B] dark:text-[#FF6B6B] text-lg leading-snug">
+                          {post.title}
+                        </h4>
+                        
+                        <div className="text-[14px] font-medium text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap bg-slate-50 dark:bg-slate-950/20 p-4 rounded-xl border border-dashed border-slate-200 dark:border-slate-800/70">
+                          {post.content}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* SONGS SECTION */}
           {currentSection === 'Songs' && (
@@ -1204,7 +1450,14 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
           </div>
 
           {/* Subtab selection for manager sections */}
-          <div className="flex bg-slate-100 dark:bg-slate-900/80 p-1 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 max-w-xl flex-wrap gap-1">
+          <div className="flex bg-slate-100 dark:bg-slate-900/80 p-1 rounded-2xl border border-slate-200/40 dark:border-slate-800/60 max-w-2xl flex-wrap gap-1">
+            <button
+              onClick={() => setAdminSection('Posts')}
+              className={`flex-1 min-w-[100px] py-1.5 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${adminSection === 'Posts' ? 'bg-[#EF4444] text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}
+            >
+              <FileText size={13} />
+              Posts
+            </button>
             <button
               onClick={() => setAdminSection('Songs')}
               className={`flex-1 min-w-[100px] py-1.5 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${adminSection === 'Songs' ? 'bg-[#EF4444] text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}
@@ -1230,7 +1483,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
               onClick={() => setAdminSection('News')}
               className={`flex-1 min-w-[100px] py-1.5 px-3 rounded-xl text-xs font-black tracking-wide transition flex items-center justify-center gap-1.5 ${adminSection === 'News' ? 'bg-[#EF4444] text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'}`}
             >
-              <FileText size={13} />
+              <Folder size={13} />
               News
             </button>
             <button
@@ -1241,6 +1494,97 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
               Books
             </button>
           </div>
+
+          {/* ==================== POSTS MANAGER PANEL ==================== */}
+          {adminSection === 'Posts' && (
+            <div className="flex flex-col gap-4 animate-fade-in text-left">
+              <div className="flex justify-between items-center sm:gap-4 flex-wrap gap-2 animate-fade-in">
+                <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                  <span>📰</span> POSTS DATABASE ({posts.length})
+                </h4>
+                <button
+                  onClick={() => openAddForm('Posts')}
+                  className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black flex items-center gap-1 shadow-md transition transform hover:scale-[1.02] active-press"
+                >
+                  <PlusCircle size={14} />
+                  Add New Post
+                </button>
+              </div>
+
+              {loadingPosts ? (
+                <div className="flex justify-center py-10">
+                  <Loader2 className="animate-spin text-indigo-400" size={20} />
+                </div>
+              ) : posts.length === 0 ? (
+                <div className="p-8 text-center bg-slate-100/50 dark:bg-slate-900/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+                  <p className="text-xs font-bold text-slate-400">Database table 'posts' returned 0 records.</p>
+                </div>
+              ) : (
+                <div className="flex flex-col border border-slate-200/65 dark:border-slate-850 bg-white dark:bg-slate-900/40 rounded-2xl overflow-hidden shadow-sm font-sans">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 dark:bg-slate-900 border-b border-lightBorder dark:border-darkBorder text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                          <th className="py-3 px-4">Post Title</th>
+                          <th className="py-3 px-4">Category</th>
+                          <th className="py-3 px-4">Generated By</th>
+                          <th className="py-3 px-4 hidden md:table-cell">Snippet</th>
+                          <th className="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-850/60 text-xs text-slate-700 dark:text-slate-300 font-bold">
+                        {posts.map((post) => (
+                          <tr key={post.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/20 transition">
+                            <td className="py-3.5 px-4 font-black">
+                              <span className="text-indigo-400 text-[13px] block">{post.title}</span>
+                              <span className="text-[10px] text-slate-400 font-medium">ID: {post.id}</span>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <span className="text-[10px] font-black px-2 py-0.5 rounded-full border border-indigo-500/20 bg-indigo-500/10 text-indigo-400 tracking-wide uppercase">
+                                {post.category || "General"}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              {post.generated_by === 'ai' ? (
+                                <span className="text-[10px] font-black px-2 py-0.5 rounded-full border border-purple-500/20 bg-purple-500/10 text-purple-400">
+                                  🤖 AI
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-500 text-amber-600 dark:text-amber-400">
+                                  👤 Admin
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3.5 px-4 hidden md:table-cell max-w-[200px] truncate font-medium text-slate-400">
+                              {post.content}
+                            </td>
+                            <td className="py-3.5 px-4 text-right">
+                              <div className="flex gap-1.5 justify-end">
+                                <button
+                                  onClick={() => openEditForm('Posts', post)}
+                                  className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-950/80 text-indigo-500 transition flex items-center justify-center cursor-pointer border border-indigo-55/10"
+                                  title="Edit Post"
+                                >
+                                  <Edit size={12} />
+                                </button>
+                                <button
+                                  onClick={() => handleDelete('Posts', post.id)}
+                                  className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-950/80 text-[#EF4444] transition flex items-center justify-center cursor-pointer border border-red-50/10"
+                                  title="Delete Post"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ==================== SONGS MANAGER PANEL ==================== */}
           {adminSection === 'Songs' && (
@@ -1777,6 +2121,140 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
             {/* Form core scrollable fields */}
             <div className="flex flex-col gap-4 overflow-y-auto max-h-[60vh] py-1 px-0.5">
               
+              {/* POSTS MANAGER FIELDS */}
+              {formActiveManager === 'Posts' && (
+                <div className="flex flex-col gap-3.5 text-left font-sans">
+                  
+                  {/* Mode switcher for adding posts */}
+                  {formType === 'add' && (
+                    <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-lightBorder dark:border-darkBorder">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPostGeneratedBy('admin');
+                        }}
+                        className={`flex-1 py-1.5 px-3 rounded-lg text-[11px] font-black tracking-wide transition flex items-center justify-center gap-1 ${postGeneratedBy === 'admin' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'}`}
+                      >
+                        ✍️ Manual Post
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPostGeneratedBy('ai');
+                        }}
+                        className={`flex-1 py-1.5 px-3 rounded-lg text-[11px] font-black tracking-wide transition flex items-center justify-center gap-1 relative ${postGeneratedBy === 'ai' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-205'}`}
+                      >
+                        ✨ AI Generate Post
+                      </button>
+                    </div>
+                  )}
+
+                  {/* AI input section */}
+                  {formType === 'add' && postGeneratedBy === 'ai' && (
+                    <div className="p-4 bg-purple-500/5 dark:bg-purple-950/15 border border-purple-500/20 rounded-2xl flex flex-col gap-3 mb-2 animate-fade-in text-left">
+                      <div className="flex items-center gap-1.5 text-xs font-black text-purple-500 uppercase tracking-widest">
+                        <Sparkles size={13} />
+                        Gemini AI Post Generator
+                      </div>
+                      
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                          ဘာအကြောင်းအရာ ရေးမလဲ ပြောပါ...
+                        </label>
+                        <textarea
+                          value={aiPrompt}
+                          onChange={(e) => setAiPrompt(e.target.value)}
+                          placeholder="e.g. ဂျပန်မှာ အလုပ်လုပ်တဲ့အခါ သတိထားရမယ့် ယဉ်ကျေးမှုများ"
+                          className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-purple-500"
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Word Count</label>
+                          <select
+                            value={aiWordCount}
+                            onChange={(e) => setAiWordCount(Number(e.target.value))}
+                            className="w-full text-xs font-black p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-purple-500"
+                          >
+                            <option value={100}>100 words</option>
+                            <option value={200}>200 words</option>
+                            <option value={300}>300 words</option>
+                            <option value={500}>500 words</option>
+                          </select>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Language</label>
+                          <div className="w-full text-[11px] font-black p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-100 dark:bg-slate-950/60 text-slate-500 dark:text-slate-400">
+                            မြန်မာဘာသာ (Default)
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleGeneratePostWithAI}
+                        disabled={generatingAi}
+                        className="w-full py-3 rounded-xl bg-purple-650 hover:bg-purple-700 disabled:bg-purple-900/40 text-white text-xs font-black flex items-center justify-center gap-1.5 shadow-md shadow-purple-500/15 hover:shadow-purple-500/25 transition"
+                      >
+                        {generatingAi ? (
+                          <>
+                            <Loader2 size={13} className="animate-spin" />
+                            AI Generation in progress...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles size={13} />
+                            Generate & Preview
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Standard Editable Fields */}
+                  <div className="flex flex-col gap-3.5">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Post Title</label>
+                      <input 
+                        type="text" 
+                        value={postTitle}
+                        onChange={(e) => setPostTitle(e.target.value)}
+                        placeholder="e.g. Japanese Bowing Etiquette"
+                        className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+                        required
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Category</label>
+                      <input 
+                        type="text" 
+                        value={postCategory}
+                        onChange={(e) => setPostCategory(e.target.value)}
+                        placeholder="e.g. Japanese Culture"
+                        className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
+                        required
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest font-sans">Content (Myanmar)</label>
+                      <textarea 
+                        value={postContent}
+                        onChange={(e) => setPostContent(e.target.value)}
+                        placeholder="Type post story or verify generated description with AI..."
+                        className="w-full text-xs font-medium p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 min-h-[150px]"
+                        required
+                        rows={6}
+                      />
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
               {/* SONGS MANAGER FIELDS */}
               {formActiveManager === 'Songs' && (
                 <div className="flex flex-col gap-3.5">
