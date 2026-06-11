@@ -19,9 +19,16 @@ interface BookItem {
 interface BooksTabProps {
   isAdminLoggedIn: boolean;
   setIsAdminLoggedIn: (val: boolean) => void;
+  externalSelectedBook?: BookItem | null;
+  onCloseExternalBook?: () => void;
 }
 
-export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminLoggedIn }) => {
+export const BooksTab: React.FC<BooksTabProps> = ({ 
+  isAdminLoggedIn, 
+  setIsAdminLoggedIn, 
+  externalSelectedBook, 
+  onCloseExternalBook 
+}) => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://rtfumxdmgldvseuxarjo.supabase.co';
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
@@ -118,6 +125,15 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
     }
   }, [supabase]);
 
+  useEffect(() => {
+    if (externalSelectedBook) {
+      setSelectedBook(externalSelectedBook);
+      setIframeLoading(true);
+    } else if (externalSelectedBook === null) {
+      setSelectedBook(null);
+    }
+  }, [externalSelectedBook]);
+
   const openPdfViewer = (book: BookItem) => {
     setSelectedBook(book);
     setIframeLoading(true);
@@ -126,6 +142,9 @@ export const BooksTab: React.FC<BooksTabProps> = ({ isAdminLoggedIn, setIsAdminL
   const closePdfViewer = () => {
     setSelectedBook(null);
     setIframeLoading(true);
+    if (onCloseExternalBook) {
+      onCloseExternalBook();
+    }
   };
 
   const filteredBooks = books.filter(book => {

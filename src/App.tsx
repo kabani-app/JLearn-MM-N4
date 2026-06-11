@@ -229,6 +229,76 @@ export default function App() {
   // Search screen query state
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Universal Search Integration
+  const [isUniversalSearchOpen, setIsUniversalSearchOpen] = useState(false);
+  const [universalSearchQuery, setUniversalSearchQuery] = useState('');
+  const [booksList, setBooksList] = useState<any[]>([]);
+  const [externalBook, setExternalBook] = useState<any>(null);
+
+  // Fetch books for Universal Search mapping
+  useEffect(() => {
+    const fetchBooksForSearch = async () => {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://rtfumxdmgldvseuxarjo.supabase.co';
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+      if (supabaseUrl && supabaseAnonKey) {
+        try {
+          const { createClient } = await import('@supabase/supabase-js');
+          const supabase = createClient(supabaseUrl, supabaseAnonKey);
+          const { data, error } = await supabase
+            .from('books')
+            .select('*')
+            .order('id', { ascending: false });
+          if (data && !error) {
+            setBooksList(data || []);
+          }
+        } catch (e) {
+          console.error("Error fetching books for search:", e);
+        }
+      }
+    };
+    fetchBooksForSearch();
+  }, []);
+
+  const universalSearchResults = useMemo(() => {
+    const q = universalSearchQuery.trim().toLowerCase();
+    if (q.length < 2) return { vocab: [], kanji: [], books: [], grammar: [] };
+
+    // A) Vocabulary
+    const vocabResults = allWords.filter(w => 
+      w.kanji.toLowerCase().includes(q) ||
+      w.hiragana.toLowerCase().includes(q) ||
+      w.meaning.toLowerCase().includes(q)
+    );
+
+    // B) Kanji
+    const kanjiResults = kanjiData.filter(k => 
+      k.kanji.toLowerCase().includes(q) ||
+      (k.onyomi && k.onyomi.toLowerCase().includes(q)) ||
+      (k.kunyomi && k.kunyomi.toLowerCase().includes(q)) ||
+      k.meaning_mm.toLowerCase().includes(q)
+    );
+
+    // C) Books (using booksList state)
+    const booksResults = booksList.filter(b => 
+      b.title.toLowerCase().includes(q)
+    );
+
+    // D) Grammar
+    const grammarResults = grammarData.filter(g => 
+      g.pattern.toLowerCase().includes(q) ||
+      g.meaning_mm.toLowerCase().includes(q) ||
+      (g.explanation_mm && g.explanation_mm.toLowerCase().includes(q)) ||
+      (g.reading && g.reading.toLowerCase().includes(q))
+    );
+
+    return {
+      vocab: vocabResults,
+      kanji: kanjiResults,
+      books: booksResults,
+      grammar: grammarResults
+    };
+  }, [universalSearchQuery, allWords, kanjiData, booksList]);
+
   // AI Helping States (Fully Offline Synonyms & Antonyms)
   const [aiMode, setAiMode] = useState<'same' | 'diff' | null>(null);
 
@@ -575,14 +645,13 @@ export default function App() {
                       setSelectedUnit(null);
                       setSelectedKanjiUnit(null);
                     }}
-                    className="flex items-center gap-2 sm:gap-3 cursor-pointer select-none active:opacity-80 shrink-0"
+                    className="flex items-center gap-1.5 sm:gap-2.5 cursor-pointer select-none active:opacity-80 shrink-0"
                   >
-                    <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none">
-                      <span className="text-lg">📚</span>
+                    <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none shrink-0">
+                      <span className="text-sm">📚</span>
                     </div>
-                    {/* Shown on sm and above, hidden on mobile phone screens to maximize space for search pill */}
-                    <div className="hidden sm:block">
-                      <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">JLearn-MM-N3</h1>
+                    <div className="leading-tight shrink-0">
+                      <h1 className="font-extrabold text-xs sm:text-sm lg:text-base text-slate-800 dark:text-slate-100 tracking-tight">JLearn-MM-N3</h1>
                       <p className="hidden md:block text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
                     </div>
                   </div>
@@ -590,14 +659,12 @@ export default function App() {
                   {/* Mobile Search Bar - Wide/Elongated pill layout. Shown only below 'lg' */}
                   <div 
                     onClick={() => {
-                      setActiveTab('Search');
-                      setSelectedUnit(null);
-                      setSelectedKanjiUnit(null);
+                      setIsUniversalSearchOpen(true);
                     }}
-                    className="flex lg:hidden flex-grow items-center gap-2 bg-slate-900 border border-slate-800 rounded-full h-9 px-3.5 text-slate-400 hover:text-slate-350 cursor-pointer shadow-inner transition select-none active-press"
+                    className="flex lg:hidden flex-grow items-center gap-2 bg-slate-900 border border-slate-800 rounded-full h-8.5 px-3 text-slate-400 hover:text-slate-350 cursor-pointer shadow-inner transition select-none active-press"
                   >
-                    <SearchIcon size={14} className="text-slate-400 shrink-0" />
-                    <span className="text-xs font-semibold text-slate-400">Search...</span>
+                    <SearchIcon size={12} className="text-slate-400 shrink-0" />
+                    <span className="text-[11px] font-semibold text-slate-400">Search...</span>
                   </div>
 
                   {/* Desktop Navigation Tabs (Hidden on mobile) */}
@@ -667,7 +734,7 @@ export default function App() {
                         setSelectedUnit(null);
                         setSelectedKanjiUnit(null);
                       }}
-                      className={`h-9 px-3 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm active-press shrink-0 ${activeTab === 'J-Media' ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/25'}`}
+                      className={`h-9 px-3 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm active-press shrink-0 ${activeTab === 'J-Media' ? 'bg-indigo-600 text-white' : 'font-semibold text-slate-700 dark:text-slate-350 bg-slate-100 dark:bg-slate-800 hover:bg-slate-205 dark:hover:bg-slate-700 border border-slate-200/25'}`}
                     >
                       <Tv size={14} style={{ color: '#EF4444' }} />
                       <span>J-Media</span>
@@ -687,13 +754,13 @@ export default function App() {
                         setSelectedUnit(null);
                         setSelectedKanjiUnit(null);
                       }}
-                      className="flex items-center gap-2.5 sm:gap-3 cursor-pointer select-none active:opacity-80 shrink-0"
+                      className="flex items-center gap-1.5 sm:gap-2.5 cursor-pointer select-none active:opacity-80 shrink-0"
                     >
-                      <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none">
-                        <span className="text-lg">📚</span>
+                      <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none shrink-0">
+                        <span className="text-sm">📚</span>
                       </div>
-                      <div className="leading-tight hidden sm:block">
-                        <h1 className="font-bold text-sm lg:text-base leading-tight text-slate-800 dark:text-slate-100">JLearn-MM-N3</h1>
+                      <div className="leading-tight shrink-0">
+                        <h1 className="font-extrabold text-xs sm:text-sm lg:text-base text-slate-800 dark:text-slate-100 tracking-tight">JLearn-MM-N3</h1>
                         <p className="hidden md:block text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
                       </div>
                     </div>
@@ -1833,6 +1900,8 @@ export default function App() {
             <BooksTab 
               isAdminLoggedIn={isAdminLoggedIn}
               setIsAdminLoggedIn={setIsAdminLoggedIn}
+              externalSelectedBook={externalBook}
+              onCloseExternalBook={() => setExternalBook(null)}
             />
           ) : activeTab === 'J-Media' ? (
             /* --- J-MEDIA SCREEN --- */
@@ -2220,6 +2289,288 @@ export default function App() {
                   Verify authorization
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* --- UNIVERSAL SEARCH MODAL / OVERLAY --- */}
+        {isUniversalSearchOpen && (
+          <div 
+            className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-start md:items-center justify-center p-0 md:p-4 animate-fade-in"
+            onClick={() => {
+              setIsUniversalSearchOpen(false);
+              setUniversalSearchQuery('');
+            }}
+          >
+            <div 
+              className="w-full max-w-2xl h-full md:h-auto md:max-h-[85vh] bg-slate-900 border-0 md:border border-slate-800 rounded-none md:rounded-3xl overflow-hidden shadow-2xl flex flex-col animate-scale-up"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Overlay Header with search input */}
+              <div className="flex items-center justify-between p-4 border-b border-white/5 gap-3 relative shrink-0">
+                <SearchIcon size={16} className="absolute left-7 top-7 text-indigo-400" />
+                <input
+                  type="text"
+                  autoFocus
+                  required
+                  value={universalSearchQuery}
+                  onChange={(e) => setUniversalSearchQuery(e.target.value)}
+                  placeholder="Search across words, kanji, books & grammar..."
+                  className="w-full bg-slate-950 text-white font-medium text-xs pl-10 pr-10 py-3 border border-slate-800 focus:border-indigo-500 rounded-xl outline-none transition"
+                />
+                
+                {universalSearchQuery && (
+                  <button
+                    onClick={() => setUniversalSearchQuery('')}
+                    className="absolute right-18 top-7 text-slate-400 hover:text-white transition"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+
+                <button 
+                  onClick={() => {
+                    setIsUniversalSearchOpen(false);
+                    setUniversalSearchQuery('');
+                  }}
+                  className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center border border-slate-700 shrink-0"
+                  title="Close search"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+
+              {/* Search Results Area */}
+              <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 scrollbar-thin">
+                {universalSearchQuery.trim().length === 0 ? (
+                  /* Initial state hint */
+                  <div className="py-20 flex flex-col items-center justify-center text-center gap-3">
+                    <div className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center text-indigo-400 border border-slate-700/60 shadow-lg mb-1">
+                      <SearchIcon size={20} />
+                    </div>
+                    <h4 className="font-extrabold text-sm text-slate-300">Universal N3 Search</h4>
+                    <p className="text-xs text-slate-500 leading-normal max-w-sm">
+                      Enter at least 2 characters to instantly search across N3 Vocabulary, Kanji, Books, and Grammar patterns inside JLearn.
+                    </p>
+                  </div>
+                ) : universalSearchQuery.trim().length === 1 ? (
+                  /* Hint to enter more characters */
+                  <div className="py-20 flex flex-col items-center justify-center text-center gap-2">
+                    <p className="text-xs text-indigo-400 font-bold tracking-wider uppercase select-none">
+                      Typing...
+                    </p>
+                    <p className="text-xs text-slate-500 max-w-xs">
+                      Please enter at least 2 characters to search.
+                    </p>
+                  </div>
+                ) : (
+                  /* Results rendering */
+                  (() => {
+                    const { vocab, kanji, books, grammar } = universalSearchResults;
+                    const totalCount = vocab.length + kanji.length + books.length + grammar.length;
+
+                    if (totalCount === 0) {
+                      return (
+                        <div className="py-24 flex flex-col items-center justify-center text-center gap-3 select-none">
+                          <p className="text-3xl">🔍</p>
+                          <h4 className="font-black text-sm text-slate-400 tracking-wide mt-2">ရှာမတွေ့ပါ</h4>
+                          <p className="text-[10px] text-slate-500">
+                            Try searching with different keywords.
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <>
+                        {/* A) VOCABULARY CATEGORY */}
+                        {vocab.length > 0 && (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex justify-between items-center text-[10px] font-black text-indigo-400 uppercase tracking-widest pb-1 border-b border-white/5 select-none">
+                              <span>Vocabulary ({vocab.length})</span>
+                              {vocab.length > 5 && (
+                                <button
+                                  onClick={() => {
+                                    setSearchQuery(universalSearchQuery);
+                                    setActiveTab('Search');
+                                    setIsUniversalSearchOpen(false);
+                                  }}
+                                  className="text-amber-500 hover:text-amber-400 hover:underline flex items-center gap-0.5"
+                                >
+                                  See all ({vocab.length}) »
+                                </button>
+                              )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              {vocab.slice(0, 5).map((w: any) => (
+                                <div
+                                  key={`v-${w.id}`}
+                                  onClick={() => {
+                                    const baseListObj = vocabData['Part 1'][w.unit] || vocabData['Part 2'][w.unit] || [];
+                                    const idx = baseListObj.findIndex(item => item.id === w.id);
+                                    if (idx >= 0) {
+                                      openUnit(w.unit, idx);
+                                      setIsListView(false);
+                                      setIsFlipped(false);
+                                      setIsUniversalSearchOpen(false);
+                                    }
+                                  }}
+                                  className="p-3.5 bg-slate-950 border border-slate-800 hover:border-indigo-500/40 rounded-xl cursor-pointer hover:bg-slate-900 transition flex flex-col text-left gap-1 active-press"
+                                >
+                                  <div className="flex items-baseline gap-2">
+                                    <span className="font-extrabold text-sm text-white tracking-wide">{w.kanji}</span>
+                                    <span className="text-[11px] text-slate-400 font-semibold">[{w.hiragana}]</span>
+                                  </div>
+                                  <p className="text-[11.5px] text-slate-350 font-medium leading-relaxed">{w.meaning}</p>
+                                  <span className="text-[9px] text-slate-500 font-bold self-start mt-0.5 bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded uppercase">
+                                    {w.unit}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* B) KANJI CATEGORY */}
+                        {kanji.length > 0 && (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex justify-between items-center text-[10px] font-black text-amber-400 uppercase tracking-widest pb-1 border-b border-white/5 select-none">
+                              <span>Kanji ({kanji.length})</span>
+                              {kanji.length > 5 && (
+                                <button
+                                  onClick={() => {
+                                    setActiveTab('Kanji');
+                                    setSelectedKanjiUnit('All');
+                                    setIsKanjiStudyActive(false);
+                                    setIsUniversalSearchOpen(false);
+                                  }}
+                                  className="text-indigo-400 hover:text-indigo-300 hover:underline flex items-center gap-0.5"
+                                >
+                                  See all ({kanji.length}) »
+                                </button>
+                              )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              {kanji.slice(0, 5).map((k: any) => (
+                                <div
+                                  key={`k-${k.id}`}
+                                  onClick={() => {
+                                    const unitKanji = kanjiData.filter(item => item.unit === k.unit);
+                                    const idx = unitKanji.findIndex(item => item.id === k.id);
+                                    const correctIdx = idx >= 0 ? idx : 0;
+                                    setActiveTab('Kanji');
+                                    setSelectedKanjiUnit(k.unit);
+                                    setCurrentKanjiIndex(correctIdx);
+                                    setIsKanjiStudyActive(true);
+                                    setIsKanjiFlipped(false);
+                                    setIsUniversalSearchOpen(false);
+                                  }}
+                                  className="p-3.5 bg-slate-950 border border-slate-800 hover:border-amber-500/40 rounded-xl cursor-pointer hover:bg-slate-900 transition flex items-center text-left justify-between gap-4 active-press"
+                                >
+                                  <div className="flex flex-col gap-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-lg font-bold text-white select-none">{k.kanji}</span>
+                                      <span className="text-[11px] text-slate-400 font-semibold">[{k.onyomi || k.kunyomi}]</span>
+                                    </div>
+                                    <p className="text-[11.5px] text-slate-350 font-medium leading-relaxed truncate">{k.meaning_mm}</p>
+                                  </div>
+                                  <span className="text-[9px] text-slate-550 font-bold bg-slate-900 border border-slate-800 px-1.5 py-0.5 rounded shrink-0 uppercase select-none">
+                                    Unit {k.unit}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* C) PDF BOOKS CATEGORY */}
+                        {books.length > 0 && (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex justify-between items-center text-[10px] font-black text-rose-450 uppercase tracking-widest pb-1 border-b border-white/5 select-none">
+                              <span>Books ({books.length})</span>
+                              {books.length > 5 && (
+                                <button
+                                  onClick={() => {
+                                    setActiveTab('Books');
+                                    setIsUniversalSearchOpen(false);
+                                  }}
+                                  className="text-amber-500 hover:text-amber-400 hover:underline flex items-center gap-0.5"
+                                >
+                                  See all »
+                                </button>
+                              )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              {books.slice(0, 5).map((b: any) => (
+                                <div
+                                  key={`b-${b.id}`}
+                                  onClick={() => {
+                                    setActiveTab('Books');
+                                    setExternalBook(b);
+                                    setIsUniversalSearchOpen(false);
+                                  }}
+                                  className="p-3.5 bg-slate-950 border border-slate-800 hover:border-rose-500/40 rounded-xl cursor-pointer hover:bg-slate-900 transition flex items-center text-left justify-between gap-4 active-press"
+                                >
+                                  <div className="flex flex-col gap-0.5 min-w-0">
+                                    <span className="font-extrabold text-[12.5px] text-white truncate leading-normal">{b.title}</span>
+                                    <p className="text-[10px] text-slate-400 truncate leading-relaxed">{b.description_mm}</p>
+                                  </div>
+                                  <span className="text-[9px] text-indigo-400 border border-indigo-950 bg-indigo-950/25 px-2 py-0.5 rounded font-bold shrink-0 capitalize select-none">
+                                    {b.category}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* D) GRAMMAR CATEGORY */}
+                        {grammar.length > 0 && (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex justify-between items-center text-[10px] font-black text-emerald-400 uppercase tracking-widest pb-1 border-b border-white/5 select-none">
+                              <span>Grammar ({grammar.length})</span>
+                              {grammar.length > 5 && (
+                                <button
+                                  onClick={() => {
+                                    setGrammarSearchQuery(universalSearchQuery);
+                                    setActiveTab('Grammar');
+                                    setSelectedGrammarCategory('All');
+                                    setIsUniversalSearchOpen(false);
+                                  }}
+                                  className="text-indigo-400 hover:text-indigo-300 hover:underline flex items-center gap-0.5"
+                                >
+                                  See all ({grammar.length}) »
+                                </button>
+                              )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              {grammar.slice(0, 5).map((g: any) => (
+                                <div
+                                  key={`g-${g.id}`}
+                                  onClick={() => {
+                                    setActiveTab('Grammar');
+                                    setSelectedGrammarCategory('All');
+                                    setGrammarSearchQuery('');
+                                    setExpandedGrammarId(g.id);
+                                    setIsUniversalSearchOpen(false);
+                                  }}
+                                  className="p-3.5 bg-slate-950 border border-slate-800 hover:border-emerald-500/40 rounded-xl cursor-pointer hover:bg-slate-900 transition flex flex-col text-left gap-1 active-press"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[9px] bg-slate-900 border border-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-black select-none">{g.id}</span>
+                                    <span className="font-extrabold text-xs text-white tracking-wide">{g.pattern}</span>
+                                  </div>
+                                  <p className="text-[11.5px] text-slate-350 font-medium leading-relaxed">{g.meaning_mm}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()
+                )}
+              </div>
             </div>
           </div>
         )}
