@@ -8,7 +8,6 @@ import {
   ArrowLeft, 
   Star, 
   Volume2, 
-  Check, 
   X, 
   ChevronRight, 
   ChevronLeft,
@@ -515,14 +514,6 @@ export default function App() {
     });
   };
 
-  const markLearnedAndNext = (wordId: string) => {
-    setLearnedWords(prev => {
-      const next = new Set(prev);
-      next.add(wordId);
-      return next;
-    });
-    handleNext();
-  };
 
   // Offline mode is handled instantly without any API load helper function
 
@@ -1081,29 +1072,31 @@ export default function App() {
                       )}
 
                       {/* Manual pagination controller buttons */}
-                      <div className="flex items-center justify-between gap-4 mt-auto py-1">
+                      <div className="flex items-center justify-between gap-3 mt-auto py-1">
                         <button
                           onClick={handlePrev}
                           disabled={currentIndex === 0 || isAutoPlaying}
-                          className="w-13 h-13 rounded-2xl border border-lightBorder dark:border-darkBorder bg-lightSurface dark:bg-darkSurface hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-35 transition flex items-center justify-center text-slate-600 dark:text-slate-400 active-press"
+                          className="flex-1 h-12 rounded-2xl border border-lightBorder dark:border-darkBorder bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-705 dark:text-slate-300 disabled:opacity-35 transition flex items-center justify-center gap-1.5 font-bold text-xs active-press"
                         >
-                          <ChevronLeft size={24} />
+                          <span className="text-sm font-black">‹‹</span>
+                          <span>Prev</span>
                         </button>
 
                         <button
-                          onClick={() => markLearnedAndNext(currentWord.id)}
-                          className="flex-1 h-13 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm rounded-2xl flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-100 dark:shadow-none transition active-press"
+                          onClick={closeUnit}
+                          className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-750 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-black text-xs rounded-2xl flex items-center justify-center gap-1.5 shadow-md transition active-press"
                         >
-                          <span>Got it</span>
-                          <Check size={18} strokeWidth={2.5} />
+                          <span className="text-sm">🏠</span>
+                          <span>Home</span>
                         </button>
 
                         <button
                           onClick={handleNext}
                           disabled={currentIndex === activeList.length - 1 || isAutoPlaying}
-                          className="w-13 h-13 rounded-2xl border border-lightBorder dark:border-darkBorder bg-lightSurface dark:bg-darkSurface hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-35 transition flex items-center justify-center text-slate-600 dark:text-slate-400 active-press"
+                          className="flex-1 h-12 rounded-2xl border border-lightBorder dark:border-darkBorder bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-705 dark:text-slate-300 disabled:opacity-35 transition flex items-center justify-center gap-1.5 font-bold text-xs active-press"
                         >
-                          <ChevronRight size={24} />
+                          <span>Next</span>
+                          <span className="text-sm font-black">››</span>
                         </button>
                       </div>
                     </div>
@@ -1116,23 +1109,19 @@ export default function App() {
             <div className="flex flex-col gap-6">
 
               {/* SECTION TABS FOR PART 1 / PART 2 & LAST STUDY BUTTON */}
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/55 p-1 rounded-xl flex gap-1 min-w-[280px]">
-                  {(['Part 1', 'Part 2'] as const).map((part) => {
-                    const selected = activePart === part;
-                    const count = Object.keys(vocabData[part]).length;
-                    return (
-                      <button
-                        key={part}
-                        onClick={() => setActivePart(part)}
-                        className={`flex-1 py-2 font-bold text-xs rounded-lg transition active-press ${selected ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/20' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'}`}
-                      >
-                        {part} ({count} Units)
-                      </button>
-                    );
-                  })}
-                </div>
-
+              <div className="flex flex-row items-center gap-3 w-full">
+                <button
+                  onClick={() => setActivePart('Part 1')}
+                  className={`flex-1 h-11 px-4 font-bold text-xs rounded-xl border transition active-press flex items-center justify-center gap-1.5 ${activePart === 'Part 1' ? 'bg-indigo-650 border-[#4f46e5]/40 text-white shadow-md dark:bg-indigo-600' : 'bg-slate-100 dark:bg-slate-900 text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 border-slate-200/50 dark:border-slate-800/55'}`}
+                >
+                  Part 1 ({Object.keys(vocabData['Part 1']).length} Units)
+                </button>
+                <button
+                  onClick={() => setActivePart('Part 2')}
+                  className={`flex-1 h-11 px-4 font-bold text-xs rounded-xl border transition active-press flex items-center justify-center gap-1.5 ${activePart === 'Part 2' ? 'bg-indigo-650 border-[#4f46e5]/40 text-white shadow-md dark:bg-indigo-600' : 'bg-slate-100 dark:bg-slate-900 text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 border-slate-200/50 dark:border-slate-800/55'}`}
+                >
+                  Part 2 ({Object.keys(vocabData['Part 2']).length} Units)
+                </button>
                 {localStorage.getItem('lastStudy_meaning_unit') ? (
                   <button
                     onClick={() => {
@@ -1140,17 +1129,17 @@ export default function App() {
                       const index = parseInt(localStorage.getItem('lastStudy_meaning_index') || '0', 10);
                       openUnit(lastUnit, index);
                     }}
-                    className="h-10 px-4 bg-indigo-650 hover:bg-indigo-750 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition shadow-md active-press"
+                    className="flex-1 h-11 px-4 bg-amber-500 hover:bg-amber-600 dark:bg-amber-650 dark:hover:bg-amber-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition shadow-md active-press"
                   >
                     <span className="text-xs">⚡</span>
-                    <span>Last Study: {localStorage.getItem('lastStudy_meaning_unit')?.split(': ')?.[0] || localStorage.getItem('lastStudy_meaning_unit')}</span>
+                    <span className="line-clamp-1 text-center">Last Study: {localStorage.getItem('lastStudy_meaning_unit')?.split(': ')?.[0] || localStorage.getItem('lastStudy_meaning_unit')}</span>
                   </button>
                 ) : (
                   <button
                     disabled
-                    className="h-10 px-4 bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-650 font-bold text-xs rounded-xl flex items-center gap-1 border border-slate-200/20 cursor-not-allowed opacity-60"
+                    className="flex-1 h-11 px-4 bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-650 font-bold text-xs rounded-xl flex items-center justify-center gap-1 border border-slate-200/20 cursor-not-allowed opacity-60"
                   >
-                    <span>No history yet</span>
+                    <span className="line-clamp-1 text-center">No history yet</span>
                   </button>
                 )}
               </div>
