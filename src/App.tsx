@@ -1539,14 +1539,75 @@ export default function App() {
                                   {currentKanji.compounds?.map((comp, idx) => (
                                     <div 
                                       key={idx} 
-                                      className="bg-black/15 hover:bg-black/25 border border-white/5 rounded-xl p-2.5 flex flex-col gap-1 transition-all"
+                                      className="bg-black/25 border border-white/10 rounded-xl p-2.5 flex flex-col gap-1 transition-all"
+                                      style={{ 
+                                        transform: 'none', 
+                                        willChange: 'auto', 
+                                        backdropFilter: 'none',
+                                        WebkitFontSmoothing: 'antialiased',
+                                        MozOsxFontSmoothing: 'grayscale',
+                                        textRendering: 'optimizeLegibility'
+                                      }}
                                     >
-                                      <div className="flex justify-between items-baseline">
-                                        <h6 className="text-2xl font-black text-white">{comp.word}</h6>
-                                        <span className="text-base text-indigo-200 font-extrabold">{comp.reading}</span>
+                                      <div className="flex justify-between items-baseline gap-2">
+                                        <h6 
+                                          style={{ 
+                                            fontSize: '1.4rem', 
+                                            fontWeight: 700, 
+                                            color: '#FFFFFF', 
+                                            opacity: 1,
+                                            WebkitFontSmoothing: 'antialiased',
+                                            MozOsxFontSmoothing: 'grayscale',
+                                            textRendering: 'optimizeLegibility'
+                                          }}
+                                          className="leading-tight font-bold"
+                                        >
+                                          {comp.word}
+                                        </h6>
+                                        <span 
+                                          style={{ 
+                                            fontSize: '1rem', 
+                                            color: '#FBBF24', 
+                                            opacity: 1,
+                                            fontWeight: 700,
+                                            WebkitFontSmoothing: 'antialiased',
+                                            MozOsxFontSmoothing: 'grayscale',
+                                            textRendering: 'optimizeLegibility'
+                                          }}
+                                        >
+                                          {comp.reading}
+                                        </span>
                                       </div>
-                                      <p className="text-xs font-semibold text-amber-200">{comp.meaning_mm}</p>
-                                      <p className="text-[11px] text-white/70 italic">{comp.meaning_en}</p>
+                                      <p 
+                                        style={{ 
+                                          fontSize: '0.9rem', 
+                                          color: '#9CA3AF', 
+                                          opacity: 1,
+                                          fontWeight: 600,
+                                          WebkitFontSmoothing: 'antialiased',
+                                          MozOsxFontSmoothing: 'grayscale',
+                                          textRendering: 'optimizeLegibility'
+                                        }}
+                                        className="leading-snug"
+                                      >
+                                        {comp.meaning_mm}
+                                      </p>
+                                      {comp.meaning_en && (
+                                        <p 
+                                          style={{ 
+                                            fontSize: '0.8rem', 
+                                            color: '#6B7280', 
+                                            opacity: 1,
+                                            fontStyle: 'italic',
+                                            WebkitFontSmoothing: 'antialiased',
+                                            MozOsxFontSmoothing: 'grayscale',
+                                            textRendering: 'optimizeLegibility'
+                                          }}
+                                          className="leading-normal"
+                                        >
+                                          {comp.meaning_en}
+                                        </p>
+                                      )}
                                     </div>
                                   ))}
                                 </div>
