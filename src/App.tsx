@@ -1543,10 +1543,18 @@ export default function App() {
                                     >
                                       <div className="flex justify-between items-baseline">
                                         <h6 className="text-lg font-black text-white drop-shadow-sm" 
-                                            style={{WebkitFontSmoothing:'antialiased', textRendering:'optimizeLegibility'}}>
+                                            style={{
+                                              fontFamily: '"Noto Sans JP", "Yu Gothic", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "MS Gothic", sans-serif',
+                                              WebkitFontSmoothing: 'antialiased',
+                                              textRendering: 'optimizeLegibility',
+                                              fontWeight: 900
+                                            }}>
                                           {comp.word}
                                         </h6>
-                                        <span className="text-xs text-indigo-200 font-bold">{comp.reading}</span>
+                                        <span className="text-xs text-indigo-200 font-bold"
+                                              style={{fontFamily: '"Noto Sans JP", "Yu Gothic", "Hiragino Sans", sans-serif'}}>
+                                          {comp.reading}
+                                        </span>
                                       </div>
                                       <p className="text-xs font-semibold text-amber-100">{comp.meaning_mm}</p>
                                       <p className="text-[11px] text-white/80 italic">{comp.meaning_en}</p>
