@@ -15,7 +15,8 @@ import {
   Headphones,
   BookOpen,
   FileText,
-  Tv
+  Tv,
+  Settings
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Word } from './types';
@@ -70,6 +71,17 @@ export default function App() {
   });
 
   const [activeTab, setActiveTab ] = useState<'Home' | 'Kanji' | 'Search' | 'Listening' | 'Books' | 'J-Media' | 'Grammar'>('Home');
+
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [fontScale, setFontScale] = useState<number>(() => {
+    const saved = localStorage.getItem('jlearn-font-scale');
+    return saved ? parseFloat(saved) : 1.0;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('jlearn-font-scale', fontScale.toString());
+    document.documentElement.style.fontSize = `${fontScale * 100}%`;
+  }, [fontScale]);
 
   // Exchange rate states for J-Media marquee
   const [sbiRate, setSbiRate] = useState<number | null>(null);
@@ -647,7 +659,7 @@ export default function App() {
                     }}
                     className="flex items-center gap-1.5 sm:gap-2.5 cursor-pointer select-none active:opacity-80 shrink-0"
                   >
-                    <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none shrink-0">
+                    <div className="hidden md:flex w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none shrink-0">
                       <span className="text-sm">📚</span>
                     </div>
                     <div className="leading-tight shrink-0">
@@ -739,6 +751,15 @@ export default function App() {
                       <Tv size={14} style={{ color: '#EF4444' }} />
                       <span>J-Media</span>
                     </button>
+
+                    {/* Mobile Settings Icon */}
+                    <button
+                      onClick={() => setIsSettingsOpen(true)}
+                      className="md:hidden w-9 h-9 rounded-xl border border-slate-200/25 bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition active-press shrink-0"
+                      aria-label="Settings"
+                    >
+                      <Settings size={16} />
+                    </button>
                   </div>
                 </div>
               </>
@@ -756,7 +777,7 @@ export default function App() {
                       }}
                       className="flex items-center gap-1.5 sm:gap-2.5 cursor-pointer select-none active:opacity-80 shrink-0"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none shrink-0">
+                      <div className="hidden md:flex w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none shrink-0">
                         <span className="text-sm">📚</span>
                       </div>
                       <div className="leading-tight shrink-0">
@@ -2700,6 +2721,85 @@ export default function App() {
                     );
                   })()
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MOBILE SETTINGS BOTTOM SHEET - Mobile Only */}
+        {isSettingsOpen && (
+          <div className="fixed inset-0 z-[9999] md:hidden animate-fade-in">
+            {/* Backdrop overlay */}
+            <div 
+              onClick={() => setIsSettingsOpen(false)}
+              className="absolute inset-0 bg-black/50 transition-opacity duration-300"
+            />
+            
+            {/* Slide-up bottom sheet panel */}
+            <div 
+              className="absolute bottom-0 left-0 right-0 mx-auto w-full sm:max-w-md bg-[#1a1a2e] rounded-t-[20px] border-t border-white/10 p-6 shadow-2xl transition-transform duration-300 transform translate-y-0 flex flex-col gap-5 z-10"
+            >
+              {/* Panel Header */}
+              <div className="flex justify-between items-center mb-1">
+                <h3 className="text-base font-extrabold text-white tracking-wide">Settings</h3>
+                <button
+                  onClick={() => setIsSettingsOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white transition active-press"
+                  aria-label="Close"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Font Size Setting Section */}
+              <div className="flex flex-col gap-3">
+                <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">Font Size</span>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  {/* Small */}
+                  <button
+                    onClick={() => setFontScale(0.85)}
+                    className={`py-2 rounded-full border text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 active-press ${
+                      fontScale === 0.85 
+                        ? 'bg-[#6C63FF] border-[#6C63FF] text-white shadow-md shadow-indigo-600/20' 
+                        : 'bg-transparent border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-600'
+                    }`}
+                  >
+                    <span className="text-[10px]">A</span>
+                    <span className="text-[9px] font-black tracking-widest uppercase opacity-75">Small</span>
+                  </button>
+
+                  {/* Medium */}
+                  <button
+                    onClick={() => setFontScale(1.0)}
+                    className={`py-2 rounded-full border text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 active-press ${
+                      fontScale === 1.0 
+                        ? 'bg-[#6C63FF] border-[#6C63FF] text-white shadow-md shadow-indigo-600/20' 
+                        : 'bg-transparent border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-600'
+                    }`}
+                  >
+                    <span className="text-sm">A</span>
+                    <span className="text-[9px] font-black tracking-widest uppercase opacity-75">Medium</span>
+                  </button>
+
+                  {/* Large */}
+                  <button
+                    onClick={() => setFontScale(1.2)}
+                    className={`py-2 rounded-full border text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 active-press ${
+                      fontScale === 1.2 
+                        ? 'bg-[#6C63FF] border-[#6C63FF] text-white shadow-md shadow-indigo-600/20' 
+                        : 'bg-transparent border-slate-700 text-slate-400 hover:text-slate-200 hover:border-slate-600'
+                    }`}
+                  >
+                    <span className="text-base">A</span>
+                    <span className="text-[9px] font-black tracking-widest uppercase opacity-75">Large</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Extra visual separator/decoration */}
+              <div className="text-center mt-2 border-t border-white/5 pt-4">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">JLearn MM N3 Companion</span>
               </div>
             </div>
           </div>
