@@ -15,8 +15,7 @@ import {
   Headphones,
   BookOpen,
   FileText,
-  Tv,
-  Settings
+  Tv
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Word } from './types';
@@ -55,13 +54,6 @@ const KANJI_UNIT_THEMES: Record<number, string> = {
 export default function App() {
   // --- Core Vocabulary Storage & States ---
   const allWords = useMemo(() => loadVocabulary(), []);
-
-  const [fontScale, setFontScale] = useState<number>(() => {
-    const saved = localStorage.getItem('jlearn-font-scale');
-    return saved ? parseFloat(saved) : 1.0;
-  });
-
-  const [showSettings, setShowSettings] = useState(false);
 
   const [learnedWords, setLearnedWords] = useState<Set<string>>(() => {
     const saved = localStorage.getItem('learned_words');
@@ -634,10 +626,7 @@ export default function App() {
     return Math.round((masteredCount * 100) / allWords.length);
   }, [allWords, masteredCount]);
   return (
-    <div 
-      className="bg-slate-100 dark:bg-slate-950 min-h-screen flex lg:flex-col items-center justify-center lg:items-stretch lg:justify-start py-0 sm:py-8 lg:py-0 transition-colors duration-200"
-      style={{ fontSize: `${fontScale}rem` }}
-    >
+    <div className="bg-slate-100 dark:bg-slate-950 min-h-screen flex lg:flex-col items-center justify-center lg:items-stretch lg:justify-start py-0 sm:py-8 lg:py-0 transition-colors duration-200">
       
       {/* Container Frame - behaves as absolute/mobile center on smaller screens, and wide fluid layout on lg screens (1024px+) */}
       <div className="w-full sm:max-w-md lg:max-w-full lg:w-full bg-lightBg dark:bg-darkBg min-h-screen sm:min-h-[85vh] lg:min-h-screen sm:rounded-2xl lg:rounded-none sm:shadow-2xl lg:shadow-none sm:border lg:border-none border-slate-200 dark:border-darkBorder flex flex-col relative overflow-hidden transition-all duration-200 shrink-0">
@@ -677,10 +666,6 @@ export default function App() {
                     <SearchIcon size={12} className="text-slate-400 shrink-0" />
                     <span className="text-[11px] font-semibold text-slate-400">Search...</span>
                   </div>
-
-                  <button onClick={() => setShowSettings(true)} className="md:hidden flex items-center justify-center w-8 h-8 rounded-full ml-1">
-                    <Settings size={20} className="text-gray-300" />
-                  </button>
 
                   {/* Desktop Navigation Tabs (Hidden on mobile) */}
                   <div className="hidden lg:flex items-center gap-2 bg-slate-100 dark:bg-slate-900/60 px-1 py-1 rounded-xl border border-slate-200/40 shrink-0">
@@ -2715,48 +2700,6 @@ export default function App() {
                     );
                   })()
                 )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showSettings && (
-          <div className="fixed inset-0 z-50 md:hidden animate-fade-in">
-            <div 
-              className="absolute inset-0 bg-black/50"
-              onClick={() => setShowSettings(false)}
-            />
-            <div className="absolute bottom-0 left-0 right-0 bg-[#1a1a2e] rounded-t-3xl p-6 border-t border-white/10 shadow-2xl">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-white font-bold text-lg">Settings</h3>
-                <button onClick={() => setShowSettings(false)} className="text-gray-400 hover:text-white p-1">✕</button>
-              </div>
-              <div className="mb-4">
-                <p className="text-gray-400 text-sm mb-3 font-semibold">Font Size</p>
-                <div className="flex gap-3">
-                  {[
-                    { label: 'A', size: 0.85, name: 'Small' },
-                    { label: 'A', size: 1.0, name: 'Default' },
-                    { label: 'A', size: 1.2, name: 'Large' },
-                  ].map((opt) => (
-                    <button
-                      key={opt.name}
-                      onClick={() => {
-                        setFontScale(opt.size);
-                        localStorage.setItem('jlearn-font-scale', String(opt.size));
-                      }}
-                      className={`flex-1 py-2 rounded-full border text-white transition-all ${
-                        fontScale === opt.size 
-                          ? 'bg-[#6C63FF] border-[#6C63FF]' 
-                          : 'border-[#6C63FF]/50 bg-transparent'
-                      }`}
-                      style={{ fontSize: opt.size === 0.85 ? '0.8rem' : opt.size === 1.0 ? '1rem' : '1.2rem' }}
-                    >
-                      {opt.label}
-                      <span className="block text-xs mt-1">{opt.name}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
