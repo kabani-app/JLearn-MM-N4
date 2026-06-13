@@ -1551,8 +1551,11 @@ export default function App() {
                                             }}>
                                           {comp.word}
                                         </h6>
-                                        <span className="text-xs text-indigo-200 font-bold"
-                                              style={{fontFamily: '"Noto Sans JP", "Yu Gothic", "Hiragino Sans", sans-serif'}}>
+                                        <span className="text-2xl text-indigo-200 font-extrabold"
+                                              style={{
+                                                fontFamily: '"Noto Sans JP", "Yu Gothic", "Hiragino Sans", sans-serif',
+                                                fontSize: '1.5rem'
+                                              }}>
                                           {comp.reading}
                                         </span>
                                       </div>
