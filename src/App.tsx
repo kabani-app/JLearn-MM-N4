@@ -737,7 +737,7 @@ export default function App() {
                       className={`h-9 px-3 font-semibold text-xs rounded-xl flex items-center gap-1.5 transition shadow-sm active-press shrink-0 ${activeTab === 'J-Media' ? 'bg-indigo-600 text-white' : 'font-semibold text-slate-700 dark:text-slate-350 bg-slate-100 dark:bg-slate-800 hover:bg-slate-205 dark:hover:bg-slate-700 border border-slate-200/25'}`}
                     >
                       <Tv size={14} style={{ color: '#EF4444' }} />
-                      <span>J-Media</span>
+                      <span className="text-red-500">J-Media</span>
                     </button>
                   </div>
                 </div>
