@@ -832,7 +832,7 @@ export default function App() {
         </div>
 
         {/* MAIN BODY AREA */}
-        <main className={`flex-1 overflow-y-auto ${activeTab === 'J-Media' ? 'px-0 md:px-4' : 'px-4'} pt-4 lg:px-8 lg:pt-8 flex flex-col gap-4 ${(selectedUnit === null && selectedKanjiUnit === null) ? (activeTab === 'J-Media' ? 'pb-28 lg:pb-8' : 'pb-16 lg:pb-8') : 'pb-4 lg:pb-8'}`}>
+        <main className={`flex-1 overflow-y-auto px-4 pt-4 lg:px-8 lg:pt-8 flex flex-col gap-4 ${(selectedUnit === null && selectedKanjiUnit === null) ? (activeTab === 'J-Media' ? 'pb-28 lg:pb-8' : 'pb-16 lg:pb-8') : 'pb-4 lg:pb-8'}`}>
           <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col gap-6">
           
           {/* SCREEN DISPATCHER */}
