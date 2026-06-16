@@ -832,7 +832,7 @@ export default function App() {
         </div>
 
         {/* MAIN BODY AREA */}
-        <main className={`flex-1 overflow-y-auto px-4 pt-4 lg:px-8 lg:pt-8 flex flex-col gap-4 ${(selectedUnit === null && selectedKanjiUnit === null) ? (activeTab === 'J-Media' ? 'pb-28 lg:pb-8' : 'pb-16 lg:pb-8') : 'pb-4 lg:pb-8'}`}>
+        <main className={`flex-1 overflow-y-auto ${activeTab === 'J-Media' ? 'px-0 md:px-4' : 'px-4'} pt-4 lg:px-8 lg:pt-8 flex flex-col gap-4 ${(selectedUnit === null && selectedKanjiUnit === null) ? (activeTab === 'J-Media' ? 'pb-28 lg:pb-8' : 'pb-16 lg:pb-8') : 'pb-4 lg:pb-8'}`}>
           <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col gap-6">
           
           {/* SCREEN DISPATCHER */}
@@ -1523,8 +1523,16 @@ export default function App() {
                                   </button>
                                 </div>
                                 <div className="flex items-baseline gap-2">
-                                  <h5 className="text-2xl font-black text-white">{currentKanji.example_word}</h5>
-                                  <span className="text-xs text-indigo-100 font-bold">【{currentKanji.example_reading}】</span>
+                                  <h5 className="text-2xl font-black text-white"
+                                      style={{
+                                        fontFamily: '"Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif',
+                                        textRendering: 'optimizeLegibility',
+                                        WebkitFontSmoothing: 'antialiased',
+                                        MozOsxFontSmoothing: 'grayscale'
+                                      }}>
+                                    {currentKanji.example_word}
+                                  </h5>
+                                  <span className="text-xl text-indigo-100 font-bold">【{currentKanji.example_reading}】</span>
                                 </div>
                                 <p className="text-xs font-semibold text-amber-200 border-t border-white/5 pt-1.5">{currentKanji.example_meaning}</p>
                               </div>
@@ -1544,14 +1552,14 @@ export default function App() {
                                       <div className="flex justify-between items-baseline">
                                         <h6 className="text-lg font-black text-white drop-shadow-sm" 
                                             style={{
-                                              fontFamily: '"Noto Sans JP", "Yu Gothic", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "MS Gothic", sans-serif',
-                                              WebkitFontSmoothing: 'antialiased',
+                                              fontFamily: '"Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif',
                                               textRendering: 'optimizeLegibility',
-                                              fontWeight: 900
+                                              WebkitFontSmoothing: 'antialiased',
+                                              MozOsxFontSmoothing: 'grayscale'
                                             }}>
                                           {comp.word}
                                         </h6>
-                                        <span className="text-xs text-indigo-200 font-bold"
+                                        <span className="text-xl text-indigo-200 font-bold"
                                               style={{fontFamily: '"Noto Sans JP", "Yu Gothic", "Hiragino Sans", sans-serif'}}>
                                           {comp.reading}
                                         </span>

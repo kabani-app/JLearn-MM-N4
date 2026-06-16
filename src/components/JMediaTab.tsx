@@ -914,11 +914,11 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 select-none max-w-5xl mx-auto w-full animate-fade-in pb-16">
+    <div className="w-full flex flex-col gap-6 select-none md:max-w-5xl md:mx-auto animate-fade-in pb-16">
       
       {/* Toggle Mode button for admins */}
       {isAdminLoggedIn && (
-        <div className="flex justify-end border-b border-slate-100 dark:border-slate-800/60 pb-4">
+        <div className="flex justify-end border-b border-slate-100 dark:border-slate-800/60 pb-4 px-4 md:px-0">
           <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800 rounded-xl">
             <button
               onClick={() => setViewMode('public')}
@@ -940,7 +940,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
 
       {/* Database notification warnings if anon keys are not defined */}
       {!supabaseAnonKey && (
-        <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3">
+        <div className="mx-4 md:mx-0 p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-start gap-3">
           <Info className="text-amber-500 shrink-0 mt-0.5" size={16} />
           <div className="text-xs font-bold text-amber-700 dark:text-amber-300 leading-relaxed">
             Supabase Anonymous Key is not detected in your project environment!
@@ -953,14 +953,14 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
 
       {/* Floating Status notifications */}
       {successBanner && (
-        <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-xs font-black flex items-center gap-2 animate-bounce select-none">
+        <div className="mx-4 md:mx-0 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-xs font-black flex items-center gap-2 animate-bounce select-none">
           <CheckCircle size={14} className="text-emerald-500" />
           <span>{successBanner}</span>
         </div>
       )}
 
       {errorBanner && (
-        <div className="p-3 bg-red-500/15 border border-red-500/25 text-red-400 rounded-xl text-xs font-black flex items-center gap-2 animate-pulse select-none">
+        <div className="mx-4 md:mx-0 p-3 bg-red-500/15 border border-red-500/25 text-red-400 rounded-xl text-xs font-black flex items-center gap-2 animate-pulse select-none">
           <AlertCircle size={14} className="text-red-500" />
           <span>{errorBanner}</span>
         </div>
@@ -971,41 +971,43 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
       {/* ========================================================================= */}
       {viewMode === 'public' ? (
         <div className="flex flex-col gap-6">
-          <div className="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 w-full max-w-xl mx-auto flex-nowrap overflow-x-auto gap-1 scrollbar-none">
-            <button
-              onClick={() => setCurrentSection('Posts')}
-              className={`flex-1 min-w-[70px] sm:min-w-[100px] py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-black tracking-wide transition flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${currentSection === 'Posts' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'}`}
-            >
-              <FileText size={12} className="sm:w-[13px] sm:h-[13px]" />
-              Posts
-            </button>
-            <button
-              onClick={() => setCurrentSection('Songs')}
-              className={`flex-1 min-w-[70px] sm:min-w-[100px] py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-black tracking-wide transition flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${currentSection === 'Songs' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'}`}
-            >
-              <Music size={12} className="sm:w-[13px] sm:h-[13px]" />
-              Songs
-            </button>
-            <button
-              onClick={() => setCurrentSection('Lessons')}
-              className={`flex-1 min-w-[70px] sm:min-w-[100px] py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-black tracking-wide transition flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${currentSection === 'Lessons' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-205'}`}
-            >
-              <Youtube size={12} className="sm:w-[13px] sm:h-[13px]" />
-              Lessons
-            </button>
-            <button
-              onClick={() => setCurrentSection('News')}
-              className={`flex-1 min-w-[70px] sm:min-w-[100px] py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-black tracking-wide transition flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${currentSection === 'News' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-205'}`}
-            >
-              <Layers size={12} className="sm:w-[13px] sm:h-[13px]" />
-              <span>News<span className="hidden sm:inline"> & Podcast</span></span>
-            </button>
+          <div className="px-4 md:px-0">
+            <div className="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/40 w-full max-w-xl mx-auto flex-nowrap overflow-x-auto gap-1 scrollbar-none">
+              <button
+                onClick={() => setCurrentSection('Posts')}
+                className={`flex-1 min-w-[70px] sm:min-w-[100px] py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-black tracking-wide transition flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${currentSection === 'Posts' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'}`}
+              >
+                <FileText size={12} className="sm:w-[13px] sm:h-[13px]" />
+                Posts
+              </button>
+              <button
+                onClick={() => setCurrentSection('Songs')}
+                className={`flex-1 min-w-[70px] sm:min-w-[100px] py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-black tracking-wide transition flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${currentSection === 'Songs' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-200'}`}
+              >
+                <Music size={12} className="sm:w-[13px] sm:h-[13px]" />
+                Songs
+              </button>
+              <button
+                onClick={() => setCurrentSection('Lessons')}
+                className={`flex-1 min-w-[70px] sm:min-w-[100px] py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-black tracking-wide transition flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${currentSection === 'Lessons' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-205'}`}
+              >
+                <Youtube size={12} className="sm:w-[13px] sm:h-[13px]" />
+                Lessons
+              </button>
+              <button
+                onClick={() => setCurrentSection('News')}
+                className={`flex-1 min-w-[70px] sm:min-w-[100px] py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-[11px] sm:text-xs font-black tracking-wide transition flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap ${currentSection === 'News' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-205'}`}
+              >
+                <Layers size={12} className="sm:w-[13px] sm:h-[13px]" />
+                <span>News<span className="hidden sm:inline"> & Podcast</span></span>
+              </button>
+            </div>
           </div>
 
           {/* POSTS SECTION */}
           {currentSection === 'Posts' && (
             <div className="flex flex-col gap-4 text-left">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between px-4 md:px-0">
                 <h3 className="text-sm font-black text-indigo-500 uppercase tracking-widest flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
                   Articles & Posts ({posts.length})
@@ -1036,7 +1038,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                     return (
                       <div 
                         key={post.id}
-                        className="p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl shadow-sm transition flex flex-col gap-4 animate-fade-in text-left hover:shadow-md"
+                        className="p-4 px-3 md:p-6 bg-white dark:bg-slate-900 border-x-0 md:border border-slate-100 dark:border-slate-800 rounded-none md:rounded-3xl shadow-sm transition flex flex-col gap-4 animate-fade-in text-left hover:shadow-md"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/50 pb-3">
                           <div className="flex items-center gap-2">
@@ -1093,7 +1095,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
           {/* SONGS SECTION */}
           {currentSection === 'Songs' && (
             <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between px-4 md:px-0">
                 <h3 className="text-sm font-black text-indigo-500 uppercase tracking-widest flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B6B]" />
                   Japanese Songs ({songs.length})
@@ -1126,7 +1128,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                         setPlayingYoutubeId(song.youtube_id);
                         setPlayingTitle(song.title);
                       }}
-                      className="group p-5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:border-indigo-500/40 dark:hover:border-indigo-500/50 rounded-2xl shadow-sm transition-all duration-200 cursor-pointer flex justify-between gap-4 h-full relative overflow-hidden animate-fade-in"
+                      className="group p-4 px-3 md:p-5 bg-white dark:bg-slate-900 border-x-0 md:border border-slate-100 dark:border-slate-800 hover:border-indigo-500/40 dark:hover:border-indigo-500/50 rounded-none md:rounded-2xl shadow-sm transition-all duration-200 cursor-pointer flex justify-between gap-4 h-full relative overflow-hidden animate-fade-in"
                     >
                       <div className="flex flex-col flex-1 gap-2">
                         <div>
@@ -1180,13 +1182,13 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                   <div className="flex flex-col gap-4">
                     <button
                       onClick={() => setSelectedPlaylist(null)}
-                      className="self-start px-3 py-1.5 rounded-xl border border-slate-200/55 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-850 transition text-xs font-black text-slate-650 dark:text-slate-350 flex items-center gap-2"
+                      className="self-start px-3 py-1.5 ml-4 md:ml-0 rounded-xl border border-slate-200/55 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-855 transition text-xs font-black text-slate-650 dark:text-slate-350 flex items-center gap-2"
                     >
                       <ArrowLeft size={13} className="text-slate-500" />
                       Back to Playlists
                     </button>
 
-                    <div className="p-6 bg-slate-105 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/80 rounded-3xl flex flex-col md:flex-row gap-5 items-center relative overflow-hidden">
+                    <div className="p-4 px-3 md:p-6 bg-slate-105 dark:bg-slate-900 border-x-0 md:border border-slate-200/40 dark:border-slate-800/80 rounded-none md:rounded-3xl flex flex-col md:flex-row gap-5 items-center relative overflow-hidden">
                       {/* Thumbnail frame of playlist in detail top */}
                       <div className="w-full md:w-56 aspect-video shrink-0 bg-slate-950 rounded-2xl border border-slate-200/30 dark:border-slate-800 relative overflow-hidden flex items-center justify-center shadow-md">
                         <img 
@@ -1227,7 +1229,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
 
                   {/* Videos list belonging to active playlist */}
                   <div className="flex flex-col gap-4">
-                    <h4 className="text-xs font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1.5 px-0.5">
+                    <h4 className="text-xs font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1.5 px-4 md:px-0.5">
                       <Film size={12} className="text-[#EF4444]" />
                       Lesson Videos inside this playlist ({lessons.filter(l => String(l.playlist_id) === String(selectedPlaylist.id)).length})
                     </h4>
@@ -1255,7 +1257,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                                   setPlayingYoutubeId(item.youtube_id);
                                   setPlayingTitle(item.channel_name);
                                 }}
-                                className="group p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:border-indigo-500/40 dark:hover:border-indigo-500/50 rounded-2xl shadow-sm transition-all duration-200 cursor-pointer flex justify-between gap-4 h-full relative overflow-hidden"
+                                className="group p-4 px-3 md:p-4 bg-white dark:bg-slate-900 border-x-0 md:border border-slate-100 dark:border-slate-800 hover:border-indigo-500/40 dark:hover:border-indigo-500/50 rounded-none md:rounded-2xl shadow-sm transition-all duration-200 cursor-pointer flex justify-between gap-4 h-full relative overflow-hidden"
                               >
                                 <div className="flex flex-col flex-grow justify-between gap-2 text-left">
                                   <div className="flex flex-col gap-2">
@@ -1299,7 +1301,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                 /* PLAYLISTS OVERVIEW GRID VIEW */
                 <div className="flex flex-col gap-8">
                   {/* Playlist Group List Header */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between px-4 md:px-0">
                     <h3 className="text-sm font-black text-indigo-500 uppercase tracking-widest flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
                       Lessons Playlists & Groups ({playlists.length})
@@ -1335,7 +1337,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                           <div
                             key={playlist.id}
                             onClick={() => setSelectedPlaylist(playlist)}
-                            className="group bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:border-indigo-500/40 dark:hover:border-indigo-500/50 hover:shadow-lg rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer flex flex-col h-full relative"
+                            className="group bg-white dark:bg-slate-900 border-x-0 md:border border-slate-100 dark:border-slate-800 hover:border-indigo-500/40 dark:hover:border-indigo-500/50 hover:shadow-lg rounded-none md:rounded-2xl overflow-hidden transition-all duration-300 cursor-pointer flex flex-col h-full relative"
                           >
                             {/* Playlist mockup cover with stacked layers styling */}
                             <div className="w-full aspect-video bg-slate-950 relative overflow-hidden flex items-center justify-center shrink-0">
@@ -1363,7 +1365,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                             </div>
 
                             {/* Info card bottom details */}
-                            <div className="p-4 flex flex-col justify-between flex-grow gap-2.5 text-left">
+                            <div className="p-4 px-3 md:p-4 flex flex-col justify-between flex-grow gap-2.5 text-left">
                               <div className="flex flex-col gap-1.5">
                                 <h4 className="font-extrabold text-[15px] text-slate-800 dark:text-slate-100 line-clamp-2 leading-snug group-hover:text-indigo-500 transition">
                                   {playlist.title}
@@ -1390,7 +1392,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                   {/* UNASSIGNED & UNCATEGORIZED VIDEOS SECTION AT THE BOTTOM */}
                   {lessons.filter(l => !l.playlist_id).length > 0 && (
                     <div className="flex flex-col gap-4 border-t border-slate-100 dark:border-slate-850 pt-8 mt-4 text-left">
-                      <div className="flex flex-col text-left">
+                      <div className="flex flex-col text-left px-4 md:px-0">
                         <h4 className="text-xs font-black text-slate-550 dark:text-slate-300 uppercase tracking-widest flex items-center gap-1.5">
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-450 dark:bg-slate-600" />
                           Uncategorized Lessons ({lessons.filter(l => !l.playlist_id).length})
@@ -1417,7 +1419,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                                   setPlayingYoutubeId(item.youtube_id);
                                   setPlayingTitle(item.channel_name);
                                 }}
-                                className="group p-5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:border-indigo-500/40 dark:hover:border-indigo-500/50 rounded-2xl shadow-sm transition-all duration-200 cursor-pointer flex justify-between gap-4 h-full relative overflow-hidden text-left"
+                                className="group p-4 px-3 md:p-5 bg-white dark:bg-slate-900 border-x-0 md:border border-slate-100 dark:border-slate-800 hover:border-indigo-500/40 dark:hover:border-indigo-500/50 rounded-none md:rounded-2xl shadow-sm transition-all duration-200 cursor-pointer flex justify-between gap-4 h-full relative overflow-hidden text-left"
                               >
                                 <div className="flex flex-col flex-1 gap-2.5 text-left">
                                   <div className="flex flex-wrap items-center gap-2">
@@ -1465,7 +1467,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
           {/* NEWS & PODCAST SECTION */}
           {currentSection === 'News' && (
             <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between px-4 md:px-0">
                 <h3 className="text-sm font-black text-indigo-500 uppercase tracking-widest flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
                   News & Podcast Channels ({newsList.length})
@@ -1502,7 +1504,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                         href={news.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="group p-5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 hover:border-[#10B981]/50 rounded-2xl shadow-sm transition-all duration-200 flex flex-col justify-between gap-3 h-full animate-fade-in relative hover:shadow-md"
+                        className="group p-4 px-3 md:p-5 bg-white dark:bg-slate-900 border-x-0 md:border border-slate-100 dark:border-slate-800 hover:border-[#10B981]/50 rounded-none md:rounded-2xl shadow-sm transition-all duration-200 flex flex-col justify-between gap-3 h-full animate-fade-in relative hover:shadow-md"
                       >
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center justify-between gap-2">
