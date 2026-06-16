@@ -914,7 +914,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col gap-6 select-none max-w-5xl mx-auto w-full animate-fade-in pb-16">
+    <div className="w-full flex flex-col gap-6 select-none max-w-5xl w-full animate-fade-in pb-16">
       
       {/* Toggle Mode button for admins */}
       {isAdminLoggedIn && (
