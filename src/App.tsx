@@ -636,8 +636,23 @@ export default function App() {
           <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
             {selectedUnit === null && selectedKanjiUnit === null ? (
               <>
-                <div className="flex items-center justify-between w-full gap-3 sm:gap-4 md:gap-8">
-                  {/* Branding / Logo */}
+                <div className="flex flex-row items-center justify-between w-full gap-2 lg:gap-8">
+                  {/* Mobile Hub back button */}
+                  <button
+                    onClick={() => {
+                      window.location.href = 'https://jlearn-mm-hub.vercel.app';
+                    }}
+                    className="lg:hidden h-9 px-3 font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 transition shadow-sm active-press shrink-0 bg-[#6C63FF] hover:bg-[#5b52e5] text-white flex-none"
+                  >
+                    <span>‹ Hub</span>
+                  </button>
+
+                  {/* Mobile branding title */}
+                  <span className="lg:hidden text-xs font-bold text-white flex-none">
+                    JLearn-MM-N3
+                  </span>
+
+                  {/* Branding / Logo (Desktop only) */}
                   <div 
                     onClick={() => {
                       handleLogoClick();
@@ -645,7 +660,7 @@ export default function App() {
                       setSelectedUnit(null);
                       setSelectedKanjiUnit(null);
                     }}
-                    className="flex items-center gap-1.5 sm:gap-2.5 cursor-pointer select-none active:opacity-80 shrink-0"
+                    className="hidden lg:flex items-center gap-1.5 sm:gap-2.5 cursor-pointer select-none active:opacity-80 shrink-0"
                   >
                     <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none shrink-0">
                       <span className="text-sm">📚</span>
@@ -661,7 +676,7 @@ export default function App() {
                     onClick={() => {
                       setIsUniversalSearchOpen(true);
                     }}
-                    className="flex lg:hidden flex-grow items-center gap-2 bg-slate-900 border border-slate-800 rounded-full h-8.5 px-3 text-slate-400 hover:text-slate-350 cursor-pointer shadow-inner transition select-none active-press"
+                    className="flex lg:hidden flex-1 items-center gap-2 bg-slate-900 border border-slate-800 rounded-full h-8.5 px-3 text-slate-400 hover:text-slate-350 cursor-pointer shadow-inner transition select-none active-press"
                   >
                     <SearchIcon size={12} className="text-slate-400 shrink-0" />
                     <span className="text-[11px] font-semibold text-slate-400">Search...</span>
@@ -706,7 +721,7 @@ export default function App() {
                   </div>
 
                   {/* Desktop Actions & Stats, plus J-Media (Shrink-0) */}
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 flex-none">
                     {/* Desktop Header Stats */}
                     <div className="hidden lg:flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950/25 border border-emerald-100 dark:border-emerald-900/40 px-3.5 py-1.5 rounded-xl mr-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 animate-fade-in">
                       <span>✨ Mastered {masteredCount}/{allWords.length}</span>
