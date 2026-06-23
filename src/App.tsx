@@ -1031,10 +1031,10 @@ export default function App() {
                                   className="text-center font-semibold tracking-wide text-slate-500 dark:text-slate-400 line-clamp-2 max-w-full px-2"
                                   style={{
                                     fontSize: currentWord.hiragana.length > 16 
-                                      ? "clamp(1.0rem, 3.5vw, 1.5rem)" 
+                                      ? "clamp(0.5rem, 1.75vw, 0.75rem)" 
                                       : currentWord.hiragana.length > 8 
-                                        ? "clamp(1.2rem, 4.5vw, 2.0rem)" 
-                                        : "clamp(1.5rem, 5vw, 3rem)",
+                                        ? "clamp(0.6rem, 2.25vw, 1.0rem)" 
+                                        : "clamp(0.75rem, 2.5vw, 1.5rem)",
                                     wordBreak: "break-word",
                                     overflowWrap: "anywhere"
                                   }}
@@ -1046,10 +1046,10 @@ export default function App() {
                                 className="font-extrabold text-slate-900 dark:text-slate-100 leading-tight text-center max-w-full px-2"
                                 style={{
                                   fontSize: currentWord.kanji.length > 12 
-                                    ? "clamp(0.8rem, 2.2vw, 1.2rem)" 
+                                    ? "clamp(1.6rem, 4.4vw, 2.4rem)" 
                                     : currentWord.kanji.length > 6 
-                                      ? "clamp(0.9rem, 2.6vw, 1.5rem)" 
-                                      : "clamp(1rem, 3vw, 1.8rem)",
+                                      ? "clamp(1.8rem, 5.2vw, 3.0rem)" 
+                                      : "clamp(2rem, 6vw, 3.6rem)",
                                   wordBreak: "break-word",
                                   overflowWrap: "anywhere"
                                 }}
