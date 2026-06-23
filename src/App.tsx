@@ -1029,14 +1029,14 @@ export default function App() {
                               {currentWord.kanji !== currentWord.hiragana && (
                                 <p 
                                   className="text-center font-semibold tracking-wide text-slate-500 dark:text-slate-400 line-clamp-2 max-w-full px-2"
-                                  style={{
-                                    fontSize: currentWord.hiragana.length > 16 
-                                      ? "clamp(0.5rem, 1.75vw, 0.75rem)" 
-                                      : currentWord.hiragana.length > 8 
-                                        ? "clamp(0.6rem, 2.25vw, 1.0rem)" 
-                                        : "clamp(0.75rem, 2.5vw, 1.5rem)",
-                                    wordBreak: "break-word",
-                                    overflowWrap: "anywhere"
+                                  style={{ 
+                                    fontSize: 'clamp(1rem, 6vw, 2.5rem)', 
+                                    whiteSpace: 'nowrap', 
+                                    overflow: 'hidden', 
+                                    textOverflow: 'ellipsis',
+                                    display: 'block',
+                                    width: '100%',
+                                    textAlign: 'center'
                                   }}
                                 >
                                   {currentWord.hiragana}
@@ -1044,14 +1044,14 @@ export default function App() {
                               )}
                               <h3 
                                 className="font-extrabold text-slate-900 dark:text-slate-100 leading-tight text-center max-w-full px-2"
-                                style={{
-                                  fontSize: currentWord.kanji.length > 12 
-                                    ? "clamp(1.6rem, 4.4vw, 2.4rem)" 
-                                    : currentWord.kanji.length > 6 
-                                      ? "clamp(1.8rem, 5.2vw, 3.0rem)" 
-                                      : "clamp(2rem, 6vw, 3.6rem)",
-                                  wordBreak: "break-word",
-                                  overflowWrap: "anywhere"
+                                style={{ 
+                                  fontSize: 'clamp(2rem, 12vw, 5rem)', 
+                                  whiteSpace: 'nowrap', 
+                                  overflow: 'hidden', 
+                                  textOverflow: 'ellipsis',
+                                  display: 'block',
+                                  width: '100%',
+                                  textAlign: 'center'
                                 }}
                               >
                                 {currentWord.kanji}
@@ -1061,12 +1061,13 @@ export default function App() {
                               
                               <p 
                                 className="font-black text-indigo-600 dark:text-indigo-400 text-center max-w-full px-2"
-                                style={{
-                                  fontSize: currentWord.meaning.length > 20
-                                    ? "clamp(0.8rem, 2.2vw, 1.1rem)"
-                                    : "clamp(0.9rem, 2.5vw, 1.3rem)",
-                                  wordBreak: "break-word",
-                                  overflowWrap: "anywhere"
+                                style={{ 
+                                  fontSize: 'clamp(0.9rem, 5vw, 1.8rem)', 
+                                  whiteSpace: 'nowrap', 
+                                  overflow: 'hidden', 
+                                  textOverflow: 'ellipsis',
+                                  display: 'block',
+                                  width: '100%'
                                 }}
                               >
                                 {currentWord.meaning}
@@ -1379,7 +1380,7 @@ export default function App() {
                   </div>
 
                   {currentKanji ? (
-                    <div className="flex-1 flex flex-col gap-4">
+                    <div className="flex-1 flex flex-col gap-4 pb-24">
                       
                       {/* Progress info and navigation tools */}
                       <div className="flex items-center justify-between text-xs px-2">
@@ -1523,12 +1524,13 @@ export default function App() {
                                   </button>
                                 </div>
                                 <div className="flex items-baseline gap-2">
-                                  <h5 className="text-2xl font-black text-white"
+                                  <h5 className="text-4xl font-black text-white"
                                       style={{
                                         fontFamily: '"Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif',
                                         textRendering: 'optimizeLegibility',
                                         WebkitFontSmoothing: 'antialiased',
-                                        MozOsxFontSmoothing: 'grayscale'
+                                        MozOsxFontSmoothing: 'grayscale',
+                                        letterSpacing: '0.15em'
                                       }}>
                                     {currentKanji.example_word}
                                   </h5>
@@ -1550,12 +1552,13 @@ export default function App() {
                                       className="bg-black/30 hover:bg-black/40 border border-white/15 rounded-xl p-2.5 flex flex-col gap-1 transition-all"
                                     >
                                       <div className="flex justify-between items-baseline">
-                                        <h6 className="text-lg font-black text-white drop-shadow-sm" 
+                                        <h6 className="text-2xl font-black text-white drop-shadow-sm" 
                                             style={{
                                               fontFamily: '"Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif',
                                               textRendering: 'optimizeLegibility',
                                               WebkitFontSmoothing: 'antialiased',
-                                              MozOsxFontSmoothing: 'grayscale'
+                                              MozOsxFontSmoothing: 'grayscale',
+                                              letterSpacing: '0.15em'
                                             }}>
                                           {comp.word}
                                         </h6>
@@ -1583,7 +1586,7 @@ export default function App() {
                       </div>
 
                       {/* NAVIGATION CONTROLS */}
-                      <div className="flex items-center justify-between gap-3 mt-2">
+                      <div className="flex items-center justify-between gap-3 mt-2 fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0f0f1a] pb-4 pt-2 px-4 max-w-2xl mx-auto w-full">
                         <button
                           onClick={() => {
                             setIsKanjiFlipped(false);
