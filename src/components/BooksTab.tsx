@@ -54,7 +54,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({
 
   const [selectedBook, setSelectedBook] = useState<BookItem | null>(null);
   const [iframeLoading, setIframeLoading] = useState<boolean>(true);
-  const [selectedCategory, setSelectedCategory] = useState<'All' | 'N3 Books' | 'မေးခွန်းဟောင်း'>('All');
+  const [selectedCategory, setSelectedCategory] = useState<'All' | 'N4 Books' | 'မေးခွန်းဟောင်း'>('All');
 
   // View state: Admin panel vs. Public client
   const [viewMode, setViewMode] = useState<'public' | 'admin'>(isAdminLoggedIn ? 'admin' : 'public');
@@ -70,8 +70,8 @@ export const BooksTab: React.FC<BooksTabProps> = ({
 
   const [bookTitle, setBookTitle] = useState('');
   const [bookDesc, setBookDesc] = useState('');
-  const [bookCategory, setBookCategory] = useState('N3 Books');
-  const [bookLevel, setBookLevel] = useState('n3');
+  const [bookCategory, setBookCategory] = useState('N4 Books');
+  const [bookLevel, setBookLevel] = useState('n4');
   const [bookFileSize, setBookFileSize] = useState('');
   const [bookDriveFileId, setBookDriveFileId] = useState('');
 
@@ -149,12 +149,12 @@ export const BooksTab: React.FC<BooksTabProps> = ({
 
   const filteredBooks = books.filter(book => {
     const isCategoryMatch = selectedCategory === 'All' ? true : book.category === selectedCategory;
-    const isLevelMatch = !book.app_level || book.app_level === 'n3' || book.app_level === 'all';
+    const isLevelMatch = !book.app_level || book.app_level === 'n4' || book.app_level === 'all';
     return isCategoryMatch && isLevelMatch;
   });
 
   const getBookColor = (category: string) => {
-    return category === 'N3 Books' ? '#6C63FF' : '#EF4444';
+    return category === 'N4 Books' ? '#6C63FF' : '#EF4444';
   };
 
   // Open Form Dialogs
@@ -163,8 +163,8 @@ export const BooksTab: React.FC<BooksTabProps> = ({
     setSelectedItemId(null);
     setBookTitle('');
     setBookDesc('');
-    setBookCategory('N3 Books');
-    setBookLevel('n3');
+    setBookCategory('N4 Books');
+    setBookLevel('n4');
     setBookFileSize('');
     setBookDriveFileId('');
     setIsFormModalOpen(true);
@@ -175,8 +175,8 @@ export const BooksTab: React.FC<BooksTabProps> = ({
     setSelectedItemId(book.id);
     setBookTitle(book.title || '');
     setBookDesc(book.description_mm || '');
-    setBookCategory(book.category || 'N3 Books');
-    setBookLevel(book.app_level || 'n3');
+    setBookCategory(book.category || 'N4 Books');
+    setBookLevel(book.app_level || 'n4');
     setBookFileSize(book.file_size || '');
     setBookDriveFileId(book.drive_file_id || '');
     setIsFormModalOpen(true);
@@ -307,7 +307,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({
           <div className="hidden lg:flex justify-between items-center mb-6 flex-wrap gap-3">
             {/* Category filter tabs */}
             <div className="flex gap-2 p-1.5 bg-slate-100 dark:bg-slate-900/60 rounded-xl border border-slate-250/20 dark:border-slate-800/40 w-full sm:w-auto sm:min-w-[400px]">
-              {(['All', 'N3 Books', 'မေးခွန်းဟောင်း'] as const).map((cat) => (
+              {(['All', 'N4 Books', 'မေးခွန်းဟောင်း'] as const).map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
@@ -317,7 +317,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({
                       : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >
-                  {cat === 'All' ? '📂 All' : cat === 'N3 Books' ? '📖 N3 Books' : '📝 မေးခွန်းဟောင်း'}
+                  {cat === 'All' ? '📂 All' : cat === 'N4 Books' ? '📖 N4 Books' : '📝 မေးခွန်းဟောင်း'}
                 </button>
               ))}
             </div>
@@ -352,16 +352,16 @@ export const BooksTab: React.FC<BooksTabProps> = ({
                 <span>🔄 Refresh</span>
               </button>
 
-              {/* N3 Books Tab Button */}
+              {/* N4 Books Tab Button */}
               <button
-                onClick={() => setSelectedCategory('N3 Books')}
+                onClick={() => setSelectedCategory('N4 Books')}
                 className={`flex-1 py-1.5 text-center text-xs font-bold rounded-lg transition-all active-press ${
-                  selectedCategory === 'N3 Books'
+                  selectedCategory === 'N4 Books'
                     ? 'bg-lightSurface dark:bg-darkSurface text-indigo-600 dark:text-indigo-400 shadow-xs border border-slate-200/20'
-                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-205'
                 }`}
               >
-                N3 Books
+                N4 Books
               </button>
 
               {/* မေးခွန်းဟောင်း Tab Button */}
@@ -540,7 +540,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({
                         </td>
                         <td className="py-3.5 px-4">
                           <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border tracking-wide uppercase ${
-                            book.category === 'N3 Books' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 
+                            book.category === 'N4 Books' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 
                             'bg-red-500/10 text-red-100 dark:text-red-400 border-red-500/20'
                           }`}>
                             {book.category}
@@ -548,7 +548,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({
                         </td>
                         <td className="py-3.5 px-4">
                           <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 border border-indigo-500/10 uppercase font-mono">
-                            {book.app_level || 'n3'}
+                            {book.app_level || 'n4'}
                           </span>
                         </td>
                         <td className="py-3.5 px-4 font-mono font-bold text-[11px]">
@@ -686,7 +686,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({
                     type="text" 
                     value={bookTitle}
                     onChange={(e) => setBookTitle(e.target.value)}
-                    placeholder="e.g. Try! N3 Bunpou"
+                    placeholder="e.g. Try! N4 Bunpou"
                     className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
                     required
                   />
@@ -700,7 +700,7 @@ export const BooksTab: React.FC<BooksTabProps> = ({
                     className="w-full text-xs font-black p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-955 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
                     required
                   >
-                    <option value="N3 Books">N3 Books</option>
+                    <option value="N4 Books">N4 Books</option>
                     <option value="မေးခွန်းဟောင်း">မေးခွန်းဟောင်း</option>
                   </select>
                 </div>

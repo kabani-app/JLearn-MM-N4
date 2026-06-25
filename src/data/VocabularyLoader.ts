@@ -1,78 +1,70 @@
 import { Word } from '../types';
-import part1Content from './n3_part1.txt?raw';
-import part2Content from './n3_part2.txt?raw';
+import { vocabularyN4Part1 } from './vocabulary_n4_part1';
+import { vocabularyN4Part2 } from './vocabulary_n4_part2';
 import { getUniqueSentence } from './sentenceDictionary';
 import { getOfflineMeanings } from './offlineMeanings';
-
-function getPos(kanji: string, unitName: string): string {
-  const lowerUnit = unitName.toLowerCase();
-  if (lowerUnit.includes('verb') || lowerUnit.includes('action')) return 'Verb';
-  if (lowerUnit.includes('adjective') || lowerUnit.includes('emotion')) return 'Adjective';
-  if (lowerUnit.includes('adverb')) return 'Adverb';
-
-  const cleanKanji = kanji.replace(/[~〜()（）]/g, '').trim();
-  if (cleanKanji.length > 0) {
-    const lastChar = cleanKanji.charAt(cleanKanji.length - 1);
-    if (/[うくるすむぶぬ]$/.test(lastChar)) return 'Verb';
-    if (cleanKanji.endsWith('な') || cleanKanji.endsWith('い')) return 'Adjective';
-  }
-  return 'Noun';
-}
+import { vocabularyN4Part1Sentences } from './vocabulary_n4_part1_sentences';
+import { vocabularyN4Part2Sentences } from './vocabulary_n4_part2_sentences';
 
 export function loadVocabulary(): Word[] {
   const list: Word[] = [];
-  parseAsset(part1Content, 'Part 1', list);
-  parseAsset(part2Content, 'Part 2', list);
+
+  vocabularyN4Part1.forEach((item, index) => {
+    const wordId = `${item.word}|${item.meaning_mm}`;
+    const unitStr = `Lesson ${item.unit}`;
+    
+    // Attempt to find a static generated sentence matching word and reading
+    const matched = vocabularyN4Part1Sentences.find(
+      (s) => s.word === item.word && s.reading === item.reading
+    );
+    const sentenceJa = matched ? matched.example_hiragana : getUniqueSentence(item.reading, item.meaning_mm, item.pos, index).ja;
+    const sentenceMm = matched ? matched.example_myanmar : getUniqueSentence(item.reading, item.meaning_mm, item.pos, index).mm;
+
+    const offlineMeanings = getOfflineMeanings(item.word, item.meaning_mm, item.pos, index);
+
+    list.push({
+      id: wordId,
+      part: 'Part 1',
+      unit: unitStr,
+      hiragana: item.reading,
+      kanji: item.word,
+      meaning: item.meaning_mm,
+      pos: item.pos,
+      sentenceJa,
+      sentenceMm,
+      same_meanings: offlineMeanings.same_meanings,
+      opposite_meanings: offlineMeanings.opposite_meanings,
+    });
+  });
+
+  vocabularyN4Part2.forEach((item, index) => {
+    const wordId = `${item.word}|${item.meaning_mm}`;
+    const unitStr = `Lesson ${item.unit}`;
+    
+    // Attempt to find a static generated sentence matching word and reading
+    const matched = vocabularyN4Part2Sentences.find(
+      (s) => s.word === item.word && s.reading === item.reading
+    );
+    const sentenceJa = matched ? matched.example_hiragana : getUniqueSentence(item.reading, item.meaning_mm, item.pos, vocabularyN4Part1.length + index).ja;
+    const sentenceMm = matched ? matched.example_myanmar : getUniqueSentence(item.reading, item.meaning_mm, item.pos, vocabularyN4Part1.length + index).mm;
+
+    const offlineMeanings = getOfflineMeanings(item.word, item.meaning_mm, item.pos, vocabularyN4Part1.length + index);
+
+    list.push({
+      id: wordId,
+      part: 'Part 2',
+      unit: unitStr,
+      hiragana: item.reading,
+      kanji: item.word,
+      meaning: item.meaning_mm,
+      pos: item.pos,
+      sentenceJa,
+      sentenceMm,
+      same_meanings: offlineMeanings.same_meanings,
+      opposite_meanings: offlineMeanings.opposite_meanings,
+    });
+  });
+
   return list;
-}
-
-function parseAsset(content: string, partName: string, outList: Word[]): void {
-  try {
-    const lines = content.split(/\r?\n/);
-    let currentUnit = '';
-    let wordsInUnit = 0;
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.length === 0) continue;
-
-      if (trimmed.startsWith('#')) {
-        currentUnit = trimmed.substring(1).trim();
-        wordsInUnit = 0;
-      } else if (currentUnit.length > 0) {
-        // Words are semicolon-separated in a single line or list
-        const words = trimmed.split(';');
-        for (const wordStr of words) {
-          const parts = wordStr.split('|');
-          if (parts.length >= 3) {
-            const hiragana = parts[0].trim();
-            const kanji = parts[1].trim() || hiragana;
-            const meaning = parts[2].trim();
-            const wordId = `${kanji}|${meaning}`;
-            const pos = getPos(kanji, currentUnit);
-            const sentence = getUniqueSentence(kanji, meaning, pos, wordsInUnit);
-            const offlineMeanings = getOfflineMeanings(kanji, meaning, pos, outList.length + wordsInUnit);
-
-            outList.push({
-              id: wordId,
-              part: partName,
-              unit: currentUnit,
-              hiragana,
-              kanji,
-              meaning,
-              pos,
-              sentenceJa: sentence.ja,
-              sentenceMm: sentence.mm,
-              same_meanings: offlineMeanings.same_meanings,
-              opposite_meanings: offlineMeanings.opposite_meanings,
-            });
-            wordsInUnit++;
-          }
-        }
-      }
-    }
-  } catch (e) {
-    console.error('Error parsing asset content:', e);
-  }
 }
 

@@ -288,7 +288,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
   // Books Form Fields
   const [bookTitle, setBookTitle] = useState('');
   const [bookDesc, setBookDesc] = useState('');
-  const [bookCategory, setBookCategory] = useState('N3 Books');
+  const [bookCategory, setBookCategory] = useState('N4 Books');
   const [bookFileSize, setBookFileSize] = useState('');
   const [bookDriveFileId, setBookDriveFileId] = useState('');
 
@@ -658,7 +658,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
 
     setBookTitle('');
     setBookDesc('');
-    setBookCategory('N3 Books');
+    setBookCategory('N4 Books');
     setBookFileSize('');
     setBookDriveFileId('');
 
@@ -701,7 +701,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
     } else if (manager === 'Books') {
       setBookTitle(item.title || '');
       setBookDesc(item.description_mm || '');
-      setBookCategory(item.category || 'N3 Books');
+      setBookCategory(item.category || 'N4 Books');
       setBookFileSize(item.file_size || '');
       setBookDriveFileId(item.drive_file_id || '');
     }
@@ -2115,7 +2115,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                             </td>
                             <td className="py-3.5 px-4">
                               <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border tracking-wide uppercase ${
-                                book.category === 'N3 Books' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 
+                                book.category === 'N4 Books' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 
                                 'bg-red-500/10 text-red-100 dark:text-red-400 border-red-500/20'
                               }`}>
                                 {book.category}
@@ -2511,7 +2511,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                       type="text" 
                       value={playlistTitle}
                       onChange={(e) => setPlaylistTitle(e.target.value)}
-                      placeholder="e.g. N3 Grammar Master Class (စကားပြောစွမ်းရည်)"
+                      placeholder="e.g. N4 Grammar Master Class (စကားပြောစွမ်းရည်)"
                       className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
                       required
                     />
@@ -2523,7 +2523,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                       type="text" 
                       value={playlistCategory}
                       onChange={(e) => setPlaylistCategory(e.target.value)}
-                      placeholder="e.g. JLPT N3 Grammar"
+                      placeholder="e.g. JLPT N4 Grammar"
                       className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
                       required
                     />
@@ -2580,7 +2580,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                       className="w-full text-xs font-black p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
                     >
                       <option value="Beginner">Beginner (N5/N4)</option>
-                      <option value="Intermediate">Intermediate (N3)</option>
+                      <option value="Intermediate">Intermediate (N4)</option>
                       <option value="Advanced">Advanced (N2/N1)</option>
                     </select>
                   </div>
@@ -2690,7 +2690,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                       type="text" 
                       value={bookTitle}
                       onChange={(e) => setBookTitle(e.target.value)}
-                      placeholder="e.g. Try! N3 Bunpou"
+                      placeholder="e.g. Try! N4 Bunpou"
                       className="w-full text-xs font-bold p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
                       required
                     />
@@ -2704,7 +2704,7 @@ export const JMediaTab: React.FC<JMediaTabProps> = ({
                       className="w-full text-xs font-black p-3 rounded-xl border border-lightBorder dark:border-darkBorder bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
                       required
                     >
-                      <option value="N3 Books">N3 Books</option>
+                      <option value="N4 Books">N4 Books</option>
                       <option value="မေးခွန်းဟောင်း">မေးခွန်းဟောင်း</option>
                     </select>
                   </div>

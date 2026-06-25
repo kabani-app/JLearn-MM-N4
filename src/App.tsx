@@ -20,9 +20,10 @@ import {
 import confetti from 'canvas-confetti';
 import { Word } from './types';
 import { loadVocabulary } from './data/VocabularyLoader';
+import { vocabularyN4Part1Sentences } from './data/vocabulary_n4_part1_sentences';
 // Offline modes of synonyms and antonyms are loaded directly from offline database
-import { kanjiData } from './data/kanji_n3';
-import { grammarData } from './data/grammar_n3';
+import { kanjiData } from './data/kanji_n4';
+import { grammarData } from './data/grammar_n4';
 import { KanjiStrokeAnimator } from './components/KanjiStrokeAnimator';
 import { ListeningTab } from './components/ListeningTab';
 import { BooksTab } from './components/BooksTab';
@@ -50,10 +51,257 @@ const KANJI_UNIT_THEMES: Record<number, string> = {
 };
 
 // Caching helper functions replaced with instant offline data structures
+const KANJI_TO_HIRAGANA_MAP: Record<string, string> = {
+  "昨日": "きのう",
+  "友達": "ともだち",
+  "遊ぶ": "あそぶ",
+  "楽しかった": "たのしかった",
+  "一昨日": "おととい",
+  "雨": "あめ",
+  "降っていました": "ふっていました",
+  "昨年": "さくねん",
+  "日本": "にほん",
+  "留学": "りゅうがく",
+  "予定": "よてい",
+  "立てました": "たてました",
+  "返事": "へんじ",
+  "送って": "おくって",
+  "先々週": "せんせんしゅう",
+  "難しい": "むずかしい",
+  "合格": "ごうかく",
+  "しました": "しました",
+  "先日": "せんじつ",
+  "親切": "しんせつ",
+  "案内": "あんない",
+  "感謝": "かんしゃ",
+  "旅行": "りょこう",
+  "当日": "とうじつ",
+  "朝": "あさ",
+  "六時": "ろくじ",
+  "駅": "えき",
+  "集合": "しゅうごう",
+  "翌日": "よくじつ",
+  "台風": "たいふう",
+  "天気": "てんき",
+  "なりました": "なりました",
+  "近いうちに": "ちかいうちに",
+  "一緒": "いっしょ",
+  "食事": "しょくじ",
+  "詳しい": "くわしい",
+  "後日": "ごじつ",
+  "連絡": "れんらく",
+  "いたします": "いたします",
+  "今後": "こんご",
+  "注意": "ちゅうい",
+  "当時": "とうじ",
+  "物価": "ぶっか",
+  "安かった": "やすかった",
+  "思います": "おもいます",
+  "以前": "いぜん",
+  "古い": "ふるい",
+  "本屋": "ほんや",
+  "以後": "いご",
+  "午後": "ごご",
+  "五時": "ごじ",
+  "事務所": "じむしょ",
+  "閉まります": "しまります",
+  "夫婦": "ふうふ",
+  "温泉": "おんせん",
+  "行きました": "いきました",
+  "彼女": "かのじょ",
+  "美しい": "うつくしい",
+  "姉妹": "しまい",
+  "兄弟": "きょうだい",
+  "三人": "さんにん",
+  "仲が良く": "なかがよく",
+  "素晴らしい": "すばらしい",
+  "主人": "しゅじん",
+  "週末": "しゅうまつ",
+  "料理": "りょうり",
+  "作って": "つくって",
+  "長男": "ちょうなん",
+  "家族": "かぞく",
+  "優しく": "やさしく",
+  "育ちました": "そだちました",
+  "次男": "じなん",
+  "上手": "じょうず",
+  "大活躍": "だいかつやく",
+  "三男": "さんなん",
+  "今年": "ことし",
+  "無事": "ぶじ",
+  "小学校": "しょうがっこう",
+  "入学": "にゅうがく",
+  "長女": "ちょうじょ",
+  "しっかり者": "しっかりもの",
+  "妹": "いもうと",
+  "面倒": "めんどう",
+  "見ます": "みます",
+  "次女": "じじょ",
+  "弾く": "ひく",
+  "好き": "すき",
+  "お盆": "おぼん",
+  "お祭り": "おまつり",
+  "姪": "めい",
+  "可愛らしい": "かわいらしい",
+  "人形": "にんぎょう",
+  "抱いて": "だいて",
+  "寝ています": "ねています",
+  "甥": "おい",
+  "高校": "こうこう",
+  "祝いました": "いわいました",
+  "親せき": "しんせき",
+  "人": "ひと",
+  "お正月": "おしょうがつ",
+  "お正月に": "おしょうがつに",
+  "集まります": "あつまります",
+  "親類": "しんるい",
+  "当たる": "あたる",
+  "人物": "じんぶつ",
+  "孫": "まご",
+  "祖父": "そふ",
+  "来る": "くる",
+  "楽しみ": "たのしみ",
+  "子孫": "しそん",
+  "文化": "ぶんか",
+  "未来": "みらい",
+  "伝えて": "つたえて",
+  "赤ん坊": "あかんぼう",
+  "声": "こえ",
+  "笑って": "わらって",
+  "少年": "しょうねん",
+  "公園": "こうえん",
+  "野球": "やきゅう",
+  "練習": "れんしゅう",
+  "少女": "しょうじょ",
+  "花束": "はなたば",
+  "現れました": "あらわれました",
+  "お嬢さん": "おじょうさん",
+  "何歳": "なんさい",
+  "青年": "せいねん",
+  "真面目": "まじめ",
+  "仕事": "しごと",
+  "頑張ります": "がんばります",
+  "中年": "ちゅうねん",
+  "健康": "けんこう",
+  "女子": "じょし",
+  "教室": "きょうしつ",
+  "楽しそう": "たのしそう",
+  "話しています": "はなしています",
+  "男子": "だんし",
+  "生徒": "せいと",
+  "校庭": "こうてい",
+  "走って": "はしって",
+  "お年寄り": "おとしより",
+  "席": "せき",
+  "譲りました": "ゆずりました",
+  "高齢者": "こうれいしゃ",
+  "町": "まち",
+  "福祉": "ふくし",
+  "充実": "じゅうじつ",
+  "味見": "あじみ",
+  "味わう": "あじわう",
+  "丸ごと": "まるごと",
+  "腹": "はら",
+  "減った": "へった",
+  "飯": "めし",
+  "食おう": "くおう",
+  "風邪": "かぜ",
+  "食欲": "しょくよく",
+  "書店": "しょてん",
+  "駅前": "えきまえ",
+  "雑誌": "ざっし",
+  "買いました": "かいました",
+  "床屋": "とこや",
+  "日曜日": "にちようび",
+  "髪": "かみ",
+  "切りました": "きりました",
+  "劇場": "げきじょう",
+  "音楽": "おんがく",
+  "楽しみました": "たのしみました",
+  "舞台": "ぶたい",
+  "俳優": "はいゆう",
+  "上": "うえ",
+  "演技": "えんぎ",
+  "売店": "ばいてん",
+  "お弁当": "おべんとう",
+  "日本語": "にほんご",
+  "試験": "しけん",
+  "出ます": "でます",
+  "意味": "いみ",
+  "分からない": "わからない",
+  "辞書": "じしょ",
+  "調べます": "しらべます",
+  "新しい": "あたらしい",
+  "勉強": "べんきょう",
+  "重要": "じゅうよう",
+  "詳しく": "くわしく",
+  "知りたい": "しりたい",
+  "先生": "せんせい",
+  "教えて": "おしえて",
+  "生活": "せいかつ",
+  "豊かに": "ゆたかに",
+  "重要な": "じゅうような",
+  "話し合います": "はなしあいます",
+  "準備": "じゅんび",
+  "忘れない": "わすれない",
+  "明日": "あした",
+  "とき": "とき",
+  "緊張": "きんちょう",
+  "繰り返して": "くりかえして",
+  "こと": "こと",
+  "嬉しい": "うれしい",
+  "部屋": "へや",
+  "落ち着きます": "おちつきます",
+  "出会えて": "であえて",
+  "本当に": "ほんとうに",
+  "安心": "あんしん",
+  "本": "ほん",
+  "書かれた": "かかれた",
+  "お話": "おはなし",
+  "話せる": "はなせる",
+  "大切": "たいせつ",
+  "楽しい": "たのしい",
+  "毎日": "まいにち",
+  "本当": "ほんとう",
+  "上手に": "じょうずに",
+  "美味しい": "おいしい",
+  "味わいました": "あじわいました",
+  "彼は": "かれは",
+  "遊びに": "あそびに"
+};
+
+const convertToHiragana = (text: string): string => {
+  if (!text) return '';
+  let result = text;
+  const keys = Object.keys(KANJI_TO_HIRAGANA_MAP).sort((a, b) => b.length - a.length);
+  for (const key of keys) {
+    result = result.split(key).join(KANJI_TO_HIRAGANA_MAP[key]);
+  }
+  return result;
+};
+
 
 export default function App() {
   // --- Core Vocabulary Storage & States ---
-  const allWords = useMemo(() => loadVocabulary(), []);
+  const allWords = useMemo(() => {
+    const rawWords = loadVocabulary();
+    const sentenceMap = new Map<string, typeof vocabularyN4Part1Sentences[number]>();
+    vocabularyN4Part1Sentences.forEach((s) => {
+      sentenceMap.set(s.word, s);
+    });
+
+    return rawWords.map((w) => {
+      const match = sentenceMap.get(w.kanji);
+      if (match) {
+        return {
+          ...w,
+          sentenceJa: match.example_hiragana,
+          sentenceMm: match.example_myanmar,
+        };
+      }
+      return w;
+    });
+  }, []);
 
   const [learnedWords, setLearnedWords] = useState<Set<string>>(() => {
     const saved = localStorage.getItem('learned_words');
@@ -365,42 +613,281 @@ export default function App() {
     }
   };
 
-  // Styled Sentence Parser Helper
-  const renderStyledSentence = (text: string) => {
-    const regex = /\[([NVAP]):([^\]]+)\]|([^\[]+)/g;
-    const spans: React.ReactNode[] = [];
-    let match;
-    let keyIdx = 0;
+  // Build a comprehensive Japanese word dictionary for intelligent tokenization
+  const jpTokenDict = useMemo(() => {
+    const dict = new Map<string, 'noun' | 'verb' | 'particle' | 'grammar' | 'adjective' | 'adverb'>();
 
-    while ((match = regex.exec(text)) !== null) {
-      if (match[1]) {
-        const tag = match[1];
-        const content = match[2];
-        let color = '#FFFFFF';
-        if (tag === 'N') color = '#FBBF24'; // Gold/Yellow (Nouns)
-        else if (tag === 'V') color = '#60A5FA'; // Blue (Verbs)
-        else if (tag === 'A') color = '#34D399'; // Green (Adjectives)
-        else if (tag === 'P') color = '#9CA3AF'; // Gray (Particles)
-        
-        spans.push(
-          <span key={keyIdx++} style={{ color }} className="font-extrabold select-all">
-            {content}
-          </span>
-        );
-      } else if (match[3]) {
-        spans.push(
-          <span key={keyIdx++} style={{ color: '#FFFFFF' }} className="select-all">
-            {match[3]}
-          </span>
-        );
+    // ── Particles ──
+    const pList = [
+      'は','が','を','に','で','と','も','の','へ','か','ね','よ','な','や',
+      'から','まで','より','けど','けれど','けれども','ので','のに',
+      'って','では','には','でも','とか','しか','だけ','ばかり','ほど','など',
+      'こそ','さえ','すら','ながら','たり','ずつ','くらい','ぐらい','ほう',
+      'について','に対して','として','にとって','において','によって',
+      'だって','のは','のが','のを','ものの',
+    ];
+    for (const p of pList) dict.set(p, 'particle');
+
+    // ── Grammar patterns (N4) ──
+    const gList = [
+      'なければなりません','なければいけません','なくてはいけません','なくてはなりません',
+      'なければならない','なくてもいいです','なくてもいい',
+      'ようにする','ようになる','ようにしている','ようにしています',
+      'ことができます','ことができる','ことがあります','ことがある',
+      'ことにします','ことにする','ことになります','ことになる',
+      'てしまいます','てしまう','てしまいました','ちゃった','じゃった',
+      'てあげます','てもらいます','てくれます','てあげる','てもらう','てくれる',
+      'たらいいですか','たらいい','たほうがいい','たほうがいいです',
+      'てはいけません','てはいけない','てはだめです',
+      'なさい','てください','ないでください',
+      'そうです','らしいです','みたいです','ようです',
+      'つもりです','つもりだ','はずです','はずだ',
+      'かもしれません','かもしれない',
+      'でしょう','だろう','すぎます','すぎる',
+      'やすいです','やすい','にくいです','にくい',
+      'たがる','たがっている','たがっています',
+      'ために','ように','のために','てから',
+      'といいます','という','といって',
+      'ています','ている','てある','てあります',
+      'ておきます','ておく','ていきます','ていく','てきます','てくる',
+      'たことがあります','たことがある',
+      'たばかりです','たばかり','たところです','たところ',
+      'ているところです',
+      'させます','させる','させられます','させられる',
+    ];
+    for (const g of gList) dict.set(g, 'grammar');
+
+    // ── Common verbs/copula ──
+    const commonVerbs = [
+      'です','でした','ではありません','じゃありません','ではない','じゃない',
+      'だ','だった','ある','あった','ない','なかった',
+      'いる','いた','いない','いなかった',
+      'する','した','しない','しなかった','して','しよう',
+      'くる','きた','こない','こなかった','きて',
+      'なる','なった','ならない','なって',
+      'できる','できた','できない','できて',
+      'わかる','わかった','わからない','わかって',
+      'います','いました','いません',
+      'あります','ありました','ありません',
+      'します','しました','しません','しましょう',
+      'きます','きました','きません',
+      'なります','なりました','なりません',
+      'できます','できました','できません',
+      'わかります','わかりました','わかりません',
+    ];
+    for (const v of commonVerbs) if (!dict.has(v)) dict.set(v, 'verb');
+
+    // ── Vocabulary-based entries + auto-conjugation ──
+    for (const w of allWords) {
+      const reading = w.hiragana;
+      if (!reading) continue;
+      const posL = w.pos.toLowerCase();
+
+      if (posL.includes('verb')) {
+        dict.set(reading, 'verb');
+        // Auto-generate conjugations from ます-form
+        if (reading.endsWith('ます')) {
+          const stem = reading.slice(0, -2);
+          // ます-family conjugations
+          for (const suffix of ['ました','ません','ませんでした','ましょう']) {
+            dict.set(stem + suffix, 'verb');
+          }
+          // て/た/ない forms
+          for (const suffix of ['て','た','ない','なかった','たい','たいです','たくない','たくなかった']) {
+            dict.set(stem + suffix, 'verb');
+          }
+          // Stem by itself (for compound forms like stem+ている)
+          if (stem.length >= 2) dict.set(stem, 'verb');
+        }
+      } else if (posL.includes('adj')) {
+        dict.set(reading, 'adjective');
+        // i-adjective conjugations
+        if (reading.endsWith('い') && reading.length >= 2) {
+          const stem = reading.slice(0, -1);
+          for (const suffix of ['くない','かった','くなかった','く','くて','さ','すぎる','すぎます']) {
+            dict.set(stem + suffix, 'adjective');
+          }
+        }
+      } else if (posL.includes('adv')) {
+        dict.set(reading, 'adverb');
+      } else {
+        // Noun, Suffix, Pronoun, etc. → noun
+        dict.set(reading, 'noun');
       }
     }
 
-    if (spans.length === 0) {
-      return <span style={{ color: '#FFFFFF' }}>{text}</span>;
+    // ── Common nouns that may appear in sentences but not in vocab ──
+    const commonNouns = [
+      'あさ','ひる','よる','ゆうがた','けさ','こんばん','ゆうべ',
+      'きょう','あした','あす','きのう','おととい','あさって',
+      'まいにち','まいあさ','まいばん','まいしゅう','まいつき','まいとし',
+      'ことし','きょねん','らいねん','せんげつ','こんげつ','らいげつ',
+      'こんしゅう','らいしゅう','せんしゅう',
+      'いま','あと','まえ','さき','つぎ',
+      'こうえん','みち','えき','びょういん','がっこう','だいがく','としょかん',
+      'へや','うち','いえ','まち','みせ','かいしゃ','じむしょ','こうじょう',
+      'くうこう','ホテル','レストラン','デパート','スーパー','コンビニ',
+      'えいが','おんがく','スポーツ','サッカー','やきゅう','テニス',
+      'でんしゃ','バス','くるま','じてんしゃ','タクシー','ひこうき','ちかてつ',
+      'せんせい','ともだち','かぞく','こども','おとな','ひと','がくせい',
+      'おとうさん','おかあさん','おにいさん','おねえさん','おとうと','いもうと',
+      'あに','あね','おじいさん','おばあさん','おじさん','おばさん',
+      'いしゃ','かんごし','けいさつ','うんてんしゅ',
+      'にほんご','えいご','べんきょう','しごと','しゅくだい','れんしゅう',
+      'おかね','じかん','でんわ','てがみ','しんぶん','ざっし','ほん',
+      'ごはん','あさごはん','ひるごはん','ばんごはん','おちゃ','みず','おさけ',
+      'コーヒー','ジュース','ぎゅうにゅう','パン','にく','さかな','やさい','くだもの',
+      'てんき','あめ','ゆき','かぜ','そら','やま','うみ','かわ',
+      'もんだい','こたえ','いみ','りゆう','けっか','れい',
+      'さいふ','かぎ','くつ','ふく','かばん','めがね','かさ','ぼうし',
+      'でんき','テレビ','パソコン','スマホ','カメラ','エアコン',
+      'たんじょうび','やすみ','りょこう','パーティー','しけん',
+      'なまえ','じゅうしょ','でんわばんごう',
+      'くに','ところ','ばしょ','ちず',
+      'はな','き','どうぶつ','ねこ','いぬ','とり',
+      'おとこ','おんな','おとこのこ','おんなのこ',
+      'もの','こと','とき','ところ','ほう','かた',
+      'なか','そと','うえ','した','みぎ','ひだり','よこ','となり','ちかく','むこう',
+      'しゃしん','おみやげ','プレゼント','にもつ',
+      'せかい','しゃかい','けいざい','ぶんか','れきし',
+    ];
+    for (const n of commonNouns) if (!dict.has(n)) dict.set(n, 'noun');
+
+    // ── Common adverbs ──
+    const commonAdverbs = [
+      'とても','すこし','ちょっと','もう','まだ','もっと','よく','たくさん',
+      'いつも','ときどき','たまに','ぜんぜん','あまり','けっこう','かなり',
+      'ずっと','すぐ','やっと','だんだん','ゆっくり','はっきり',
+      'たぶん','きっと','ぜひ','もちろん','ほんとうに','じつは',
+      'はじめて','さいきん','ずいぶん','ちょくせつ',
+      'いつでも','どこでも','だれでも','なんでも',
+      'そして','それから','しかし','でも','だから','ところで','それで','それに',
+      'まず','つぎに','さいごに','とくに','たとえば',
+    ];
+    for (const a of commonAdverbs) if (!dict.has(a)) dict.set(a, 'adverb');
+
+    return dict;
+  }, [allWords]);
+
+  // Styled Sentence Parser Helper — dictionary-based longest-match tokenizer
+  const renderStyledSentence = (text: string) => {
+    // If text uses the tagged format [N:...], [V:...], etc., parse those first
+    if (/\[[NVAPG]:/.test(text)) {
+      const regex = /\[([NVAPG]):([^\]]+)\]|([^\[]+)/g;
+      const spans: React.ReactNode[] = [];
+      let match;
+      let keyIdx = 0;
+
+      while ((match = regex.exec(text)) !== null) {
+        if (match[1]) {
+          const tag = match[1];
+          const content = match[2];
+          let colorClass = '';
+          if (tag === 'N') colorClass = 'text-amber-500 dark:text-amber-400';
+          else if (tag === 'V') colorClass = 'text-blue-600 dark:text-blue-400';
+          else if (tag === 'A' || tag === 'G') colorClass = 'text-red-500 dark:text-red-400';
+          else if (tag === 'P') colorClass = 'text-emerald-600 dark:text-emerald-400';
+
+          spans.push(
+            <span key={keyIdx++} className={`font-extrabold select-all ${colorClass}`}>
+              {content}
+            </span>
+          );
+        } else if (match[3]) {
+          spans.push(
+            <span key={keyIdx++} className="select-all">{match[3]}</span>
+          );
+        }
+      }
+      if (spans.length > 0) return <>{spans}</>;
     }
 
-    return <>{spans}</>;
+    // ── Dictionary-based longest-match segmentation ──
+    const segments: { text: string; type: string }[] = [];
+    let i = 0;
+    const maxLen = 15; // longest possible token to try
+
+    while (i < text.length) {
+      const ch = text[i];
+
+      // Spaces → pass through
+      if (ch === ' ' || ch === '　' || ch === '\t') {
+        segments.push({ text: ch, type: 'space' });
+        i++;
+        continue;
+      }
+
+      // Punctuation → pass through
+      if (/[。、！？「」（）・\.\!\?\-]/.test(ch)) {
+        segments.push({ text: ch, type: 'punct' });
+        i++;
+        continue;
+      }
+
+      // Try longest dictionary match at position i
+      let bestWord = '';
+      let bestType = '';
+      const remaining = text.length - i;
+
+      for (let len = Math.min(maxLen, remaining); len >= 1; len--) {
+        const candidate = text.substring(i, i + len);
+        // Skip candidates that include spaces or punctuation mid-word
+        if (len > 1 && /[\s。、！？「」（）・]/.test(candidate)) continue;
+        const found = jpTokenDict.get(candidate);
+        if (found) {
+          bestWord = candidate;
+          bestType = found;
+          break;
+        }
+      }
+
+      if (bestWord) {
+        segments.push({ text: bestWord, type: bestType });
+        i += bestWord.length;
+      } else {
+        // No dictionary match — take single character
+        segments.push({ text: ch, type: 'unknown' });
+        i++;
+      }
+    }
+
+    // Merge consecutive unknowns into a single span
+    const merged: { text: string; type: string }[] = [];
+    for (const seg of segments) {
+      const prev = merged[merged.length - 1];
+      if (prev && prev.type === 'unknown' && seg.type === 'unknown') {
+        prev.text += seg.text;
+      } else {
+        merged.push({ ...seg });
+      }
+    }
+
+    // Render with color classes
+    if (merged.length === 0) return <span>{text}</span>;
+
+    return (
+      <>
+        {merged.map((seg, idx) => {
+          let cls = 'select-all';
+          switch (seg.type) {
+            case 'particle':
+              cls += ' font-extrabold text-emerald-600 dark:text-emerald-400'; break;
+            case 'verb':
+              cls += ' font-extrabold text-blue-600 dark:text-blue-400'; break;
+            case 'noun':
+              cls += ' font-extrabold text-amber-500 dark:text-amber-400'; break;
+            case 'grammar':
+              cls += ' font-extrabold text-red-500 dark:text-red-400'; break;
+            case 'adjective':
+              cls += ' font-extrabold text-red-500 dark:text-red-400'; break;
+            case 'adverb':
+              cls += ' font-extrabold text-amber-500 dark:text-amber-400'; break;
+            // space, punct, unknown → inherit
+          }
+          return <span key={idx} className={cls}>{seg.text}</span>;
+        })}
+      </>
+    );
   };
 
   // Grouped vocabulary data
@@ -649,7 +1136,7 @@ export default function App() {
 
                   {/* Mobile branding title */}
                   <span className="lg:hidden text-xs font-bold text-white flex-none">
-                    JLearn-MM-N3
+                    JLearn-MM-N4
                   </span>
 
                   {/* Branding / Logo (Desktop only) */}
@@ -666,7 +1153,7 @@ export default function App() {
                       <span className="text-sm">📚</span>
                     </div>
                     <div className="leading-tight shrink-0">
-                      <h1 className="font-extrabold text-xs sm:text-sm lg:text-base text-slate-800 dark:text-slate-100 tracking-tight">JLearn-MM-N3</h1>
+                      <h1 className="font-extrabold text-xs sm:text-sm lg:text-base text-slate-800 dark:text-slate-100 tracking-tight">JLearn-MM-N4</h1>
                       <p className="hidden md:block text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
                     </div>
                   </div>
@@ -775,7 +1262,7 @@ export default function App() {
                         <span className="text-sm">📚</span>
                       </div>
                       <div className="leading-tight shrink-0">
-                        <h1 className="font-extrabold text-xs sm:text-sm lg:text-base text-slate-800 dark:text-slate-100 tracking-tight">JLearn-MM-N3</h1>
+                        <h1 className="font-extrabold text-xs sm:text-sm lg:text-base text-slate-800 dark:text-slate-100 tracking-tight">JLearn-MM-N4</h1>
                         <p className="hidden md:block text-[10px] text-slate-500 dark:text-slate-400">Daily Japanese Myanmar Companion</p>
                       </div>
                     </div>
@@ -980,7 +1467,7 @@ export default function App() {
                             {word.sentenceJa && (
                               <div className="bg-slate-900 border border-slate-800 p-3 rounded-xl flex flex-col gap-1.5 text-xs sm:text-sm text-white">
                                 <div className="flex items-center justify-between gap-2.5">
-                                  <p className="font-semibold leading-relaxed">{renderStyledSentence(word.sentenceJa)}</p>
+                                  <p className="font-semibold leading-relaxed">{renderStyledSentence(convertToHiragana(word.sentenceJa))}</p>
                                   <button 
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -991,7 +1478,7 @@ export default function App() {
                                     <Volume2 size={13} />
                                   </button>
                                 </div>
-                                <p className="text-slate-300 leading-relaxed font-semibold">{word.sentenceMm}</p>
+                                <p className="text-slate-300 leading-relaxed font-semibold" style={{ fontFamily: 'Pyidaungsu, Myanmar Text, sans-serif' }}>{word.sentenceMm}</p>
                               </div>
                             )}
                           </div>
@@ -1039,16 +1526,68 @@ export default function App() {
                               </button>
                             </div>
  
-                            {/* Center Kanji/Hiragana */}
-                            <div className="flex-1 flex flex-col justify-center items-center gap-1.5 py-4 w-full">
-                              {currentWord.kanji !== currentWord.hiragana && (
+                            {/* Center Kanji/Hiragana — order: Kanji → Hiragana → Myanmar */}
+                            <div className="flex-1 flex flex-col justify-center items-center gap-1.5 py-4 w-full overflow-hidden">
+                              {currentWord.kanji !== currentWord.hiragana ? (
+                                <>
+                                  <h3 
+                                    className="font-semibold text-slate-500 dark:text-slate-400 leading-tight text-center max-w-full px-2"
+                                    ref={(el) => {
+                                      if (el) {
+                                        let fs = 40;
+                                        el.style.fontSize = fs + 'px';
+                                        while (el.scrollWidth > el.clientWidth && fs > 14) {
+                                          fs -= 1;
+                                          el.style.fontSize = fs + 'px';
+                                        }
+                                      }
+                                    }}
+                                    style={{ 
+                                      whiteSpace: 'nowrap', 
+                                      display: 'block',
+                                      width: '100%',
+                                      textAlign: 'center'
+                                    }}
+                                  >
+                                    {currentWord.kanji}
+                                  </h3>
+                                  <p 
+                                    className="text-center font-extrabold text-slate-900 dark:text-slate-100 max-w-full px-2"
+                                    ref={(el) => {
+                                      if (el) {
+                                        let fs = 60;
+                                        el.style.fontSize = fs + 'px';
+                                        while (el.scrollWidth > el.clientWidth && fs > 10) {
+                                          fs -= 2;
+                                          el.style.fontSize = fs + 'px';
+                                        }
+                                      }
+                                    }}
+                                    style={{ 
+                                      whiteSpace: 'nowrap', 
+                                      display: 'block',
+                                      width: '100%',
+                                      textAlign: 'center'
+                                    }}
+                                  >
+                                    {currentWord.hiragana}
+                                  </p>
+                                </>
+                              ) : (
                                 <p 
-                                  className="text-center font-semibold tracking-wide text-slate-500 dark:text-slate-400 line-clamp-2 max-w-full px-2"
+                                  className="text-center font-extrabold text-slate-900 dark:text-slate-100 max-w-full px-2"
+                                  ref={(el) => {
+                                    if (el) {
+                                      let fs = 60;
+                                      el.style.fontSize = fs + 'px';
+                                      while (el.scrollWidth > el.clientWidth && fs > 10) {
+                                        fs -= 2;
+                                        el.style.fontSize = fs + 'px';
+                                      }
+                                    }
+                                  }}
                                   style={{ 
-                                    fontSize: 'clamp(1rem, 6vw, 2.5rem)', 
                                     whiteSpace: 'nowrap', 
-                                    overflow: 'hidden', 
-                                    textOverflow: 'ellipsis',
                                     display: 'block',
                                     width: '100%',
                                     textAlign: 'center'
@@ -1057,30 +1596,23 @@ export default function App() {
                                   {currentWord.hiragana}
                                 </p>
                               )}
-                              <h3 
-                                className="font-extrabold text-slate-900 dark:text-slate-100 leading-tight text-center max-w-full px-2"
-                                style={{ 
-                                  fontSize: 'clamp(2rem, 12vw, 5rem)', 
-                                  whiteSpace: 'nowrap', 
-                                  overflow: 'hidden', 
-                                  textOverflow: 'ellipsis',
-                                  display: 'block',
-                                  width: '100%',
-                                  textAlign: 'center'
-                                }}
-                              >
-                                {currentWord.kanji}
-                              </h3>
                               
                               <div className="w-14 h-[2px] bg-slate-100 dark:bg-slate-800 my-3" />
                               
                               <p 
                                 className="font-black text-indigo-600 dark:text-indigo-400 text-center max-w-full px-2"
+                                ref={(el) => {
+                                  if (el) {
+                                    let fs = 28;
+                                    el.style.fontSize = fs + 'px';
+                                    while (el.scrollWidth > el.clientWidth && fs > 10) {
+                                      fs -= 1;
+                                      el.style.fontSize = fs + 'px';
+                                    }
+                                  }
+                                }}
                                 style={{ 
-                                  fontSize: 'clamp(0.9rem, 5vw, 1.8rem)', 
                                   whiteSpace: 'nowrap', 
-                                  overflow: 'hidden', 
-                                  textOverflow: 'ellipsis',
                                   display: 'block',
                                   width: '100%'
                                 }}
@@ -1096,11 +1628,11 @@ export default function App() {
                           </div>
  
                           {/* BACK PANEL */}
-                          <div className={`${isFlipped ? 'relative w-full min-h-[18rem] h-auto' : 'absolute inset-0 w-full h-full select-none pointer-events-none'} overflow-hidden rounded-3xl bg-indigo-600 dark:bg-indigo-900 text-white p-6 shadow-xl backface-hidden rotate-y-180 flex flex-col justify-between items-center text-center`}>
+                          <div className={`${isFlipped ? 'relative w-full min-h-[18rem] h-auto' : 'absolute inset-0 w-full h-full select-none pointer-events-none'} overflow-hidden rounded-3xl bg-lightSurface dark:bg-darkSurface border border-lightBorder dark:border-darkBorder text-slate-900 dark:text-slate-100 p-6 shadow-md shadow-slate-100 dark:shadow-none backface-hidden rotate-y-180 flex flex-col justify-between items-center text-center`}>
                             
                             {/* Header back */}
                             <div className="w-full flex items-center justify-between">
-                              <span className="px-2.5 py-1 text-[10px] uppercase tracking-wider font-extrabold bg-white/20 text-white rounded-md">
+                              <span className="px-2.5 py-1 text-[10px] uppercase tracking-wider font-extrabold bg-slate-100 dark:bg-slate-805 text-slate-500 dark:text-slate-400 rounded-md">
                                 {currentWord.pos}
                               </span>
 
@@ -1110,7 +1642,7 @@ export default function App() {
                                     e.stopPropagation();
                                     speak(currentWord.kanji);
                                   }}
-                                  className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-white hover:bg-white/25 transition"
+                                  className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition"
                                 >
                                   <Volume2 size={16} />
                                 </button>
@@ -1119,7 +1651,7 @@ export default function App() {
                                     e.stopPropagation();
                                     toggleLearned(currentWord.id);
                                   }}
-                                  className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-white hover:bg-white/25 transition"
+                                  className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition"
                                 >
                                   <Star size={16} fill={learnedWords.has(currentWord.id) ? '#fbbf24' : 'none'} className={learnedWords.has(currentWord.id) ? 'text-amber-400' : ''} />
                                 </button>
@@ -1128,35 +1660,35 @@ export default function App() {
 
                             {/* Back Content */}
                             <div className="flex-1 flex flex-col justify-center items-center py-2 max-w-xs w-full gap-2.5">
-                              <p className="text-[10px] tracking-widest uppercase font-extrabold text-white/60">EXAMPLE SENTENCE</p>
+                              <p className="text-[10px] tracking-widest uppercase font-extrabold text-slate-400 dark:text-slate-500">EXAMPLE SENTENCE</p>
                               
                               {currentWord.sentenceJa ? (
                                 <>
-                                  <p className="text-[21px] font-bold leading-snug">{renderStyledSentence(currentWord.sentenceJa)}</p>
+                                  <p className="text-[21px] font-bold leading-snug">{renderStyledSentence(convertToHiragana(currentWord.sentenceJa))}</p>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       speak(currentWord.sentenceJa);
                                     }}
-                                    className="h-7 px-3 bg-white/20 hover:bg-white/30 text-white font-bold text-[10px] rounded-full flex items-center gap-1.5 transition"
+                                    className="h-7 px-3 bg-indigo-100 dark:bg-indigo-900/40 hover:bg-indigo-200 dark:hover:bg-indigo-800/50 text-indigo-600 dark:text-indigo-400 font-bold text-[10px] rounded-full flex items-center gap-1.5 transition"
                                   >
                                     <Volume2 size={11} />
                                     <span>Listen</span>
                                   </button>
 
-                                  <div className="bg-black/15 w-full p-3 rounded-xl border border-white/5 mt-1">
-                                    <p className="text-[13px] leading-relaxed text-slate-100 font-medium">
+                                  <div className="bg-slate-50 dark:bg-slate-800/60 w-full p-3 rounded-xl border border-lightBorder dark:border-darkBorder mt-1">
+                                    <p className="text-[13px] leading-relaxed text-slate-700 dark:text-slate-300 font-medium" style={{ fontFamily: 'Pyidaungsu, Myanmar Text, sans-serif' }}>
                                       {currentWord.sentenceMm}
                                     </p>
                                   </div>
                                 </>
                               ) : (
-                                <p className="text-xs text-white/70 italic">No example text available</p>
+                                <p className="text-xs text-slate-400 dark:text-slate-500 italic">No example text available</p>
                               )}
                             </div>
 
                             {/* Hint back */}
-                            <p className="text-[10px] text-white/50 font-bold tracking-wider">
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold tracking-wider">
                               Tap to flip back
                             </p>
                           </div>
@@ -1468,16 +2000,16 @@ export default function App() {
                           </div>
 
                           {/* BACK PANEL */}
-                          <div className="absolute inset-0 w-full h-full rounded-3xl bg-indigo-650 dark:bg-indigo-950 text-white p-6 shadow-xl backface-hidden rotate-y-180 flex flex-col justify-between items-center text-center border border-indigo-500/10">
+                          <div className="absolute inset-0 w-full h-full rounded-3xl bg-lightSurface dark:bg-darkSurface text-slate-900 dark:text-slate-100 p-6 shadow-md shadow-slate-100 dark:shadow-none backface-hidden rotate-y-180 flex flex-col justify-between items-center text-center border border-lightBorder dark:border-darkBorder">
                             
                             {/* Back Panel Header */}
                             <div className="w-full flex items-center justify-between">
-                              <span className="px-2.5 py-1 text-[10px] uppercase tracking-wider font-extrabold bg-white/15 text-white/90 rounded-md font-sans">
+                              <span className="px-2.5 py-1 text-[10px] uppercase tracking-wider font-extrabold bg-slate-100 dark:bg-slate-800/80 text-indigo-600 dark:text-indigo-400 rounded-md font-sans">
                                 Unit {currentKanji.unit}
                               </span>
                               
                               <div className="flex items-center gap-2">
-                                <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider font-black bg-white/15 text-white/90 rounded-md">
+                                <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider font-black bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400 rounded-md border border-amber-500/20">
                                   {currentKanji.strokes} Strokes
                                 </span>
                                 <button
@@ -1485,7 +2017,7 @@ export default function App() {
                                     e.stopPropagation();
                                     speak(currentKanji.kanji);
                                   }}
-                                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition shrink-0 active-press"
+                                  className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition shrink-0 active-press"
                                   title="Listen"
                                 >
                                   <Volume2 size={14} />
@@ -1504,42 +2036,42 @@ export default function App() {
                               
                               {/* Large Myanmar Translation */}
                               <div className="flex flex-col items-center gap-1">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">Myanmar Meaning</span>
-                                <h4 className="text-2xl font-black text-amber-300 leading-snug drop-shadow-sm font-sans">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Myanmar Meaning</span>
+                                <h4 className="text-2xl font-black text-indigo-600 dark:text-indigo-400 leading-snug font-sans">
                                   {currentKanji.meaning_mm}
                                 </h4>
-                                <p className="text-xs text-white/70 font-bold">({currentKanji.meaning_en})</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">({currentKanji.meaning_en})</p>
                               </div>
                               
                               {/* Onyomi / Kunyomi Labels */}
-                              <div className="grid grid-cols-2 gap-3 w-full mt-1 bg-black/15 p-3 rounded-2xl border border-white/5">
-                                <div className="flex flex-col gap-1 items-center border-r border-white/10 pr-2">
-                                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-red-300">Onyomi (音読み)</span>
-                                  <span className="text-sm font-bold text-white tracking-wide">{currentKanji.onyomi}</span>
+                              <div className="grid grid-cols-2 gap-3 w-full mt-1 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-lightBorder dark:border-darkBorder">
+                                <div className="flex flex-col gap-1 items-center border-r border-slate-200 dark:border-slate-700 pr-2">
+                                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-red-500 dark:text-red-400">Onyomi (音読み)</span>
+                                  <span className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-wide">{currentKanji.onyomi}</span>
                                 </div>
                                 <div className="flex flex-col gap-1 items-center pl-2">
-                                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-blue-300">Kunyomi (訓読み)</span>
-                                  <span className="text-sm font-bold text-white tracking-wide">{currentKanji.kunyomi}</span>
+                                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-blue-500 dark:text-blue-400">Kunyomi (訓読み)</span>
+                                  <span className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-wide">{currentKanji.kunyomi}</span>
                                 </div>
                               </div>
 
                               {/* Example Showcase */}
-                              <div className="w-full bg-white/10 border border-white/10 p-3 rounded-2xl text-left flex flex-col gap-1.5 hover:bg-white/15 transition-all">
+                              <div className="w-full bg-slate-50 dark:bg-slate-800/60 border border-lightBorder dark:border-darkBorder p-3 rounded-2xl text-left flex flex-col gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
                                 <div className="flex justify-between items-center">
-                                  <span className="text-[9px] font-black tracking-widest uppercase text-indigo-200">Example Compound</span>
+                                  <span className="text-[9px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500">Example Compound</span>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       speak(currentKanji.example_word);
                                     }}
-                                    className="h-5 px-2 bg-white/15 hover:bg-white/25 text-[9px] font-bold rounded-lg flex items-center gap-1 transition shrink-0 active-press"
+                                    className="h-5 px-2 bg-indigo-100 dark:bg-indigo-900/40 hover:bg-indigo-200 dark:hover:bg-indigo-800/50 text-indigo-600 dark:text-indigo-400 text-[9px] font-bold rounded-lg flex items-center gap-1 transition shrink-0 active-press"
                                   >
                                     <Volume2 size={10} />
                                     <span>Pronounce</span>
                                   </button>
                                 </div>
                                 <div className="flex items-baseline gap-2">
-                                  <h5 className="text-4xl font-black text-white"
+                                  <h5 className="text-4xl font-black text-slate-900 dark:text-slate-50"
                                       style={{
                                         fontFamily: '"Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif',
                                         textRendering: 'optimizeLegibility',
@@ -1549,14 +2081,14 @@ export default function App() {
                                       }}>
                                     {currentKanji.example_word}
                                   </h5>
-                                  <span className="text-xl text-indigo-100 font-bold">【{currentKanji.example_reading}】</span>
+                                  <span className="text-xl text-slate-500 dark:text-slate-400 font-bold">【{currentKanji.example_reading}】</span>
                                 </div>
-                                <p className="text-xs font-semibold text-amber-200 border-t border-white/5 pt-1.5">{currentKanji.example_meaning}</p>
+                                <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 border-t border-slate-200 dark:border-slate-700 pt-1.5">{currentKanji.example_meaning}</p>
                               </div>
 
                               {/* Compound Words Section */}
-                              <div className="w-full flex flex-col gap-2 text-left mt-1 border-t border-white/10 pt-3">
-                                <span className="text-[9px] font-black tracking-widest uppercase text-indigo-200">
+                              <div className="w-full flex flex-col gap-2 text-left mt-1 border-t border-slate-200 dark:border-slate-700 pt-3">
+                                <span className="text-[9px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500">
                                   COMPOUND WORDS
                                 </span>
                                 
@@ -1564,10 +2096,10 @@ export default function App() {
                                   {currentKanji.compounds?.map((comp, idx) => (
                                     <div 
                                       key={idx} 
-                                      className="bg-black/30 hover:bg-black/40 border border-white/15 rounded-xl p-2.5 flex flex-col gap-1 transition-all"
+                                      className="bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-lightBorder dark:border-darkBorder rounded-xl p-2.5 flex flex-col gap-1 transition-all"
                                     >
                                       <div className="flex justify-between items-baseline">
-                                        <h6 className="text-2xl font-black text-white drop-shadow-sm" 
+                                        <h6 className="text-2xl font-black text-slate-900 dark:text-slate-50" 
                                             style={{
                                               fontFamily: '"Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif',
                                               textRendering: 'optimizeLegibility',
@@ -1577,13 +2109,13 @@ export default function App() {
                                             }}>
                                           {comp.word}
                                         </h6>
-                                        <span className="text-xl text-indigo-200 font-bold"
+                                        <span className="text-xl text-slate-500 dark:text-slate-400 font-bold"
                                               style={{fontFamily: '"Noto Sans JP", "Yu Gothic", "Hiragino Sans", sans-serif'}}>
                                           {comp.reading}
                                         </span>
                                       </div>
-                                      <p className="text-xs font-semibold text-amber-100">{comp.meaning_mm}</p>
-                                      <p className="text-[11px] text-white/80 italic">{comp.meaning_en}</p>
+                                      <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{comp.meaning_mm}</p>
+                                      <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">{comp.meaning_en}</p>
                                     </div>
                                   ))}
                                 </div>
@@ -1592,7 +2124,7 @@ export default function App() {
                             </div>
 
                             {/* Prompt hint back */}
-                            <p className="text-[10px] text-white/50 font-bold tracking-wider uppercase">
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase">
                               Tap card to flip back
                             </p>
                           </div>
@@ -1965,10 +2497,10 @@ export default function App() {
               {/* Header Info */}
               <div className="text-center">
                 <h2 className="font-extrabold text-2xl lg:text-3xl text-indigo-600 dark:text-indigo-400 tracking-wide flex items-center justify-center gap-2">
-                   N3 Grammar (文法)
+                   N4 Grammar (文法)
                 </h2>
                 <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-1 uppercase tracking-wider">
-                  Master 65 Crucial JLPT N3 Grammar Patterns by Category
+                  Master Crucial JLPT N4 Grammar Patterns by Category
                 </p>
               </div>
 
@@ -2034,7 +2566,7 @@ export default function App() {
               {/* STATS SUMMARY */}
               <div className="flex items-center justify-between text-xs font-bold text-slate-400 px-1">
                 <span>FOUND {filteredGrammar.length} GRAMMAR PATTERNS</span>
-                <span>JLPT N3 SYLLABUS</span>
+                <span>JLPT N4 SYLLABUS</span>
               </div>
 
               {/* GRAMMAR ACCORDION LIST */}
@@ -2504,9 +3036,9 @@ export default function App() {
                     <div className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center text-indigo-400 border border-slate-700/60 shadow-lg mb-1">
                       <SearchIcon size={20} />
                     </div>
-                    <h4 className="font-extrabold text-sm text-slate-300">Universal N3 Search</h4>
+                    <h4 className="font-extrabold text-sm text-slate-300">Universal N4 Search</h4>
                     <p className="text-xs text-slate-500 leading-normal max-w-sm">
-                      Enter at least 2 characters to instantly search across N3 Vocabulary, Kanji, Books, and Grammar patterns inside JLearn.
+                      Enter at least 2 characters to instantly search across N4 Vocabulary, Kanji, Books, and Grammar patterns inside JLearn.
                     </p>
                   </div>
                 ) : universalSearchQuery.trim().length === 1 ? (

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jlearn-mm-n3-cache-v1';
+const CACHE_NAME = 'jlearn-mm-n4-cache-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

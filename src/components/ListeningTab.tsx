@@ -63,9 +63,9 @@ export const ListeningTab: React.FC = () => {
         throw new Error("Supabase client is not fully configured. Please configure your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY keys.");
       }
 
-      // Fetch file listings from bucket 'listening-audio'
+      // Fetch file listings from bucket 'listening-n4'
       const { data, error } = await supabase.storage
-        .from('listening-audio')
+        .from('listening-n4')
         .list('', {
           limit: 300,
           sortBy: { column: 'name', order: 'asc' }
@@ -191,9 +191,9 @@ export const ListeningTab: React.FC = () => {
     setIsLoadingAudio(true);
 
     // Build standard direct audio download stream URL as requested:
-    // https://rtfumxdmgldvseuxarjo.supabase.co/storage/v1/object/public/listening-audio/[filename]
+    // https://rtfumxdmgldvseuxarjo.supabase.co/storage/v1/object/public/listening-n4/[filename]
     const activeUrl = supabaseUrl || 'https://rtfumxdmgldvseuxarjo.supabase.co';
-    const audioSrc = `${activeUrl}/storage/v1/object/public/listening-audio/${encodeURIComponent(track.fileName)}`;
+    const audioSrc = `${activeUrl}/storage/v1/object/public/listening-n4/${encodeURIComponent(track.fileName)}`;
 
     audioRef.current.src = audioSrc;
     audioRef.current.load();
@@ -279,7 +279,7 @@ export const ListeningTab: React.FC = () => {
             </span>
           </h2>
           <p className="text-xs text-[#FBBF24] font-medium">
-            N3 SHINKANZEN စာအုပ်ဖြင့် တွဲဖက်နားထောင်ပါ
+            N4 SHINKANZEN စာအုပ်ဖြင့် တွဲဖက်နားထောင်ပါ
           </p>
         </div>
 
