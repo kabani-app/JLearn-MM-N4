@@ -1135,9 +1135,15 @@ export default function App() {
                   </button>
 
                   {/* Mobile branding title */}
-                  <span className="lg:hidden text-xs font-bold text-white flex-none">
-                    JLearn-MM-N4
-                  </span>
+                  <button 
+                    onClick={() => {
+                      setActiveTab('Home');
+                      window.scrollTo(0, 0);
+                    }}
+                    className="lg:hidden text-sm font-bold text-white"
+                  >
+                    JLearn-N4
+                  </button>
 
                   {/* Branding / Logo (Desktop only) */}
                   <div 
