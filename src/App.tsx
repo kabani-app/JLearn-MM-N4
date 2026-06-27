@@ -2077,7 +2077,7 @@ export default function App() {
                                   </button>
                                 </div>
                                 <div className="flex items-baseline gap-2">
-                                  <h5 className="text-4xl font-black text-slate-900 dark:text-slate-50"
+                                  <h5 className="text-4xl font-medium text-slate-900 dark:text-slate-50"
                                       style={{
                                         fontFamily: '"Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif',
                                         textRendering: 'optimizeLegibility',
@@ -2105,7 +2105,7 @@ export default function App() {
                                       className="bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-lightBorder dark:border-darkBorder rounded-xl p-2.5 flex flex-col gap-1 transition-all"
                                     >
                                       <div className="flex justify-between items-baseline">
-                                        <h6 className="text-2xl font-black text-slate-900 dark:text-slate-50" 
+                                        <h6 className="text-2xl font-medium text-slate-900 dark:text-slate-50" 
                                             style={{
                                               fontFamily: '"Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif',
                                               textRendering: 'optimizeLegibility',
